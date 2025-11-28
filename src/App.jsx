@@ -1,27 +1,31 @@
 import Navbar from "./components/Navbar"
 import Hero from "./components/Hero"
-import AuditStats from "./components/AuditStats"
-import About from "./components/About"
 import Technologies from "./components/Technologies"
 import Experience from "./components/Experience"
 import Projects from "./components/Projects"
 import Education from "./components/Education"
 import Certifications from "./components/Certifications"
+import AuditStats from "./components/AuditStats"
 import Contact from "./components/Contact"
-
+import About from "./components/About"
+import cyberBg from "./assets/cyber_bg.png"
 
 const App = () => {
   return (
-    <div className="overflow-x-hidden text-stone-300 antialised">
+    <div className="overflow-x-hidden text-stone-300 antialiased selection:bg-cyan-300 selection:text-cyan-900">
       <div className="fixed inset-0 -z-10">
-        <div className="relative h-full w-full bg-black">
-          <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
-          <div className="absolute left-0 right-0 top-[-10%] h-[1000px] w-[1000px] rounded-full bg-[radial-gradient(circle_400px_at_50%_300px,#9333ea36,#000)]"></div>
-          <div className="absolute right-0 bottom-[-10%] h-[800px] w-[800px] rounded-full bg-[radial-gradient(circle_300px_at_50%_300px,#06b6d436,#000)]"></div>
+        <div className="relative h-full w-full">
+          <img
+            src={cyberBg}
+            alt="Background"
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#030014] via-transparent to-[#030014] opacity-90"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,243,255,0.05),transparent_50%)]"></div>
         </div>
       </div>
 
-      <div className="container mx-auto px-8">
+      <div className="container mx-auto px-4 lg:px-8 max-w-7xl">
         <Navbar />
         <Hero />
         <AuditStats />
@@ -34,8 +38,7 @@ const App = () => {
         <Contact />
       </div>
     </div>
-  )
-}
+  );
+};
 
-
-export default App
+export default App;
