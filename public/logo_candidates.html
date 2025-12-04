@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JW3B Professional Logo Candidates</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        body {
+            background-color: #050505;
+            color: #e5e5e5;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 4rem 2rem;
+            margin: 0;
+        }
+
+        h1 {
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #333;
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            color: #888;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+        }
+
+        .svg-wrapper {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            line-height: 1.5;
+            max-width: 300px;
+        }
+
+        /* Concept A Styles */
+        .concept-a-text {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            letter-spacing: -0.08em;
+        }
+
+        /* Concept B Styles */
+        .concept-b-path {
+            fill: #fff;
+        }
+
+        /* Concept C Styles */
+        .concept-c-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Logo Candidates</h1>
+    <div class="grid">
+
+        <!-- Concept A: Modernist Terminal -->
+        <div class="card">
+            <h2>Concept A: Modernist Terminal</h2>
+            <div class="svg-wrapper">
+                <svg viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gradA" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#fff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#ccc;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <!-- jw -->
+                    <text x="20" y="70" class="concept-a-text" font-size="80" fill="url(#gradA)">jw</text>
+
+                    <!-- Custom 3 (Stylized as reversed E / strong geometric 3) -->
+                    <!-- Using a path to create a sharp, geometric 3 that aligns with the x-height -->
+                    <path d="M125,32 H165 V45 H135 V52 H155 V65 H135 V72 H165 V85 H125 V32 Z" fill="#00f2fe" />
+
+                    <!-- b -->
+                    <text x="175" y="70" class="concept-a-text" font-size="80" fill="url(#gradA)">b</text>
+
+                    <!-- Dot accent -->
+                    <circle cx="235" cy="75" r="5" fill="#00f2fe" />
+                </svg>
+            </div>
+            <p class="description">
+                Clean, bold sans-serif typography. The '3' is custom-drawn as a geometric block, highlighted in cyan to
+                emphasize the "Web3" aspect. Professional and corporate-ready.
+            </p>
+        </div>
+
+        <!-- Concept B: Brutalist Monogram -->
+        <div class="card">
+            <h2>Concept B: Brutalist Monogram</h2>
+            <div class="svg-wrapper">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Grid Layout: 2x2 -->
+                    <!-- J (Top Left) -->
+                    <path d="M60,40 V80 H40" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square" />
+
+                    <!-- W (Top Right) -->
+                    <path d="M110,40 V80 L130,60 L150,80 V40" fill="none" stroke="#fff" stroke-width="8"
+                        stroke-linejoin="miter" />
+
+                    <!-- 3 (Bottom Left) -->
+                    <path d="M40,110 H70 V130 H50 M70,130 V150 H40" fill="none" stroke="#00f2fe" stroke-width="12"
+                        stroke-linecap="square" />
+
+                    <!-- B (Bottom Right) -->
+                    <path d="M110,110 V150 H140 V130 H110 M140,130 V110 H110" fill="none" stroke="#fff"
+                        stroke-width="12" stroke-linecap="square" />
+
+                    <!-- Container Box -->
+                    <rect x="20" y="20" width="160" height="160" fill="none" stroke="#333" stroke-width="4" />
+                </svg>
+            </div>
+            <p class="description">
+                Strict grid-based construction. Monospaced, architectural, and heavy. The '3' is highlighted. Represents
+                structure and infrastructure.
+            </p>
+        </div>
+
+        <!-- Concept C: Abstract Hex -->
+        <div class="card">
+            <h2>Concept C: Abstract Hex</h2>
+            <div class="svg-wrapper">
+                <svg viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Symbol -->
+                    <g transform="translate(40, 20) scale(0.6)">
+                        <!-- Hexagon Outline -->
+                        <path d="M50,0 L93,25 L93,75 L50,100 L7,75 L7,25 Z" fill="none" stroke="#00f2fe"
+                            stroke-width="6" />
+                        <!-- Internal Nodes -->
+                        <circle cx="50" cy="50" r="8" fill="#fff" />
+                        <line x1="50" y1="50" x2="93" y2="25" stroke="#fff" stroke-width="4" />
+                        <line x1="50" y1="50" x2="7" y2="75" stroke="#fff" stroke-width="4" />
+                        <line x1="50" y1="50" x2="50" y2="100" stroke="#fff" stroke-width="4" />
+                    </g>
+
+                    <!-- Wordmark -->
+                    <text x="110" y="65" class="concept-c-text" font-size="50" fill="#fff">jw3b<tspan fill="#00f2fe">.
+                        </tspan>dev</text>
+                </svg>
+            </div>
+            <p class="description">
+                A technical symbol referencing blockchain nodes/hexagons. Paired with a clean monospace font (JetBrains
+                Mono). The most "developer" aesthetic.
+            </p>
+        </div>
+
+    </div>
+</body>
+
+</html>

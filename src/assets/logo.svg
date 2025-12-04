@@ -1,0 +1,19 @@
+<svg viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="gradA" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#fff;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#ccc;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <!-- jw -->
+    <text x="20" y="70" font-family="'Inter', sans-serif" font-weight="900" letter-spacing="-0.08em" font-size="80" fill="url(#gradA)">jw</text>
+    
+    <!-- Custom 3 (Stylized as reversed E / strong geometric 3) -->
+    <path d="M125,32 H165 V45 H135 V52 H155 V65 H135 V72 H165 V85 H125 V32 Z" fill="#00f2fe" />
+    
+    <!-- b -->
+    <text x="175" y="70" font-family="'Inter', sans-serif" font-weight="900" letter-spacing="-0.08em" font-size="80" fill="url(#gradA)">b</text>
+    
+    <!-- Dot accent -->
+    <circle cx="235" cy="75" r="5" fill="#00f2fe" />
+</svg>

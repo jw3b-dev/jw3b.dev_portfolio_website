@@ -1,7 +1,6 @@
-
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa"
 import { motion } from "framer-motion"
-import Logo from "./Logo"
+import StoryLogo from "./StoryLogo"
 
 const Navbar = () => {
     return (
@@ -11,11 +10,11 @@ const Navbar = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-5xl rounded-full glass-panel px-6 py-4 flex items-center justify-between border border-white/10 bg-black/40 backdrop-blur-xl"
         >
-            <a href="#" className="flex items-center gap-2 group flex-shrink-0">
-                <Logo className="h-8" />
-            </a>
-
-            {/* Desktop Navigation */}
+            <div className="flex flex-shrink-0 items-center">
+                <a href="/" aria-label="Home">
+                    <StoryLogo />
+                </a>
+            </div>       {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8 font-mono text-sm text-stone-300">
                 {['about', 'experience', 'projects', 'contact'].map((item) => (
                     <a
