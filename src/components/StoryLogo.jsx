@@ -10,19 +10,14 @@ const StoryLogo = () => {
             // Start at JW
             setPhase('JW');
 
-            // Go to WEB3 after 2s
+            // Go to JW3B after 2s
             timeout = setTimeout(() => {
-                setPhase('WEB3');
+                setPhase('JW3B');
 
-                // Go to JW3B after 3s (Total 5s)
+                // Restart after 5s (Total 7s)
                 timeout = setTimeout(() => {
-                    setPhase('JW3B');
-
-                    // Restart after 6s (Total 11s)
-                    timeout = setTimeout(() => {
-                        runSequence();
-                    }, 6000);
-                }, 3000);
+                    runSequence();
+                }, 5000);
             }, 2000);
         };
 
@@ -33,8 +28,7 @@ const StoryLogo = () => {
     // Animation variants
     const containerVariants = {
         JW: { gap: '0.5rem' },
-        WEB3: { gap: '0.2rem' },
-        JW3B: { gap: '0.2rem' }
+        JW3B: { gap: '0.1rem' }
     };
 
     // Smoother, less "snappy" spring
@@ -45,8 +39,8 @@ const StoryLogo = () => {
         mass: 1
     };
 
-    // Common styles - font-mono for hacker theme
-    const letterClass = "text-5xl font-mono font-bold text-white tracking-tighter relative z-10";
+    // Common styles - Audiowide for futuristic theme
+    const letterClass = "text-5xl font-['Audiowide'] font-bold text-white tracking-widest relative z-10";
 
     // Using a gradient text for the metallic look
     const metalText = {
@@ -56,13 +50,22 @@ const StoryLogo = () => {
         filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))"
     };
 
-    const cyanText = {
-        color: "#00f2fe",
-        textShadow: "0 0 10px rgba(0, 242, 254, 0.5), 0 0 20px rgba(0, 242, 254, 0.3)"
+    // Pulsing glow animation for the "3"
+    const pulseAnimation = {
+        textShadow: [
+            "0 0 10px rgba(0, 242, 254, 0.5), 0 0 20px rgba(0, 242, 254, 0.3)",
+            "0 0 15px rgba(0, 242, 254, 0.8), 0 0 30px rgba(0, 242, 254, 0.5)",
+            "0 0 10px rgba(0, 242, 254, 0.5), 0 0 20px rgba(0, 242, 254, 0.3)"
+        ],
+        transition: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+        }
     };
 
     return (
-        <div className="relative h-24 w-80 flex items-center justify-center overflow-hidden bg-black/40 rounded-xl backdrop-blur-md border border-white/10 shadow-2xl">
+        <div className="relative h-16 w-auto px-4 flex items-center justify-center overflow-hidden">
 
             <LayoutGroup>
                 <motion.div
@@ -101,36 +104,26 @@ const StoryLogo = () => {
                         W
                     </motion.span>
 
-                    {/* Letter E (Only in WEB3) */}
+                    {/* Shared 3 (Only in JW3B) */}
                     <AnimatePresence mode="popLayout">
-                        {phase === 'WEB3' && (
-                            <motion.span
-                                layoutId="letter-E"
-                                layout="position"
-                                className={letterClass}
-                                style={metalText}
-                                initial={{ opacity: 0, scale: 0.5, filter: "blur(10px)" }}
-                                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                                exit={{ opacity: 0, scale: 0.5, filter: "blur(10px)" }}
-                                transition={itemTransition}
-                            >
-                                E
-                            </motion.span>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Shared 3 (WEB3 and JW3B) */}
-                    <AnimatePresence mode="popLayout">
-                        {(phase === 'WEB3' || phase === 'JW3B') && (
+                        {phase === 'JW3B' && (
                             <motion.span
                                 layoutId="shared-3"
                                 layout="position"
-                                className="text-6xl font-mono font-bold relative z-20"
-                                style={cyanText}
-                                initial={{ opacity: 0, y: -20, scale: 0.5 }}
-                                animate={{ opacity: 1, y: 0, scale: 1.1 }}
+                                className="text-6xl font-['Audiowide'] font-bold relative z-20"
+                                style={{ color: "#00f2fe" }}
+                                initial={{ opacity: 0, y: -20, scale: 0.5, textShadow: "0 0 10px rgba(0, 242, 254, 0.5)" }}
+                                animate={{
+                                    opacity: 1,
+                                    y: 0,
+                                    scale: 1.1,
+                                    textShadow: pulseAnimation.textShadow
+                                }}
                                 exit={{ opacity: 0, y: 20, scale: 0.5 }}
-                                transition={itemTransition}
+                                transition={{
+                                    ...itemTransition,
+                                    textShadow: pulseAnimation.transition
+                                }}
                             >
                                 3
                             </motion.span>
@@ -139,7 +132,7 @@ const StoryLogo = () => {
 
                     {/* Letter B */}
                     <AnimatePresence mode="popLayout">
-                        {(phase === 'WEB3' || phase === 'JW3B') && (
+                        {phase === 'JW3B' && (
                             <motion.span
                                 layoutId="letter-B"
                                 layout="position"

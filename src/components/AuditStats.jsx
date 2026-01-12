@@ -49,7 +49,7 @@ const AuditStats = () => {
             {/* Section Header Line */}
             <div className="absolute top-10 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-900/50 to-transparent"></div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                 <StatItem value={50000} label="Lines Audited" suffix="+" />
                 <StatItem value={15} label="High/Critical Findings" />
                 <StatItem value={25} label="Protocols Secured" suffix="+" />

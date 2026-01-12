@@ -27,6 +27,11 @@ body {
   overflow-x: hidden;
 }
 
+/* Scroll offset for fixed navbar */
+[id] {
+  scroll-margin-top: 10rem;
+}
+
 ::selection {
   background: var(--neon-cyan);
   color: #000;
@@ -55,17 +60,29 @@ body {
   font-family: "Space Mono", monospace;
 }
 
+/* Glassmorphism Refined */
 .glass-panel {
   background: rgba(10, 10, 20, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px) saturate(110%);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: all 0.3s ease-out;
 }
 
 .glass-panel:hover {
-  border-color: var(--glass-highlight);
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+  background: rgba(15, 15, 25, 0.5);
+  border-color: rgba(0, 243, 255, 0.2);
+  box-shadow: 0 10px 40px -10px rgba(0, 243, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* New: Card Gradient Border */
+.card-gradient-border {
+  position: relative;
+  background: linear-gradient(#030014, #030014) padding-box,
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)) border-box;
+  border: 1px solid transparent;
 }
 
 /* Neon Text Effects */
@@ -75,6 +92,14 @@ body {
 
 .text-glow-purple {
   text-shadow: 0 0 10px rgba(188, 19, 254, 0.5), 0 0 20px rgba(188, 19, 254, 0.3);
+}
+
+.text-glow-hover {
+  transition: text-shadow 0.3s ease;
+}
+
+.text-glow-hover:hover {
+  text-shadow: 0 0 8px currentColor;
 }
 
 /* Animations */

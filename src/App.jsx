@@ -1,34 +1,26 @@
-import Navbar from "./components/Navbar"
-import Hero from "./components/Hero"
-import Technologies from "./components/Technologies"
-import Experience from "./components/Experience"
-import Projects from "./components/Projects"
-import Education from "./components/Education"
-import Certifications from "./components/Certifications"
-import AuditStats from "./components/AuditStats"
-import Contact from "./components/Contact"
-import About from "./components/About"
-
-import Background from "./components/Background"
+import { useRef, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from 'react-helmet-async';
+import Home from "./components/Home";
+import Background from "./components/Background";
+const ProjectDetails = lazy(() => import("./components/ProjectDetails"));
 
 const App = () => {
   return (
-    <div className="overflow-x-hidden text-stone-300 antialiased selection:bg-cyan-300 selection:text-cyan-900">
-      <Background />
+    <HelmetProvider>
+      <BrowserRouter>
+        <div className="overflow-x-hidden text-stone-300 antialiased selection:bg-cyan-300 selection:text-cyan-900">
+          <Background />
 
-      <div className="container mx-auto px-4 lg:px-8 max-w-7xl relative z-10">
-        <Navbar />
-        <Hero />
-        <AuditStats />
-        <About />
-        <Technologies />
-        <Experience />
-        <Projects />
-        <Education />
-        <Certifications />
-        <Contact />
-      </div>
-    </div>
+          <Suspense fallback={<div className="min-h-screen text-cyan-400 flex items-center justify-center font-mono">Loading...</div>}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/projects/:id" element={<ProjectDetails />} />
+            </Routes>
+          </Suspense>
+        </div>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 };
 

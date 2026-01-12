@@ -1,5 +1,40 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+
+const ReducedMotionParticles = () => {
+    const shouldReduceMotion = useReducedMotion();
+
+    if (shouldReduceMotion) return null;
+
+    return (
+        <>
+            {[...Array(12)].map((_, i) => (
+                <motion.div
+                    key={i}
+                    className="absolute rounded-full bg-cyan-400 opacity-20 blur-[1px]"
+                    initial={{
+                        x: Math.random() * 100 + "vw",
+                        y: Math.random() * 100 + "vh",
+                        scale: Math.random() * 0.5 + 0.2,
+                    }}
+                    animate={{
+                        y: [null, Math.random() * 100 + "vh"],
+                        x: [null, Math.random() * 100 + "vw"],
+                    }}
+                    transition={{
+                        duration: Math.random() * 20 + 20,
+                        repeat: Infinity,
+                        ease: "linear",
+                    }}
+                    style={{
+                        width: Math.random() * 4 + 2 + "px",
+                        height: Math.random() * 4 + 2 + "px",
+                    }}
+                />
+            ))}
+        </>
+    );
+};
 
 const Background = () => {
     return (
@@ -12,32 +47,9 @@ const Background = () => {
                 <div className="grid-lines"></div>
             </div>
 
-            {/* Floating Particles / Blockchain Nodes */}
+            {/* Floating Particles / Blockchain Nodes - Only show if motion is allowed */}
             <div className="absolute inset-0">
-                {[...Array(20)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className="absolute rounded-full bg-cyan-400 opacity-20 blur-[1px]"
-                        initial={{
-                            x: Math.random() * 100 + "vw",
-                            y: Math.random() * 100 + "vh",
-                            scale: Math.random() * 0.5 + 0.2,
-                        }}
-                        animate={{
-                            y: [null, Math.random() * 100 + "vh"],
-                            x: [null, Math.random() * 100 + "vw"],
-                        }}
-                        transition={{
-                            duration: Math.random() * 20 + 20,
-                            repeat: Infinity,
-                            ease: "linear",
-                        }}
-                        style={{
-                            width: Math.random() * 4 + 2 + "px",
-                            height: Math.random() * 4 + 2 + "px",
-                        }}
-                    />
-                ))}
+                <ReducedMotionParticles />
             </div>
 
             {/* Connecting Lines (Simulated Network) - Optional visual flair */}
