@@ -110,16 +110,36 @@ const Hero = () => {
                             >
                                 VIEW AUDITS
                             </motion.a>
-                            <motion.a
-                                whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(6,182,212,0.4)" }}
-                                whileTap={{ scale: 0.95 }}
-                                href="/resume.pdf"
-                                download
-                                className="px-8 py-4 rounded-lg border border-cyan-400/30 bg-cyan-400/5 hover:border-cyan-400 hover:bg-cyan-400/15 transition-all font-mono text-cyan-400 tracking-wide flex items-center gap-2"
-                            >
-                                <Download className="w-4 h-4" />
-                                DOWNLOAD CV
-                            </motion.a>
+                            <div className="relative group">
+                                <motion.button
+                                    whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(6,182,212,0.4)" }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="px-8 py-4 rounded-lg border border-cyan-400/30 bg-cyan-400/5 hover:border-cyan-400 hover:bg-cyan-400/15 transition-all font-mono text-cyan-400 tracking-wide flex items-center gap-2"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    DOWNLOAD CV
+                                </motion.button>
+                                <div className="absolute top-full left-0 mt-2 w-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <div className="bg-black/95 border border-cyan-400/30 rounded-lg overflow-hidden backdrop-blur-md">
+                                        <a
+                                            href="/cvs/John_Wellard_Blockchain_Engineer_CV.pdf"
+                                            download
+                                            className="flex items-center gap-2 px-4 py-3 text-sm font-mono text-purple-400 hover:bg-purple-500/20 hover:text-white transition-colors"
+                                        >
+                                            <Download className="w-3 h-3" />
+                                            Engineer CV
+                                        </a>
+                                        <a
+                                            href="/cvs/John_Wellard_Web3_PM_CV.pdf"
+                                            download
+                                            className="flex items-center gap-2 px-4 py-3 text-sm font-mono text-green-400 hover:bg-green-500/20 hover:text-white transition-colors border-t border-white/10"
+                                        >
+                                            <Download className="w-3 h-3" />
+                                            PM CV
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </motion.div>

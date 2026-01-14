@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
 import { FaGithub, FaLinkedin, FaDiscord, FaTelegram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-import { Copy, Check, Shield, Bug, Search, Globe, Zap, FileCode, Terminal, Crosshair } from "lucide-react";
+import { Copy, Check, Shield, Bug, Search, Globe, Zap, FileCode, Terminal, Crosshair, Download } from "lucide-react";
 
 const Contact = () => {
     const [copied, setCopied] = useState(false);
@@ -230,6 +230,37 @@ const Contact = () => {
                                         </span>
                                     </a>
                                 ))}
+                            </div>
+                        </motion.div>
+
+                        {/* Download CV Section */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3, delay: 0.45 }}
+                            viewport={{ once: true }}
+                        >
+                            <div className="text-green-400 mb-3 flex items-center gap-2">
+                                <Download className="w-4 h-4 text-cyan-400" />
+                                $ download --cv
+                            </div>
+                            <div className="pl-4 flex flex-wrap gap-3">
+                                <a
+                                    href="/cvs/John_Wellard_Blockchain_Engineer_CV.pdf"
+                                    download
+                                    className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/10 border border-purple-400/30 hover:bg-purple-500/20 hover:border-purple-400 transition-all"
+                                >
+                                    <Download className="w-4 h-4 text-purple-400" />
+                                    <span className="text-purple-400 font-mono text-sm">Engineer_CV.pdf</span>
+                                </a>
+                                <a
+                                    href="/cvs/John_Wellard_Web3_PM_CV.pdf"
+                                    download
+                                    className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-400/30 hover:bg-green-500/20 hover:border-green-400 transition-all"
+                                >
+                                    <Download className="w-4 h-4 text-green-400" />
+                                    <span className="text-green-400 font-mono text-sm">PM_CV.pdf</span>
+                                </a>
                             </div>
                         </motion.div>
 

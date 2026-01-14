@@ -152,14 +152,44 @@ const About = () => {
                                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
                                 </div>
 
-                                {/* Persona Label */}
-                                <div className="absolute bottom-4 left-4">
-                                    <div className={`px-3 py-1.5 rounded-lg ${colors.bg} border ${colors.border} backdrop-blur-sm`}>
-                                        <span className={`text-xs font-mono ${colors.text}`}>
+                                {/* Persona Label - High Visibility */}
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={activeRole + "-badge"}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="absolute bottom-4 left-4 z-50"
+                                    >
+                                        <div
+                                            className="px-4 py-2 rounded-lg text-sm font-mono font-bold tracking-widest uppercase border-2"
+                                            style={{
+                                                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                                                color: currentRole.color === 'cyan' ? '#06b6d4' :
+                                                    currentRole.color === 'green' ? '#22c55e' :
+                                                        currentRole.color === 'purple' ? '#a855f7' :
+                                                            currentRole.color === 'orange' ? '#f97316' : '#06b6d4',
+                                                borderColor: currentRole.color === 'cyan' ? '#06b6d4' :
+                                                    currentRole.color === 'green' ? '#22c55e' :
+                                                        currentRole.color === 'purple' ? '#a855f7' :
+                                                            currentRole.color === 'orange' ? '#f97316' : '#06b6d4',
+                                                boxShadow: `0 0 20px ${currentRole.color === 'cyan' ? '#06b6d4' :
+                                                        currentRole.color === 'green' ? '#22c55e' :
+                                                            currentRole.color === 'purple' ? '#a855f7' :
+                                                                currentRole.color === 'orange' ? '#f97316' : '#06b6d4'
+                                                    }60, 0 4px 12px rgba(0,0,0,0.5)`,
+                                                textShadow: `0 0 8px ${currentRole.color === 'cyan' ? '#06b6d4' :
+                                                        currentRole.color === 'green' ? '#22c55e' :
+                                                            currentRole.color === 'purple' ? '#a855f7' :
+                                                                currentRole.color === 'orange' ? '#f97316' : '#06b6d4'
+                                                    }`
+                                            }}
+                                        >
                                             {currentRole.tag} MODE
-                                        </span>
-                                    </div>
-                                </div>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
                             </div>
                         </div>
                     </div>

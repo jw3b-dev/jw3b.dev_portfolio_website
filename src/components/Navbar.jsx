@@ -56,7 +56,7 @@ const Navbar = () => {
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="fixed top-6 inset-x-0 mx-auto z-50 w-[90%] max-w-5xl rounded-full glass-panel px-8 py-4 flex items-center justify-between border border-white/10 bg-black/40 backdrop-blur-xl"
+            className="fixed top-6 inset-x-0 mx-auto z-50 w-[90%] max-w-6xl rounded-full glass-panel px-8 py-4 flex items-center justify-between border border-white/10 bg-black/40 backdrop-blur-xl"
         >
             <div className="flex flex-shrink-0 items-center w-[200px] mr-8">
                 <Link to="/" aria-label="Home">
