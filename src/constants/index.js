@@ -140,6 +140,100 @@ export const SERVICES = [
   }
 ];
 
+export const SERVICE_PACKAGES = {
+  security: {
+    title: "Security Auditing",
+    subtitle: "Protecting DeFi Protocols & Smart Contracts",
+    description: "Comprehensive security assessments ranging from quick sanity checks to full protocol audits and formal verification.",
+    color: "purple",
+    icon: "Shield",
+    packages: [
+      {
+        name: "Security Review Lite",
+        price: "$500",
+        period: "flat fee",
+        description: "Best for single contracts or small modules (≤500 SLOC). Quick turnaround to identify obvious vulnerabilities.",
+        features: ["1 Smart Contract", "Manual Code Review", "Static Analysis (Slither)", "Written Findings Report", "48h Turnaround"],
+        recommended: false
+      },
+      {
+        name: "Standard Audit",
+        price: "$2,500+",
+        period: "starting",
+        description: "Full protocol assessment. Deep dive into logic errors, reentrancy, and economic vulnerabilities.",
+        features: ["Full Protocol Scope", "Manual & Automated Review", "Fuzz Testing (Foundry)", "Comprehensive Report", "Fix Verification", "2 Weeks Avg."],
+        recommended: true
+      },
+      {
+        name: "Enterprise Verification",
+        price: "$10,000+",
+        period: "starting",
+        description: "Institutional-grade security. Includes formal verification and advanced invariant testing for high-TVL protocols.",
+        features: ["Multi-Contract Systems", "Formal Verification (Certora)", "Invariant Testing", "Economic Attack Simulation", "Direct Team Access", "4-6 Weeks"],
+        recommended: false
+      }
+    ]
+  },
+  engineering: {
+    title: "Full-Stack Engineering",
+    subtitle: "From Whitepaper to Mainnet Deployment",
+    description: "End-to-end development services. Whether you need a specific smart contract module or a complete dApp ecosystem.",
+    color: "cyan",
+    icon: "Code2",
+    categories: [
+      {
+        name: "Smart Contracts",
+        packages: [
+          { name: "Token Development", price: "$5k - $10k", details: "ERC-20/721/1155 with custom logic (staking, governance, etc.)" },
+          { name: "DeFi Module", price: "$15k - $50k", details: "Lending pools, DEX AMMs, Yield strategies, or Staking contracts" },
+          { name: "Full Protocol", price: "$50k+", details: "Complete multi-contract system with complex interactions and security focus" }
+        ]
+      },
+      {
+        name: "dApp Frontend",
+        packages: [
+          { name: "Wallet Integration", price: "$2k - $5k", details: "RainbowKit/Wagmi setup, ENS resolution, formatting, error handling" },
+          { name: "Protocol Interface", price: "$25k - $50k", details: "Complex React/Next.js dashboard for interacting with verified contracts" }
+        ]
+      }
+    ],
+    hourlyRate: "$125 - $150 / hr"
+  },
+  pm: {
+    title: "Web3 Project Management",
+    subtitle: "Agile Delivery for Decentralized Teams",
+    description: "Bringing 15+ years of PM experience to Web3. Managing audits, launches, and decentralized governance frameworks.",
+    color: "green",
+    icon: "Kanban",
+    packages: [
+      {
+        name: "Sprint Facilitation",
+        price: "$2,500",
+        period: "per 2-week sprint",
+        description: "I typically join as a fractional Delivery Lead to run your Agile ceremonies and keep the dev team unblocked.",
+        features: ["Backlog Management", "Daily Standups", "Sprint Planning & Retro", "Risk Mitigation", "Stakeholder Reporting"],
+        recommended: false
+      },
+      {
+        name: "Protocol Launch",
+        price: "$8,000+",
+        period: "per release",
+        description: "End-to-end coordination of a mainnet launch. coordinating auditors, marketing, devops, and community.",
+        features: ["Launch Roadmap", "Audit Coordination", "Deployment Scripting Check", "Incident Response Plan", "Post-Mortem Analysis"],
+        recommended: true
+      },
+      {
+        name: "Fractional PM",
+        price: "$100",
+        period: "per hour",
+        description: "Flexible project oversight for teams that need leadership but aren't ready for a full-time Head of Product.",
+        features: ["Minimum 10 hrs/week", "Team Leadership", "Product Strategy", "Vendor Management", "Async Communication"],
+        recommended: false
+      }
+    ]
+  }
+};
+
 export const EXPERIENCES = [
   {
     year: "Jan 2026 - Present",

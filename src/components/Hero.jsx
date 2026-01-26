@@ -2,11 +2,14 @@ import profilePic from "../assets/johnWellardProfile.webp";
 import digitalFortress from "../assets/digital_fortress.webp";
 import { HERO_CONTENT } from "../constants";
 import { useState, useEffect } from "react";
-import { Download } from "lucide-react";
+import { Download, Shield, Rocket } from "lucide-react";
 import { motion } from "framer-motion";
 import ParticleCanvas from "./jw3b.devParticleCanvas";
+import { useAccount } from "wagmi";
+import ConnectButton from "./wallet/ConnectButton";
 
 const Hero = () => {
+    const { isConnected } = useAccount();
     const [text, setText] = useState("");
     const roles = ["Blockchain Developer", "Security Researcher", "DeFi Architect"];
     const [roleIndex, setRoleIndex] = useState(0);
@@ -99,28 +102,30 @@ const Hero = () => {
                             {HERO_CONTENT}
                         </p>
 
-                        <div className="flex gap-6 mt-8">
+                        <div className="flex flex-wrap gap-4 lg:gap-6 mt-8">
                             <motion.a
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 href="https://audit.agilegypsy.com/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-8 py-4 rounded-lg bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold tracking-wide hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-all"
+                                className="px-6 py-4 rounded-lg bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold tracking-wide hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-all flex items-center gap-2"
                             >
-                                VIEW AUDITS
+                                <Shield className="w-5 h-5" />
+                                <span>AUDITS</span>
                             </motion.a>
+
                             <div className="relative group">
                                 <motion.button
                                     whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(6,182,212,0.4)" }}
                                     whileTap={{ scale: 0.95 }}
-                                    className="px-8 py-4 rounded-lg border border-cyan-400/30 bg-cyan-400/5 hover:border-cyan-400 hover:bg-cyan-400/15 transition-all font-mono text-cyan-400 tracking-wide flex items-center gap-2"
+                                    className="px-6 py-4 rounded-lg border border-cyan-400/30 bg-cyan-400/5 hover:border-cyan-400 hover:bg-cyan-400/15 transition-all font-mono text-cyan-400 tracking-wide flex items-center gap-2"
                                 >
-                                    <Download className="w-4 h-4" />
-                                    DOWNLOAD CV
+                                    <Download className="w-5 h-5" />
+                                    <span>CV</span>
                                 </motion.button>
                                 <div className="absolute top-full left-0 mt-2 w-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                    <div className="bg-black/95 border border-cyan-400/30 rounded-lg overflow-hidden backdrop-blur-md">
+                                    <div className="bg-black/95 border border-cyan-400/30 rounded-lg overflow-hidden backdrop-blur-md min-w-[160px]">
                                         <a
                                             href="/cvs/John_Wellard_Blockchain_Engineer_CV.pdf"
                                             download
@@ -140,6 +145,24 @@ const Hero = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Wallet CTA */}
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                {isConnected ? (
+                                    <a
+                                        href="#services"
+                                        className="px-6 py-4 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 font-bold tracking-wide hover:bg-green-500/20 hover:border-green-400 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all flex items-center gap-2"
+                                    >
+                                        <Rocket className="w-5 h-5" />
+                                        <span>BOOK NOW</span>
+                                    </a>
+                                ) : (
+                                    <ConnectButton label="CONNECT" className="h-[58px]" />
+                                )}
+                            </motion.div>
                         </div>
                     </div>
                 </motion.div>

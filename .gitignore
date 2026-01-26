@@ -50,3 +50,9 @@ src/archive/
 
 # Testing
 coverage/
+
+# Development Agent
+development_agent/
+
+# Personal enquiries (PRIVATE - never commit)
+enquirys/

@@ -9,6 +9,7 @@ import Contact from "./Contact"
 import About from "./About"
 import Services from "./Services"
 
+import ErrorBoundary from "./ErrorBoundary"
 import { Helmet } from "react-helmet-async";
 
 const Home = () => {
@@ -19,7 +20,9 @@ const Home = () => {
                 <meta name="description" content="Portfolio of John Wellard (JW3B). Expert in Smart Contract Security, Full-Stack dApp Development, and Web3 Architecture. View audits and projects." />
             </Helmet>
             <Navbar />
-            <Hero />
+            <ErrorBoundary>
+                <Hero />
+            </ErrorBoundary>
             <AuditStats />
             <About />
             <Services />

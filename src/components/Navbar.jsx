@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ChevronDown } from "lucide-react"
 import StoryLogo from "./StoryLogo"
 import { Link } from "react-router-dom"
+import ConnectButton from "./wallet/ConnectButton"
 
 const Navbar = () => {
     const [openDropdown, setOpenDropdown] = useState(null);
@@ -12,6 +13,7 @@ const Navbar = () => {
     const menuItems = [
         { label: 'About', href: '#about' },
         { label: 'Services', href: '#services' },
+        { label: 'Hire Me', href: '/hire-me', highlight: true },
         {
             label: 'Experience',
             href: null, // No link - only subitems
@@ -141,8 +143,14 @@ const Navbar = () => {
                 ))}
             </div>
 
+            {/* Wallet Connect Button (Desktop) */}
+            <div className="hidden md:block">
+                <ConnectButton />
+            </div>
+
             {/* Mobile Menu Button - Placeholder */}
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center gap-4">
+                <ConnectButton className="text-xs" label="Connect" />
                 <button className="text-stone-400 hover:text-white">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
