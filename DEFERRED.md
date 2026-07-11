@@ -7,11 +7,17 @@ the site is green (lint/tests/coverage/build) without them.
 - [x] Worker deployed → `portfolio-agent.agilegypsy.workers.dev` (running on Llama fallback).
 - [x] Frontend deployed → `jw3b.dev` (Cloudflare Pages `jw3b-dev-portfolio`, production).
 - [x] `rate_limits` table created on the live D1 (per-IP limiter now active).
-- [ ] **Claude needs a real Anthropic API key** (`sk-ant-api…`): `wrangler secret put ANTHROPIC_API_KEY`
-      then `wrangler deploy`. NOTE: `MB-agentic/.env` only has a Claude Code OAuth token
-      (`sk-ant-oat…`) — that's for the CLI and must NOT be used to power a public worker.
+- [x] **Claude is LIVE via the OAuth token** — the Worker injects the Claude Code identity
+      as the first system block (required for `sk-ant-oat…` tokens; per KTHULHU gateway.ts),
+      so chat + auditor + fuzz + tx run on Claude, with a bounded 429 retry and Llama fallback.
 - [ ] (optional) `ANTHROPIC_MODEL` var to override the default `claude-opus-4-8`
-      (e.g. `claude-haiku-4-5` for faster/cheaper).
+      (e.g. `claude-sonnet-4-6` — cheaper, eases the subscription rate limit).
+- [ ] (optional) **Cloudflare AI Gateway** for rate limits + caching + observability (KTHULHU RULE-001).
+      Worker is gateway-ready — create a gateway in the CF dashboard (AI → AI Gateway), then set:
+      `wrangler secret put ANTHROPIC_BASE_URL` =
+      `https://gateway.ai.cloudflare.com/v1/04bf3d7c95516d3e9a2af68fc8f6619b/<gateway-id>/anthropic`
+      (I couldn't create it — wrangler's OAuth token lacks AI-Gateway API scope; a scoped API token or
+      the dashboard is needed.)
 
 ## Projects section — assets & links
 - [ ] Replace interim card screenshots in `src/assets/projects/` (currently reused old assets):

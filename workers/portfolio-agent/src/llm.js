@@ -5,17 +5,21 @@ const encoder = new TextEncoder();
 // Build an Anthropic client that works with either a standard API key (sk-ant-api…,
 // sent as x-api-key) or a Claude Code OAuth token (sk-ant-oat…, sent as a Bearer
 // token with the oauth beta header).
-function makeClient(token) {
+function makeClient(token, baseURL) {
     // maxRetries: 0 — we run our own bounded retry loop (below) so we control the
     // wait cap and the fallback, instead of the SDK's opaque backoff.
+    // baseURL (optional) routes through a Cloudflare AI Gateway for rate limiting,
+    // caching, and observability (KTHULHU RULE-001) — set env.ANTHROPIC_BASE_URL to
+    // https://gateway.ai.cloudflare.com/v1/<account>/<gateway>/anthropic
+    const common = { maxRetries: 0, ...(baseURL ? { baseURL } : {}) };
     if (token.startsWith('sk-ant-oat')) {
         return new Anthropic({
             authToken: token,
             defaultHeaders: { 'anthropic-beta': 'oauth-2025-04-20' },
-            maxRetries: 0,
+            ...common,
         });
     }
-    return new Anthropic({ apiKey: token, maxRetries: 0 });
+    return new Anthropic({ apiKey: token, ...common });
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -81,8 +85,9 @@ export function claudeSSEStream({
     fallback,
     maxRetries = 2,
     retryCapMs = 3000,
+    baseURL,
 }) {
-    const client = makeClient(apiKey);
+    const client = makeClient(apiKey, baseURL);
     // Claude Code OAuth tokens (sk-ant-oat…) require the Claude Code identity as the
     // FIRST system block — Anthropic 401s / throttles otherwise. The real system prompt
     // follows as a second block. A raw API key takes the system prompt as-is.

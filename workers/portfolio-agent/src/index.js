@@ -162,6 +162,7 @@ ${JSON.stringify(findings)}`;
                 const auditMessages = [{ role: "user", content: "Here is the Solidity to review:\n\n```solidity\n" + code.slice(0, 24000) + "\n```" }];
                 const stream = claudeSSEStream({
                     apiKey: env.ANTHROPIC_API_KEY,
+                    baseURL: env.ANTHROPIC_BASE_URL, // optional Cloudflare AI Gateway route
                     model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
                     system: auditSystem,
                     messages: auditMessages,
@@ -206,6 +207,7 @@ Rules:
                 const fuzzMessages = [{ role: "user", content: spec.slice(0, 24000) }];
                 const stream = claudeSSEStream({
                     apiKey: env.ANTHROPIC_API_KEY,
+                    baseURL: env.ANTHROPIC_BASE_URL, // optional Cloudflare AI Gateway route
                     model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
                     system: fuzzSystem,
                     messages: fuzzMessages,
@@ -249,6 +251,7 @@ ${JSON.stringify(decoded).slice(0, 12000)}`;
                 const txMessages = [{ role: "user", content: "Explain this transaction." }];
                 const stream = claudeSSEStream({
                     apiKey: env.ANTHROPIC_API_KEY,
+                    baseURL: env.ANTHROPIC_BASE_URL, // optional Cloudflare AI Gateway route
                     model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
                     system: txSystem,
                     messages: txMessages,
@@ -362,6 +365,7 @@ Want me to open Mission Control so you can put a request together?
             if (env.ANTHROPIC_API_KEY) {
                 const stream = claudeSSEStream({
                     apiKey: env.ANTHROPIC_API_KEY,
+                    baseURL: env.ANTHROPIC_BASE_URL, // optional Cloudflare AI Gateway route
                     model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
                     system: systemPrompt,
                     messages, // user/assistant turns; system goes in its own param for Claude
