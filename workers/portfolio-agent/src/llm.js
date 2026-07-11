@@ -83,6 +83,16 @@ export function claudeSSEStream({
     retryCapMs = 3000,
 }) {
     const client = makeClient(apiKey);
+    // Claude Code OAuth tokens (sk-ant-oat…) require the Claude Code identity as the
+    // FIRST system block — Anthropic 401s / throttles otherwise. The real system prompt
+    // follows as a second block. A raw API key takes the system prompt as-is.
+    // (Reference: KTHULHU lib/ai/gateway.ts.)
+    const systemParam = apiKey.startsWith('sk-ant-oat')
+        ? [
+            { type: 'text', text: "You are Claude Code, Anthropic's official CLI for Claude." },
+            ...(system ? [{ type: 'text', text: system }] : []),
+          ]
+        : system;
     return new ReadableStream({
         async start(controller) {
             const send = (t) => controller.enqueue(encoder.encode(sseFrame(t)));
@@ -95,7 +105,7 @@ export function claudeSSEStream({
                     const stream = client.messages.stream({
                         model,
                         max_tokens: maxTokens,
-                        system,
+                        system: systemParam,
                         messages,
                         ...(thinking ? { thinking } : {}),
                     });
