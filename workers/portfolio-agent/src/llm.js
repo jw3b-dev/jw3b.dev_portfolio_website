@@ -6,13 +6,30 @@ const encoder = new TextEncoder();
 // sent as x-api-key) or a Claude Code OAuth token (sk-ant-oat…, sent as a Bearer
 // token with the oauth beta header).
 function makeClient(token) {
+    // maxRetries: 0 — we run our own bounded retry loop (below) so we control the
+    // wait cap and the fallback, instead of the SDK's opaque backoff.
     if (token.startsWith('sk-ant-oat')) {
         return new Anthropic({
             authToken: token,
             defaultHeaders: { 'anthropic-beta': 'oauth-2025-04-20' },
+            maxRetries: 0,
         });
     }
-    return new Anthropic({ apiKey: token });
+    return new Anthropic({ apiKey: token, maxRetries: 0 });
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Backoff for a retryable error, honoring the Retry-After header (seconds) when
+// present, else exponential — capped so a rate-limited request never blocks the
+// response for long before we fall back.
+function backoffMs(err, attempt, capMs) {
+    const h = err?.headers;
+    const raRaw = h && typeof h.get === 'function' ? h.get('retry-after') : h?.['retry-after'];
+    const ra = Number(raRaw);
+    const fromHeader = Number.isFinite(ra) && ra > 0 ? ra * 1000 : 0;
+    const exp = 400 * 2 ** attempt; // 400, 800, 1600…
+    return Math.min(Math.max(fromHeader, exp), capMs);
 }
 
 /**
@@ -53,52 +70,74 @@ export function staticSSEStream(text) {
  * @param {number} [opts.maxTokens]
  * @param {string} [opts.prefixText] - emitted as the first frame before streaming.
  */
-export function claudeSSEStream({ apiKey, model, system, messages, thinking, maxTokens = 2560, prefixText, fallback }) {
+export function claudeSSEStream({
+    apiKey,
+    model,
+    system,
+    messages,
+    thinking,
+    maxTokens = 2560,
+    prefixText,
+    fallback,
+    maxRetries = 2,
+    retryCapMs = 3000,
+}) {
     const client = makeClient(apiKey);
     return new ReadableStream({
         async start(controller) {
             const send = (t) => controller.enqueue(encoder.encode(sseFrame(t)));
             let emittedContent = false;
-            try {
-                if (prefixText) send(prefixText);
-                const stream = client.messages.stream({
-                    model,
-                    max_tokens: maxTokens,
-                    system,
-                    messages,
-                    ...(thinking ? { thinking } : {}),
-                });
-                for await (const event of stream) {
-                    if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-                        emittedContent = true;
-                        send(event.delta.text);
-                    }
-                }
-                controller.enqueue(encoder.encode(DONE));
-            } catch (err) {
-                // If Claude failed before emitting any content (e.g. a 429 from a
-                // subscription token), fall back to Workers AI so the user still gets
-                // a response. Otherwise surface a readable note.
-                if (!emittedContent && typeof fallback === 'function') {
-                    try {
-                        const fb = await fallback();
-                        const reader = fb.getReader();
-                        for (;;) {
-                            const { value, done } = await reader.read();
-                            if (done) break;
-                            controller.enqueue(value); // already data:{response} SSE bytes
+
+            if (prefixText) send(prefixText);
+
+            for (let attempt = 0; ; attempt++) {
+                try {
+                    const stream = client.messages.stream({
+                        model,
+                        max_tokens: maxTokens,
+                        system,
+                        messages,
+                        ...(thinking ? { thinking } : {}),
+                    });
+                    for await (const event of stream) {
+                        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+                            emittedContent = true;
+                            send(event.delta.text);
                         }
-                    } catch (fbErr) {
-                        send(`\n\n_(AI unavailable: ${fbErr?.message || 'unknown error'})_`);
+                    }
+                    controller.enqueue(encoder.encode(DONE));
+                    break; // success
+                } catch (err) {
+                    // Retry rate-limit (429) / overloaded (529) with Retry-After backoff,
+                    // but only while nothing has streamed yet and within the bound.
+                    const retryable = err?.status === 429 || err?.status === 529;
+                    if (!emittedContent && retryable && attempt < maxRetries) {
+                        await sleep(backoffMs(err, attempt, retryCapMs));
+                        continue;
+                    }
+                    // Exhausted → fall back to Workers AI (Llama) if we have a fallback
+                    // and haven't streamed anything; otherwise surface a readable note.
+                    if (!emittedContent && typeof fallback === 'function') {
+                        try {
+                            const fb = await fallback();
+                            const reader = fb.getReader();
+                            for (;;) {
+                                const { value, done } = await reader.read();
+                                if (done) break;
+                                controller.enqueue(value); // already data:{response} SSE bytes
+                            }
+                        } catch (fbErr) {
+                            send(`\n\n_(AI unavailable: ${fbErr?.message || 'unknown error'})_`);
+                            controller.enqueue(encoder.encode(DONE));
+                        }
+                    } else {
+                        send(`\n\n_(AI unavailable: ${err?.message || 'unknown error'})_`);
                         controller.enqueue(encoder.encode(DONE));
                     }
-                } else {
-                    send(`\n\n_(AI unavailable: ${err?.message || 'unknown error'})_`);
-                    controller.enqueue(encoder.encode(DONE));
+                    break;
                 }
-            } finally {
-                controller.close();
             }
+            controller.close();
         },
     });
 }
