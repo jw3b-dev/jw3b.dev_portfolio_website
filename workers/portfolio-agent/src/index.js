@@ -4,6 +4,16 @@ import { runHeuristics, findingsToMarkdownTable } from './auditHeuristics.js';
 
 const CLAUDE_MODEL_DEFAULT = 'claude-opus-4-8';
 
+// Workers AI (Llama) stream in the same `data:{response}` SSE format — used as the
+// graceful fallback when Claude is unavailable (no key, rate limit, etc.).
+function llamaStream(env, system, messages, maxTokens = 2560) {
+    return env.AI.run('@cf/meta/llama-3.1-70b-instruct', {
+        messages: [{ role: 'system', content: system }, ...messages],
+        max_tokens: maxTokens,
+        stream: true,
+    });
+}
+
 // 🚦 Fixed-window rate limit (per client IP), backed by the existing D1 DB.
 // Fail-open: any DB error or missing binding/IP lets the request through.
 const RATE_LIMIT_MAX = 30;            // requests allowed...
@@ -149,14 +159,16 @@ Rules:
 STATIC FINDINGS (JSON):
 ${JSON.stringify(findings)}`;
 
+                const auditMessages = [{ role: "user", content: "Here is the Solidity to review:\n\n```solidity\n" + code.slice(0, 24000) + "\n```" }];
                 const stream = claudeSSEStream({
                     apiKey: env.ANTHROPIC_API_KEY,
                     model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
                     system: auditSystem,
-                    messages: [{ role: "user", content: "Here is the Solidity to review:\n\n```solidity\n" + code.slice(0, 24000) + "\n```" }],
+                    messages: auditMessages,
                     thinking: { type: "adaptive" },
                     maxTokens: 2048,
                     prefixText: table,
+                    fallback: () => llamaStream(env, auditSystem, auditMessages),
                 });
                 return new Response(stream, {
                     headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
@@ -191,13 +203,15 @@ Rules:
 - Output ONE fenced \`\`\`solidity code block: a complete Foundry test with pragma, imports (forge-std/Test.sol, StdInvariant), a handler if useful, and invariant_/testFuzz_ functions.
 - Pick meaningful invariants (balance/supply conservation, no double-spend, access control, monotonicity, solvency).
 - One sentence above the block naming the invariants you chose and why. No other prose, no [AUDIO] tags.`;
+                const fuzzMessages = [{ role: "user", content: spec.slice(0, 24000) }];
                 const stream = claudeSSEStream({
                     apiKey: env.ANTHROPIC_API_KEY,
                     model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
                     system: fuzzSystem,
-                    messages: [{ role: "user", content: spec.slice(0, 24000) }],
+                    messages: fuzzMessages,
                     thinking: { type: "adaptive" },
                     maxTokens: 2048,
+                    fallback: () => llamaStream(env, fuzzSystem, fuzzMessages),
                 });
                 return new Response(stream, {
                     headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
@@ -232,13 +246,15 @@ Explain in plain English what the transaction did: intent, token movements, and 
 
 DECODED TX (JSON):
 ${JSON.stringify(decoded).slice(0, 12000)}`;
+                const txMessages = [{ role: "user", content: "Explain this transaction." }];
                 const stream = claudeSSEStream({
                     apiKey: env.ANTHROPIC_API_KEY,
                     model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
                     system: txSystem,
-                    messages: [{ role: "user", content: "Explain this transaction." }],
+                    messages: txMessages,
                     thinking: { type: "adaptive" },
                     maxTokens: 1536,
+                    fallback: () => llamaStream(env, txSystem, txMessages),
                 });
                 return new Response(stream, {
                     headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
@@ -350,6 +366,7 @@ Want me to open Mission Control so you can put a request together?
                     system: systemPrompt,
                     messages, // user/assistant turns; system goes in its own param for Claude
                     maxTokens: 2560, // chat: thinking omitted for lowest first-token latency
+                    fallback: () => llamaStream(env, systemPrompt, messages),
                 });
                 return new Response(stream, {
                     headers: { ...corsHeaders, "Content-Type": "text/event-stream" },

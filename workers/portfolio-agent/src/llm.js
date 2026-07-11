@@ -2,6 +2,19 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const encoder = new TextEncoder();
 
+// Build an Anthropic client that works with either a standard API key (sk-ant-api…,
+// sent as x-api-key) or a Claude Code OAuth token (sk-ant-oat…, sent as a Bearer
+// token with the oauth beta header).
+function makeClient(token) {
+    if (token.startsWith('sk-ant-oat')) {
+        return new Anthropic({
+            authToken: token,
+            defaultHeaders: { 'anthropic-beta': 'oauth-2025-04-20' },
+        });
+    }
+    return new Anthropic({ apiKey: token });
+}
+
 /**
  * One Server-Sent-Events frame in the exact shape the frontend parser expects:
  *   data: {"response":"<text>"}\n\n
@@ -40,11 +53,12 @@ export function staticSSEStream(text) {
  * @param {number} [opts.maxTokens]
  * @param {string} [opts.prefixText] - emitted as the first frame before streaming.
  */
-export function claudeSSEStream({ apiKey, model, system, messages, thinking, maxTokens = 2560, prefixText }) {
-    const client = new Anthropic({ apiKey });
+export function claudeSSEStream({ apiKey, model, system, messages, thinking, maxTokens = 2560, prefixText, fallback }) {
+    const client = makeClient(apiKey);
     return new ReadableStream({
         async start(controller) {
             const send = (t) => controller.enqueue(encoder.encode(sseFrame(t)));
+            let emittedContent = false;
             try {
                 if (prefixText) send(prefixText);
                 const stream = client.messages.stream({
@@ -56,14 +70,32 @@ export function claudeSSEStream({ apiKey, model, system, messages, thinking, max
                 });
                 for await (const event of stream) {
                     if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+                        emittedContent = true;
                         send(event.delta.text);
                     }
                 }
                 controller.enqueue(encoder.encode(DONE));
             } catch (err) {
-                // Surface a readable note instead of hanging the stream on error.
-                send(`\n\n_(AI unavailable: ${err?.message || 'unknown error'})_`);
-                controller.enqueue(encoder.encode(DONE));
+                // If Claude failed before emitting any content (e.g. a 429 from a
+                // subscription token), fall back to Workers AI so the user still gets
+                // a response. Otherwise surface a readable note.
+                if (!emittedContent && typeof fallback === 'function') {
+                    try {
+                        const fb = await fallback();
+                        const reader = fb.getReader();
+                        for (;;) {
+                            const { value, done } = await reader.read();
+                            if (done) break;
+                            controller.enqueue(value); // already data:{response} SSE bytes
+                        }
+                    } catch (fbErr) {
+                        send(`\n\n_(AI unavailable: ${fbErr?.message || 'unknown error'})_`);
+                        controller.enqueue(encoder.encode(DONE));
+                    }
+                } else {
+                    send(`\n\n_(AI unavailable: ${err?.message || 'unknown error'})_`);
+                    controller.enqueue(encoder.encode(DONE));
+                }
             } finally {
                 controller.close();
             }
