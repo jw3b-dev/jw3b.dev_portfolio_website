@@ -58,7 +58,7 @@ describe('useContractAuditor', () => {
         global.fetch.mockResolvedValueOnce({ ok: false });
         const { result } = renderHook(() => useContractAuditor());
         await act(async () => { await result.current.auditContract('contract C {}'); });
-        expect(result.current.error).toBe('Auditor endpoint error');
+        expect(result.current.error).toBe('Agent endpoint error');
         expect(result.current.isLoading).toBe(false);
     });
 

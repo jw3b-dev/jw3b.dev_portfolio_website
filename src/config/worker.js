@@ -15,6 +15,8 @@ export const AGENT_CHAT_URL = WORKER_URL;
 export const AGENT_TTS_URL = `${WORKER_URL}/text-to-speech`;
 export const AGENT_STT_URL = `${WORKER_URL}/speech-to-text`;
 export const AGENT_AUDIT_URL = `${WORKER_URL}/audit`;
+export const AGENT_FUZZ_URL = `${WORKER_URL}/fuzz`;
+export const AGENT_TX_URL = `${WORKER_URL}/tx-explain`;
 
 // Wallet that receives XMTP "E2E" messages sent from the site.
 export const XMTP_RECIPIENT =

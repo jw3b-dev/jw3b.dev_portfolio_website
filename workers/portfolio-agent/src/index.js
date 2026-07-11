@@ -170,6 +170,88 @@ ${JSON.stringify(findings)}`;
             }
         }
 
+        // 🧪 FUZZ-HARNESS GENERATOR ROUTE
+        if (url.pathname.endsWith("/fuzz")) {
+            try {
+                const { spec } = await request.json();
+                if (!spec || typeof spec !== "string") {
+                    return new Response(JSON.stringify({ error: "A contract `spec` is required" }), {
+                        status: 400,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    });
+                }
+                if (!env.ANTHROPIC_API_KEY) {
+                    return new Response(staticSSEStream("_Connect an Anthropic API key on the Worker to generate fuzz harnesses._"), {
+                        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+                    });
+                }
+                const fuzzSystem = `You are "Sentinel", John Wellard's smart-contract testing AI. Given a contract description or Solidity source, write a RUNNABLE Foundry invariant/fuzz test.
+
+Rules:
+- Output ONE fenced \`\`\`solidity code block: a complete Foundry test with pragma, imports (forge-std/Test.sol, StdInvariant), a handler if useful, and invariant_/testFuzz_ functions.
+- Pick meaningful invariants (balance/supply conservation, no double-spend, access control, monotonicity, solvency).
+- One sentence above the block naming the invariants you chose and why. No other prose, no [AUDIO] tags.`;
+                const stream = claudeSSEStream({
+                    apiKey: env.ANTHROPIC_API_KEY,
+                    model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
+                    system: fuzzSystem,
+                    messages: [{ role: "user", content: spec.slice(0, 24000) }],
+                    thinking: { type: "adaptive" },
+                    maxTokens: 2048,
+                });
+                return new Response(stream, {
+                    headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+                });
+            } catch (err) {
+                console.error("Fuzz Error:", err);
+                return new Response(JSON.stringify({ error: err.message }), {
+                    status: 500,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                });
+            }
+        }
+
+        // 🔗 TX EXPLAINER ROUTE (transaction decoded client-side via viem)
+        if (url.pathname.endsWith("/tx-explain")) {
+            try {
+                const { decoded } = await request.json();
+                if (!decoded || typeof decoded !== "object") {
+                    return new Response(JSON.stringify({ error: "A `decoded` tx object is required" }), {
+                        status: 400,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    });
+                }
+                if (!env.ANTHROPIC_API_KEY) {
+                    return new Response(staticSSEStream("_Connect an Anthropic API key on the Worker to enable AI narration of this transaction._"), {
+                        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+                    });
+                }
+                const txSystem = `You are "Sentinel", John Wellard's on-chain analyst AI. You are given a decoded EVM transaction as JSON (from, to, value, status, gas, ERC-20 transfers/approvals, method selector).
+
+Explain in plain English what the transaction did: intent, token movements, and any risk signals (unlimited approvals, failed calls, sandwich/MEV hints, contract creation). Concise and technical. Markdown, no [AUDIO] tags. If the data is thin, say what's knowable and what isn't.
+
+DECODED TX (JSON):
+${JSON.stringify(decoded).slice(0, 12000)}`;
+                const stream = claudeSSEStream({
+                    apiKey: env.ANTHROPIC_API_KEY,
+                    model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
+                    system: txSystem,
+                    messages: [{ role: "user", content: "Explain this transaction." }],
+                    thinking: { type: "adaptive" },
+                    maxTokens: 1536,
+                });
+                return new Response(stream, {
+                    headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+                });
+            } catch (err) {
+                console.error("Tx Explain Error:", err);
+                return new Response(JSON.stringify({ error: err.message }), {
+                    status: 500,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                });
+            }
+        }
+
         // 🛡️ MAIN CHAT ROUTE (With Security Guards)
         try {
             const { messages, conversationId, walletAddress } = await request.json();

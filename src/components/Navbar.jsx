@@ -14,7 +14,7 @@ const Navbar = () => {
     const menuItems = [
         { label: 'About', href: '#about' },
         { label: 'Services', href: '#services' },
-        { label: 'AI Auditor', href: '/audit', highlight: true },
+        { label: 'AI Console', href: '/audit', highlight: true },
         { label: 'Hire Me', href: '/hire-me', highlight: true },
         {
             label: 'Experience',
