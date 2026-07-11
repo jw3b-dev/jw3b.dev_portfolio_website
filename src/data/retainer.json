@@ -1,0 +1,57 @@
+{
+  "currency": "USDC",
+  "tiers": [
+    {
+      "id": "premium",
+      "name": "Premium Retainer",
+      "price": 12500,
+      "duration": 30,
+      "features": [
+        "Priority Support channel in XMTP",
+        "Access to Client Dashboard (Burndown charts)",
+        "Technical Delivery & Project Management",
+        "Unlimited Sprint Facilitation"
+      ],
+      "lockAddress": "0x..." 
+    },
+    {
+      "id": "standard",
+      "name": "Standard Retainer",
+      "price": 10000,
+      "duration": 30,
+      "features": [
+        "Access to standard XMTP channel",
+        "Weekly Report Download",
+        "Technical Delivery Support",
+        "Sprint Facilitation"
+      ],
+      "lockAddress": "0x..."
+    },
+    {
+      "id": "fractional",
+      "name": "Fractional Retainer",
+      "price": 6000,
+      "duration": 30,
+      "features": [
+        "Booking Calendar (Calendly integration)",
+        "Strategic Advisory",
+        "Development Support (Limited)"
+      ],
+      "lockAddress": "0x..."
+    }
+  ],
+  "instant_services": [
+    {
+      "id": "security_lite",
+      "name": "Security Review Lite",
+      "price": 500,
+      "lockAddress": "0x..."
+    },
+    {
+      "id": "sprint_fac",
+      "name": "Sprint Facilitation",
+      "price": 2500,
+      "lockAddress": "0x..."
+    }
+  ]
+}

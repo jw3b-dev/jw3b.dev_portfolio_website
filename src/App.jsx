@@ -9,10 +9,13 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { config } from './config/wagmi';
 import Home from "./components/Home";
 import Background from "./components/Background";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 const ProjectDetails = lazy(() => import("./components/ProjectDetails"));
-const Pricing = lazy(() => import("./components/Pricing"));
+const MissionControl = lazy(() => import("./components/MissionControl"));
 const AgentTest = lazy(() => import("./components/AgentTest"));
+const ChatWidget = lazy(() => import("./components/chat/ChatWidget"));
 
 // Create a client for React Query
 const queryClient = new QueryClient();
@@ -33,14 +36,20 @@ const App = () => {
             <BrowserRouter>
               <div className="overflow-x-hidden text-stone-300 antialiased selection:bg-cyan-300 selection:text-cyan-900">
                 <Background />
+                <Navbar />
 
                 <Suspense fallback={<div className="min-h-screen text-cyan-400 flex items-center justify-center font-mono">Loading...</div>}>
                   <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/hire-me" element={<Pricing />} />
+                    <Route path="/hire-me" element={<MissionControl />} />
                     <Route path="/projects/:id" element={<ProjectDetails />} />
                     <Route path="/test-agent" element={<AgentTest />} />
                   </Routes>
+                </Suspense>
+
+                <Footer />
+                <Suspense fallback={null}>
+                  <ChatWidget />
                 </Suspense>
               </div>
             </BrowserRouter>

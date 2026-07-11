@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import { Shield, Bot, Landmark, Layers, Code2, Rocket, ChevronRight, ExternalLink } from "lucide-react";
 import { SERVICES } from "../constants";
 

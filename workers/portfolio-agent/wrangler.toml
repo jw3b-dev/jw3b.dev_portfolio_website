@@ -1,0 +1,15 @@
+name = "portfolio-agent"
+main = "src/index.js"
+compatibility_date = "2024-03-14"
+
+[ai]
+binding = "AI"
+
+[observability]
+enabled = true
+
+# 📊 D1 ANALYTICS DATABASE (Phase 9 Big & Fancy)
+[[d1_databases]]
+binding = "DB"
+database_name = "jw3b_analytics"
+database_id = "7ed65107-5531-4f6b-a0b8-ac9c30ec8fb4"

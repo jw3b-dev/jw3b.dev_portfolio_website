@@ -1,7 +1,3 @@
-import project1 from "../assets/projects/project-1.webp";
-import project2 from "../assets/projects/project-2.webp";
-import project3 from "../assets/projects/project-3.webp";
-import project4 from "../assets/projects/project-4.webp";
 import agileGypsyImg from "../assets/projects/agilegypsy-audit.png";
 import devguildImg from "../assets/projects/devguild.png";
 import auditbraveImg from "../assets/projects/auditbrave.png";
@@ -143,74 +139,135 @@ export const SERVICES = [
 export const SERVICE_PACKAGES = {
   security: {
     title: "Security Auditing",
-    subtitle: "Protecting DeFi Protocols & Smart Contracts",
-    description: "Comprehensive security assessments ranging from quick sanity checks to full protocol audits and formal verification.",
+    subtitle: "Fortify Your Protocol Against Sovereign Threats",
+    description: "I bring an adversarial mindset, AI-driven fuzzing, and formal verification to expose vulnerabilities before they become exploits. Don't just audit—immunize your codebase against next-gen attack vectors.",
     color: "purple",
     icon: "Shield",
-    packages: [
+    project: [
       {
         name: "Security Review Lite",
         price: "$500",
         period: "flat fee",
-        description: "Best for single contracts or small modules (≤500 SLOC). Quick turnaround to identify obvious vulnerabilities.",
-        features: ["1 Smart Contract", "Manual Code Review", "Static Analysis (Slither)", "Written Findings Report", "48h Turnaround"],
+        description: "Rapid entry-level assessment for single contracts or small modules (≤500 SLOC). Focuses on identifying obvious vulnerabilities, logic errors, and gas inefficiencies.",
+        features: ["1 Smart Contract", "Manual Code Review", "Static Analysis (Slither)", "Gas Optimization Tips", "48h Turnaround"],
         recommended: false
       },
       {
         name: "Standard Audit",
         price: "$2,500+",
         period: "starting",
-        description: "Full protocol assessment. Deep dive into logic errors, reentrancy, and economic vulnerabilities.",
-        features: ["Full Protocol Scope", "Manual & Automated Review", "Fuzz Testing (Foundry)", "Comprehensive Report", "Fix Verification", "2 Weeks Avg."],
+        description: "Comprehensive vulnerability assessment for pre-launch protocols. Includes manual line-by-line review, custom fuzzing harness development (Foundry/Echidna), and economic attack simulation. Delivered with a detailed remediation roadmap.",
+        features: ["Full Protocol Scope", "Manual & Automated Review", "Fuzz Testing Harness", "Remediation Roadmap", "Fix Verification", "2 Weeks Avg."],
         recommended: true
       },
       {
         name: "Enterprise Verification",
         price: "$10,000+",
         period: "starting",
-        description: "Institutional-grade security. Includes formal verification and advanced invariant testing for high-TVL protocols.",
+        description: "Institutional-grade security assurance. Includes formal verification with Certora, advanced invariant testing, and deep economic modeling for high-TVL protocols.",
         features: ["Multi-Contract Systems", "Formal Verification (Certora)", "Invariant Testing", "Economic Attack Simulation", "Direct Team Access", "4-6 Weeks"],
+        recommended: false
+      }
+    ],
+    retainer: [
+       {
+        name: "Security Advisor",
+        price: "$6,000",
+        period: "per month",
+        description: "Ongoing security guidance for early-stage teams. I review every PR, advise on architectural decisions, and ensure security best practices are baked in from day one.",
+        features: ["~60 Hours / Month", "Architecture Review", "PR Code Audits", "Ad-hoc Advisory", "Flexible Scheduling"],
+        recommended: false
+      },
+      {
+        name: "Resident Auditor",
+        price: "$10,000",
+        period: "per month",
+        description: "Embedded security resource. I work alongside your devs to build secure code. Includes continuous fuzzing coverage and threat modeling as the protocol evolves.",
+        features: ["~120 Hours / Month", "Continuous Auditing", "Threat Modeling", "Test Suite Enhancement", "Weekly Syncs"],
+        recommended: true
+      },
+      {
+        name: "Fractional CSO",
+        price: "$12,500",
+        period: "per month",
+        description: "Full security leadership. I manage external audits, run bug bounty programs, and define the incident response plan to protect your protocol's reputation and assets.",
+        features: ["~160 Hours / Month", "Security Strategy", "Manage Audit Firms", "Incident Response Plan", "Team Training"],
         recommended: false
       }
     ]
   },
   engineering: {
     title: "Full-Stack Engineering",
-    subtitle: "From Whitepaper to Mainnet Deployment",
-    description: "End-to-end development services. Whether you need a specific smart contract module or a complete dApp ecosystem.",
+    subtitle: "Architecting the Decentralized Future",
+    description: "From zero-knowledge logic to seamless account abstraction UIs, I build production-grade infrastructure that scales with your TVL. Clean, gas-optimized code that stands the test of time.",
     color: "cyan",
     icon: "Code2",
-    categories: [
+    hourlyRate: "$125 - $150 / hr",
+    project: [
       {
-        name: "Smart Contracts",
-        packages: [
-          { name: "Token Development", price: "$5k - $10k", details: "ERC-20/721/1155 with custom logic (staking, governance, etc.)" },
-          { name: "DeFi Module", price: "$15k - $50k", details: "Lending pools, DEX AMMs, Yield strategies, or Staking contracts" },
-          { name: "Full Protocol", price: "$50k+", details: "Complete multi-contract system with complex interactions and security focus" }
-        ]
+         name: "Smart Contract Module",
+         price: "$5,000+",
+         period: "starting",
+         description: "Custom solidity development for specific needs. Tokens (ERC20/721), Staking contracts, or isolated DeFi logic modules. Fully tested and documented.",
+         features: ["Solidity Development", "Unit Testing (Foundry)", "Gas Optimization", "NatSpec Documentation", "Deployment Scripts"],
+         recommended: false
       },
       {
-        name: "dApp Frontend",
-        packages: [
-          { name: "Wallet Integration", price: "$2k - $5k", details: "RainbowKit/Wagmi setup, ENS resolution, formatting, error handling" },
-          { name: "Protocol Interface", price: "$25k - $50k", details: "Complex React/Next.js dashboard for interacting with verified contracts" }
-        ]
+         name: "dApp MVP",
+         price: "$15,000+",
+         period: "starting",
+         description: "Rapid deployment of a fully functional Alpha. Includes core Solidity logic (ERC-20/721), a secure React/Next.js frontend with RainbowKit, and subgraph indexing. Optimized for speed-to-market without sacrificing security patterns.",
+         features: ["Core Smart Contracts", "React + RainbowKit UI", "Wallet Integration", "The Graph / Indexing", "Testnet Deployment"],
+         recommended: true
+      },
+      {
+         name: "Full Protocol Build",
+         price: "$50,000+",
+         period: "starting",
+         description: "Complete multi-contract system engineering. DEXs, Lending Markets, or complex Yield protocols. Includes advanced security patterns and full frontend dashboard.",
+         features: ["Complex Architecture", "Advanced Security Patterns", "Full Frontend Dashboard", "Custom API & Indexer", "Mainnet Launch Support"],
+         recommended: false
       }
     ],
-    hourlyRate: "$125 - $150 / hr"
+    retainer: [
+      {
+        name: "Fractional Dev",
+        price: "$6,000",
+        period: "per month",
+        description: "Part-time capacity to keep your roadmap moving. Ideal for maintenance, small feature additions, or assisting an existing lead developer.",
+        features: ["~60 Hours / Month", "Frontend or Contracts", "Bug Fixes", "Feature Implementation", "Code Reviews"],
+        recommended: false
+      },
+      {
+        name: "Standard Engineer",
+        price: "$10,000",
+        period: "per month",
+        description: "A dedicated senior engineer without the overhead. High velocity delivery across the full stack (Solidity + React). I own features from spec to shipping.",
+        features: ["~120 Hours / Month", "Full-Stack Dev", "Sprint Participation", "Architecture Design", "Daily Updates"],
+        recommended: true
+      },
+      {
+        name: "Tech Lead / CTO",
+        price: "$12,500",
+        period: "per month",
+        description: "Technical leadership for your project. I manage the stack, make high-level architectural decisions, and mentor junior developers to ensure code quality.",
+        features: ["~160 Hours / Month", "Technical Direction", "Team Leadership", "Complex Implementation", "System Architecture"],
+        recommended: false
+      }
+    ]
   },
   pm: {
     title: "Web3 Project Management",
-    subtitle: "Agile Delivery for Decentralized Teams",
-    description: "Bringing 15+ years of PM experience to Web3. Managing audits, launches, and decentralized governance frameworks.",
+    subtitle: "Command & Control for Distributed Teams",
+    description: "Chaos is the enemy of shipping. I deploy battle-tested Agile methodologies to align distributed teams, crush blockers, and execute mainnet launches with military precision.",
     color: "green",
     icon: "Kanban",
-    packages: [
+    project: [
       {
         name: "Sprint Facilitation",
         price: "$2,500",
         period: "per 2-week sprint",
-        description: "I typically join as a fractional Delivery Lead to run your Agile ceremonies and keep the dev team unblocked.",
+        description: "I join as a fractional Delivery Lead to run your Agile ceremonies. I ensure the backlog is groomed, standups are effective, and the team stays unblocked.",
         features: ["Backlog Management", "Daily Standups", "Sprint Planning & Retro", "Risk Mitigation", "Stakeholder Reporting"],
         recommended: false
       },
@@ -218,16 +275,42 @@ export const SERVICE_PACKAGES = {
         name: "Protocol Launch",
         price: "$8,000+",
         period: "per release",
-        description: "End-to-end coordination of a mainnet launch. coordinating auditors, marketing, devops, and community.",
+        description: "End-to-end coordination of a mainnet launch. I coordinate auditors, marketing, devops, and community managers to ensure a synchronized and safe release.",
         features: ["Launch Roadmap", "Audit Coordination", "Deployment Scripting Check", "Incident Response Plan", "Post-Mortem Analysis"],
         recommended: true
       },
       {
+        name: "DAO Governance Setup",
+        price: "$5,000+",
+        period: "flat fee",
+        description: "Establishing the framework for decentralized decision making. Includes Snapshot setup, Tally integration, and deployment of on-chain Governor contracts.",
+        features: ["Governance Framework", "Tooling Setup (Snapshot)", "Proposal Templates", "Voting Parameters", "Documentation"],
+        recommended: false
+      }
+    ],
+    retainer: [
+      {
         name: "Fractional PM",
-        price: "$100",
-        period: "per hour",
-        description: "Flexible project oversight for teams that need leadership but aren't ready for a full-time Head of Product.",
-        features: ["Minimum 10 hrs/week", "Team Leadership", "Product Strategy", "Vendor Management", "Async Communication"],
+        price: "$6,000",
+        period: "per month",
+        description: "Oversight for teams that need structure but aren't ready for a full-time Head of Product. I keep the trains running on time and manage external vendors.",
+        features: ["~60 Hours / Month", "Backlog Grooming", "Async Coordination", "Vendor Management", "Weekly Reporting"],
+        recommended: false
+      },
+      {
+        name: "Delivery Lead",
+        price: "$10,000",
+        period: "per month",
+        description: "Driving the day-to-day execution of your roadmap. I act as the engine room for your project, ensuring the engineering team ships high-quality code every sprint.",
+        features: ["~120 Hours / Month", "Full Agile Process", "Blocker Removal", "Cross-functional Syncs", "Release Management"],
+        recommended: true
+      },
+      {
+        name: "Head of Product",
+        price: "$12,500",
+        period: "per month",
+        description: "Strategic product leadership. I work with founders to define the 'What' and 'Why', translating vision into actionable specs and a coherent long-term roadmap.",
+        features: ["~160 Hours / Month", "Product Strategy", "Roadmap Definition", "Stakeholder Mgmt", "Team Leadership"],
         recommended: false
       }
     ]

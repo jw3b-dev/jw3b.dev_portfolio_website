@@ -7,9 +7,12 @@ const ParticleCanvas = () => {
 
     // Accessibility: Disable entirely if reduced motion is preferred
     const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return null;
 
     useEffect(() => {
+        // Skip all animation setup when reduced motion is preferred.
+        // (Hooks must run unconditionally, so guard here rather than early-returning above.)
+        if (prefersReducedMotion) return;
+
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         let animationFrameId;
@@ -17,11 +20,8 @@ const ParticleCanvas = () => {
         let width, height;
 
         // Configuration - Smart Tiered Rendering
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         // Simple heuristic for low-power device (low cores)
         const isLowPower = typeof navigator !== 'undefined' && navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
-
-        if (prefersReducedMotion) return; // Stop animation loop completely
 
         const particleCount = isLowPower ? 15 : 45; // 3x reduction for low-end
         const connectionDistance = isLowPower ? 100 : 140;
@@ -105,12 +105,6 @@ const ParticleCanvas = () => {
                 }
             }
 
-            draw() {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
         }
 
         const initParticles = () => {
@@ -120,14 +114,54 @@ const ParticleCanvas = () => {
             }
         };
 
+        const hexToRgb = (hex) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 6, g: 182, b: 212 };
+        };
+
         const animate = () => {
             if (!isVisible.current) return;
 
             ctx.clearRect(0, 0, width, height);
 
+            // 🎨 Read Mood and Amplitude (Phase 10 Wow Factor)
+            const moodColor = (typeof window !== 'undefined' && window.ai_mood_color) || '#06b6d4';
+            const amplitude = (typeof window !== 'undefined' && window.ai_voice_amplitude) || 0;
+            const rgb = hexToRgb(moodColor);
+
+            // 🌊 1. Draw Audio Frequency Equalizer Line ripple
+            if (amplitude > 0) {
+                ctx.beginPath();
+                ctx.strokeStyle = moodColor;
+                ctx.lineWidth = 1.8 * (amplitude + 0.3);
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = moodColor;
+                
+                const midY = height / 2;
+                ctx.moveTo(0, midY);
+                
+                for (let x = 0; x < width; x += 4) {
+                    // Sine calculation shifted by index and time multipliers
+                    const angle = (x * 0.04) + (Date.now() * 0.015);
+                    const y = midY + Math.sin(angle) * (30 * amplitude);
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0; // Reset glow for performance
+            }
+
+            // Draw particles
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
-                particles[i].draw();
+                
+                ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`;
+                ctx.beginPath();
+                ctx.arc(particles[i].x, particles[i].y, particles[i].size, 0, Math.PI * 2);
+                ctx.fill();
 
                 // Connect particles
                 for (let j = i + 1; j < particles.length; j++) {
@@ -137,8 +171,8 @@ const ParticleCanvas = () => {
 
                     if (distSq < connectionDistance * connectionDistance) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.8 * (1 - Math.sqrt(distSq) / connectionDistance)})`;
-                        ctx.lineWidth = 0.8;
+                        ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${0.6 * (1 - Math.sqrt(distSq) / connectionDistance)})`;
+                        ctx.lineWidth = 0.6;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
                         ctx.stroke();
@@ -152,7 +186,7 @@ const ParticleCanvas = () => {
         window.addEventListener('resize', handleResize);
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseleave', handleMouseLeave);
-        if (isVisible.current) animate();
+        animate();
 
         return () => {
             window.removeEventListener('resize', handleResize);
@@ -161,7 +195,9 @@ const ParticleCanvas = () => {
             cancelAnimationFrame(animationFrameId);
             observer.disconnect();
         };
-    }, []);
+    }, [prefersReducedMotion]);
+
+    if (prefersReducedMotion) return null;
 
     return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-[1]" />;
 };

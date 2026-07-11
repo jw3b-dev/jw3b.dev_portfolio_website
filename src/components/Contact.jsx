@@ -181,7 +181,7 @@ const Contact = () => {
                                 $ audit-platforms --list
                             </div>
                             <div className="pl-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                                {auditPlatforms.map((platform, index) => (
+                                {auditPlatforms.map((platform) => (
                                     <a
                                         key={platform.key}
                                         href={platform.link}
@@ -211,7 +211,7 @@ const Contact = () => {
                         >
                             <div className="text-green-400 mb-3">$ network --list-nodes</div>
                             <div className="pl-4 grid grid-cols-1 md:grid-cols-2 gap-1">
-                                {socialNodes.map((node, index) => (
+                                {socialNodes.map((node) => (
                                     <a
                                         key={node.key}
                                         href={node.link}

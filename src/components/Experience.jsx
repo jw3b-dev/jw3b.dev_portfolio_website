@@ -53,7 +53,7 @@ const Experience = () => {
                 <div className="relative max-w-6xl mx-auto px-4 w-full">
                     {EXPERIENCES.map((experience, index) => {
                         const themeClass = themeColors[experience.color] || themeColors.purple;
-                        const [textColor, borderColor, bgColor, shadowColor] = themeClass.split(" ");
+                        const [textColor, borderColor] = themeClass.split(" ");
 
                         return (
                             <motion.div

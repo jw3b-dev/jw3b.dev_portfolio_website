@@ -8,10 +8,11 @@ import ParticleCanvas from "./jw3b.devParticleCanvas";
 import { useAccount } from "wagmi";
 import ConnectButton from "./wallet/ConnectButton";
 
+const ROLES = ["Blockchain Developer", "Security Researcher", "DeFi Architect"];
+
 const Hero = () => {
     const { isConnected } = useAccount();
     const [text, setText] = useState("");
-    const roles = ["Blockchain Developer", "Security Researcher", "DeFi Architect"];
     const [roleIndex, setRoleIndex] = useState(0);
     const [charIndex, setCharIndex] = useState(0);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -20,7 +21,7 @@ const Hero = () => {
     const availabilityOptions = ["Smart Contract Dev", "Security Auditing", "Full-Stack dApps", "Consulting"];
 
     useEffect(() => {
-        const currentRole = roles[roleIndex];
+        const currentRole = ROLES[roleIndex];
         const typeSpeed = isDeleting ? 40 : 80;
 
         const timer = setTimeout(() => {
@@ -34,12 +35,12 @@ const Hero = () => {
                 setTimeout(() => setIsDeleting(true), 2000);
             } else if (isDeleting && charIndex === 0) {
                 setIsDeleting(false);
-                setRoleIndex((prev) => (prev + 1) % roles.length);
+                setRoleIndex((prev) => (prev + 1) % ROLES.length);
             }
         }, typeSpeed);
 
         return () => clearTimeout(timer);
-    }, [charIndex, isDeleting, roleIndex, roles]);
+    }, [charIndex, isDeleting, roleIndex]);
 
     return (
         <div className="min-h-screen flex items-center justify-center pt-32 lg:pt-28 relative z-10 overflow-hidden">
@@ -102,14 +103,14 @@ const Hero = () => {
                             {HERO_CONTENT}
                         </p>
 
-                        <div className="flex flex-wrap gap-4 lg:gap-6 mt-8">
+                        <div className="flex flex-nowrap gap-3 lg:gap-4 mt-8 overflow-x-auto pb-2 scrollbar-hide">
                             <motion.a
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 href="https://audit.agilegypsy.com/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-6 py-4 rounded-lg bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold tracking-wide hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-all flex items-center gap-2"
+                                className="w-44 h-14 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-purple-600 to-cyan-600 text-white font-bold tracking-wide shadow-[0_0_20px_rgba(147,51,234,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] border border-white/20 transition-all duration-300"
                             >
                                 <Shield className="w-5 h-5" />
                                 <span>AUDITS</span>
@@ -117,9 +118,9 @@ const Hero = () => {
 
                             <div className="relative group">
                                 <motion.button
-                                    whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(6,182,212,0.4)" }}
+                                    whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className="px-6 py-4 rounded-lg border border-cyan-400/30 bg-cyan-400/5 hover:border-cyan-400 hover:bg-cyan-400/15 transition-all font-mono text-cyan-400 tracking-wide flex items-center gap-2"
+                                    className="w-44 h-14 flex items-center justify-center gap-2 rounded-xl bg-white/5 border border-cyan-500/30 text-cyan-400 font-bold tracking-wide hover:bg-cyan-500/10 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300"
                                 >
                                     <Download className="w-5 h-5" />
                                     <span>CV</span>
@@ -150,17 +151,18 @@ const Hero = () => {
                             <motion.div
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
+                                className="w-44 h-14"
                             >
                                 {isConnected ? (
                                     <a
                                         href="#services"
-                                        className="px-6 py-4 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 font-bold tracking-wide hover:bg-green-500/20 hover:border-green-400 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all flex items-center gap-2"
+                                        className="w-full h-full flex items-center justify-center gap-2 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 font-bold tracking-wide hover:bg-green-500/20 hover:border-green-400 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all duration-300"
                                     >
                                         <Rocket className="w-5 h-5" />
                                         <span>BOOK NOW</span>
                                     </a>
                                 ) : (
-                                    <ConnectButton label="CONNECT" className="h-[58px]" />
+                                    <ConnectButton label="CONNECT" className="w-full h-full" />
                                 )}
                             </motion.div>
                         </div>

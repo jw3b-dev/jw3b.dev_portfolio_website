@@ -1,4 +1,3 @@
-import Navbar from "./Navbar"
 import Hero from "./Hero"
 import Experience from "./Experience"
 import Projects from "./Projects"
@@ -19,7 +18,6 @@ const Home = () => {
                 <title>John Wellard | Full-Stack Blockchain Engineer & Security Auditor</title>
                 <meta name="description" content="Portfolio of John Wellard (JW3B). Expert in Smart Contract Security, Full-Stack dApp Development, and Web3 Architecture. View audits and projects." />
             </Helmet>
-            <Navbar />
             <ErrorBoundary>
                 <Hero />
             </ErrorBoundary>

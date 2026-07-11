@@ -41,11 +41,10 @@ export const ConnectButton = ({ label = "Connect", className = "" }) => {
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={openConnectModal}
-                                        className="relative group px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-sm flex items-center gap-2 hover:bg-cyan-500/20 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.3)] transition-all duration-300"
+                                        className="w-full h-full rounded-xl bg-white/5 border border-cyan-500/30 text-cyan-400 font-bold tracking-wide flex items-center justify-center gap-2 hover:bg-cyan-500/10 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300"
                                     >
-                                        <Wallet className="w-4 h-4" />
+                                        <Wallet className="w-5 h-5" />
                                         <span>{label}</span>
-                                        <div className="absolute inset-0 rounded-lg bg-cyan-400/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </motion.button>
                                 );
                             }
