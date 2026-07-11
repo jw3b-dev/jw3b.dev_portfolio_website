@@ -20,6 +20,7 @@ export default defineConfig({
         'src/components/pricing/UnlockPaywall.jsx',
         'src/hooks/useXMTP.js',
         'src/hooks/usePortfolioAgent.js',
+        'src/hooks/useContractAuditor.js',
         'src/config/contracts.js',
         'src/constants/index.js',
       ],

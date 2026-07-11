@@ -15,6 +15,7 @@ import Footer from "./components/Footer";
 const ProjectDetails = lazy(() => import("./components/ProjectDetails"));
 const MissionControl = lazy(() => import("./components/MissionControl"));
 const AgentTest = lazy(() => import("./components/AgentTest"));
+const AuditConsole = lazy(() => import("./components/audit/AuditConsole"));
 const ChatWidget = lazy(() => import("./components/chat/ChatWidget"));
 
 // Create a client for React Query
@@ -42,6 +43,7 @@ const App = () => {
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/hire-me" element={<MissionControl />} />
+                    <Route path="/audit" element={<AuditConsole />} />
                     <Route path="/projects/:id" element={<ProjectDetails />} />
                     <Route path="/test-agent" element={<AgentTest />} />
                   </Routes>

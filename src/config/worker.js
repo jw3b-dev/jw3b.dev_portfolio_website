@@ -14,6 +14,7 @@ export const WORKER_URL = import.meta.env.VITE_PORTFOLIO_AGENT_URL || DEFAULT_WO
 export const AGENT_CHAT_URL = WORKER_URL;
 export const AGENT_TTS_URL = `${WORKER_URL}/text-to-speech`;
 export const AGENT_STT_URL = `${WORKER_URL}/speech-to-text`;
+export const AGENT_AUDIT_URL = `${WORKER_URL}/audit`;
 
 // Wallet that receives XMTP "E2E" messages sent from the site.
 export const XMTP_RECIPIENT =
