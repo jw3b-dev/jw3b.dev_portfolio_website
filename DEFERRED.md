@@ -4,11 +4,14 @@ Things intentionally left for John to provide/decide. Not blocking the build;
 the site is green (lint/tests/coverage/build) without them.
 
 ## Provisioning (to make the AI features live)
-- [ ] `cd workers/portfolio-agent && wrangler secret put ANTHROPIC_API_KEY` — until set, the
-      concierge + auditor fall back to Workers AI (Llama) / heuristics-only.
+- [x] Worker deployed → `portfolio-agent.agilegypsy.workers.dev` (running on Llama fallback).
+- [x] Frontend deployed → `jw3b.dev` (Cloudflare Pages `jw3b-dev-portfolio`, production).
+- [x] `rate_limits` table created on the live D1 (per-IP limiter now active).
+- [ ] **Claude needs a real Anthropic API key** (`sk-ant-api…`): `wrangler secret put ANTHROPIC_API_KEY`
+      then `wrangler deploy`. NOTE: `MB-agentic/.env` only has a Claude Code OAuth token
+      (`sk-ant-oat…`) — that's for the CLI and must NOT be used to power a public worker.
 - [ ] (optional) `ANTHROPIC_MODEL` var to override the default `claude-opus-4-8`
       (e.g. `claude-haiku-4-5` for faster/cheaper).
-- [ ] Deploy the worker: `wrangler deploy` (bumped to `nodejs_compat`).
 
 ## Projects section — assets & links
 - [ ] Replace interim card screenshots in `src/assets/projects/` (currently reused old assets):
