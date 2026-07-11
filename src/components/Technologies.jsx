@@ -27,7 +27,7 @@ const TECH_CATEGORIES = [
         icon: FaCubes,
         description: "Building smart contracts with a focus on security-first development patterns.",
         techs: [
-            { name: "Solidity", icon: SiSolidity, level: 3, type: "Smart Contract Language", usedIn: "DeFi, DAOs, NFTs", learning: true, linkedProject: "devguild" },
+            { name: "Solidity", icon: SiSolidity, level: 3, type: "Smart Contract Language", usedIn: "DeFi, DAOs, NFTs", learning: true },
             { name: "Rust", icon: SiRust, level: 1, type: "Systems Language", usedIn: "Solana, Substrate" },
             { name: "Movement", icon: FaCode, level: 1, type: "VM Architecture", usedIn: "Sui, Aptos" },
             { name: "Vyper", icon: FaCode, level: 2, type: "Pythonic Contracts", usedIn: "Curve, Yearn" },
@@ -54,8 +54,8 @@ const TECH_CATEGORIES = [
         icon: FaShieldAlt,
         description: "Learning security auditing with static analysis, fuzzing, and formal verification.",
         techs: [
-            { name: "Foundry", icon: FaShieldAlt, level: 3, type: "Testing Framework", usedIn: "Fuzzing, Deploy", learning: true, linkedProject: "audit-brave" },
-            { name: "Slither", icon: FaBug, level: 3, type: "Static Analyzer", usedIn: "Vuln Detection", learning: true, linkedProject: "audit-brave" },
+            { name: "Foundry", icon: FaShieldAlt, level: 3, type: "Testing Framework", usedIn: "Fuzzing, Deploy", learning: true },
+            { name: "Slither", icon: FaBug, level: 3, type: "Static Analyzer", usedIn: "Vuln Detection", learning: true },
             { name: "Aderyn", icon: FaBug, level: 2, type: "AST Analyzer", usedIn: "Deep Analysis", learning: true },
             { name: "Echidna", icon: FaLock, level: 2, type: "Property Fuzzer", usedIn: "Invariant Testing", learning: true },
             { name: "Medusa", icon: FaBug, level: 2, type: "Parallel Fuzzer", usedIn: "Stress Testing", learning: true },
@@ -69,10 +69,10 @@ const TECH_CATEGORIES = [
         icon: FaServer,
         description: "Working with decentralized backends, subgraphs, and L2 scaling solutions.",
         techs: [
-            { name: "The Graph", icon: SiGraphql, level: 2, type: "Indexing Protocol", usedIn: "Subgraphs", linkedProject: "devguild" },
+            { name: "The Graph", icon: SiGraphql, level: 2, type: "Indexing Protocol", usedIn: "Subgraphs" },
             { name: "IPFS", icon: SiIpfs, level: 2, type: "Decentralized Storage", usedIn: "Metadata, Assets" },
             { name: "ZK Proofs", icon: FaNetworkWired, level: 1, type: "Privacy Layer", usedIn: "Rollups, Identity" },
-            { name: "Layer 2s", icon: FaLayerGroup, level: 3, type: "Scaling Solution", usedIn: "Arbitrum, OP", linkedProject: "devguild" },
+            { name: "Layer 2s", icon: FaLayerGroup, level: 3, type: "Scaling Solution", usedIn: "Arbitrum, OP" },
             { name: "Neo4j", icon: FaDatabase, level: 3, type: "Graph Database", usedIn: "Tx Analysis" },
         ]
     },
@@ -85,7 +85,7 @@ const TECH_CATEGORIES = [
             { name: "React", icon: SiReact, level: 3, type: "UI Framework", usedIn: "Component UIs", linkedProject: "agilegypsy" },
             { name: "Next.js", icon: SiNextdotjs, level: 3, type: "Full-Stack React", usedIn: "SSR, APIs", linkedProject: "agilegypsy" },
             { name: "TypeScript", icon: SiTypescript, level: 3, type: "Type-Safe JS", usedIn: "All Projects" },
-            { name: "Viem/Ethers", icon: FaWallet, level: 3, type: "Web3 Library", usedIn: "Wallet, Txs", learning: true, linkedProject: "devguild" },
+            { name: "Viem/Ethers", icon: FaWallet, level: 3, type: "Web3 Library", usedIn: "Wallet, Txs", learning: true },
             { name: "ERC-4337", icon: FaWallet, level: 2, type: "Account Abstraction", usedIn: "Gasless UX", learning: true },
             { name: "Tailwind", icon: SiTailwindcss, level: 4, type: "Utility CSS", usedIn: "Rapid Styling" },
         ]
@@ -96,10 +96,10 @@ const TECH_CATEGORIES = [
         icon: FaCoins,
         description: "Exploring RWA tokenization with ERC-3643 compliance and cross-chain protocols.",
         techs: [
-            { name: "ERC-3643", icon: FaFileContract, level: 2, type: "Security Token", usedIn: "RWA Identity", learning: true, linkedProject: "rental-deposit" },
-            { name: "RWA", icon: FaIdCard, level: 2, type: "Asset Tokenization", usedIn: "Real Estate", learning: true, linkedProject: "rental-deposit" },
+            { name: "ERC-3643", icon: FaFileContract, level: 2, type: "Security Token", usedIn: "RWA Identity", learning: true },
+            { name: "RWA", icon: FaIdCard, level: 2, type: "Asset Tokenization", usedIn: "Real Estate", learning: true },
             { name: "Cross-Chain", icon: FaLink, level: 2, type: "Bridge Protocol", usedIn: "Multichain", learning: true },
-            { name: "Chainlink", icon: SiChainlink, level: 3, type: "Oracle Network", usedIn: "Data Feeds", linkedProject: "devguild" },
+            { name: "Chainlink", icon: SiChainlink, level: 3, type: "Oracle Network", usedIn: "Data Feeds" },
         ]
     },
 ];

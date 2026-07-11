@@ -4,6 +4,7 @@ import auditbraveImg from "../assets/projects/auditbrave.png";
 import fluxbraveImg from "../assets/projects/fluxbrave.png";
 import rentaldepositImg from "../assets/projects/rentaldeposit.png";
 import creatorhubImg from "../assets/projects/creatorhub.png";
+import project2 from "../assets/projects/project-2.webp";
 
 // Persona images
 // Persona images
@@ -100,7 +101,7 @@ export const SERVICES = [
     description: "Engineering intelligent agents that operate 24/7. I build MEV-aware trading bots, automated portfolio managers, and intent-based transaction agents that execute complex strategies without human intervention.",
     features: ["Autonomous Agents", "Intent Solvers & MEV", "Automated Treasury Ops", "Multi-Agent Systems"],
     color: "cyan",
-    link: "/projects/devguild"
+    link: "https://artofzeta.com/app/"
   },
   {
     title: "RWA & Asset Tokenization",
@@ -108,7 +109,7 @@ export const SERVICES = [
     description: "Bridging real-world value to the blockchain. I engineer compliance-ready token standards (ERC-3643), decentralized identity (DID) integrations, and settlement layers for real estate, private credit, and treasury bills.",
     features: ["Regulatory Compliance", "Asset Fractionalization", "Identity & Whitelisting", "Restricted Token Standards"],
     color: "green",
-    link: "/projects/audit-brave"
+    link: "https://agilegypsy.com"
   },
   {
     title: "Strategic Architecture & ZK Scaling",
@@ -116,7 +117,7 @@ export const SERVICES = [
     description: "Designing for the modular & privacy-first era. I provide expert guidance on Zero-Knowledge rollup implementation, app-chain deployment, and sustainable tokenomics simulation to ensure your protocol scales securely.",
     features: ["ZK & Modular Strategy", "Tokenomics Design", "App-Chain Architecture", "Protocol Strategy"],
     color: "orange",
-    link: "/projects/devguild"
+    link: "https://kthulhu.co"
   },
   {
     title: "Full-Stack Blockchain Engineering",
@@ -124,7 +125,7 @@ export const SERVICES = [
     description: "Building secure, scalable applications with seamless UX. From high-performance smart contracts in Solidity/Rust to user-friendly interfaces using Account Abstraction (ERC-4337) for gasless, key-free experiences.",
     features: ["Secure Smart Contracts", "DeFi & Yield Integration", "Gasless UX (ERC-4337)", "Cross-Chain Interoperability"],
     color: "blue",
-    link: "/projects/flux-brave"
+    link: "https://kointel.co.za"
   },
   {
     title: "Web3 Product Delivery",
@@ -132,7 +133,7 @@ export const SERVICES = [
     description: "Steering complex initiatives from whitepaper to mainnet. I provide rigorous roadmap execution, cross-functional coordination, and quality assurance to ensure high-stakes launches succeed without critical failures.",
     features: ["Roadmap Execution", "Mainnet Launch Strategy", "Team Coordination", "Quality Assurance"],
     color: "rose",
-    link: "/projects/creatorhub-brave"
+    link: "https://agilegypsy.com"
   }
 ];
 
@@ -392,78 +393,90 @@ export const EXPERIENCES = [
   },
 ];
 
+// NOTE: project images below are interim placeholders reusing existing assets.
+// Replace each with a real screenshot of the corresponding live site.
 export const PROJECTS = [
   {
-    title: "AgileGypsy - Smart Contract Security",
-    image: agileGypsyImg,
+    title: "KTHULHU Overmind",
+    image: auditbraveImg,
     description:
-      "My security audit portfolio documenting vulnerability research and protocol assessments. Featuring static analysis, fuzz testing, and formal verification techniques applied to DeFi protocol patterns.",
-    technologies: ["Security Auditing", "Solidity", "DeFi", "Foundry", "Slither", "Aderyn", "Echidna", "Certora"],
-    link: "https://audit.agilegypsy.com",
+      "Autonomous, AI-driven smart-contract auditing engineered for near-zero false positives. A multi-agent system pairs ensemble LLM reasoning and adversarial red-teaming with formal verification (Halmos) and dynamic EVM fork testing — every finding is reproduced on a mainnet fork before it ships. Live with a USDC credit system.",
+    technologies: ["AI Agents", "Solidity", "Foundry", "Halmos", "Cloudflare Workers", "Durable Objects", "Next.js"],
+    link: "https://kthulhu.co",
     external: true,
     color: "purple",
+    phase: "live",
+    buttonText: "Explore KTHULHU"
+  },
+  {
+    title: "Kointel — AI Crypto Tax",
+    image: creatorhubImg,
+    description:
+      "AI-powered crypto tax compliance for South Africa — turning raw exchange exports into SARS-ready ITR12 capital-gains reports. AI classifies every transaction with confidence-banded review, a FIFO engine computes gains under SARS rules, and the whole stack runs edge-native on Cloudflare. 70K+ LOC, live in production.",
+    technologies: ["Next.js", "React", "TypeScript", "Cloudflare Workers", "Vectorize", "Workers AI", "Stitch"],
+    link: "https://kointel.co.za",
+    external: true,
+    color: "green",
+    phase: "live",
+    buttonText: "Visit Kointel"
+  },
+  {
+    title: "Art of Zeta — MEV Trading Engine",
+    image: fluxbraveImg,
+    description:
+      "An autonomous multi-agent crypto trading platform for MEV, triangular, and ZAR arbitrage. A Cloudflare Workers orchestration layer drives high-frequency execution through on-chain MEVExecutor and UniswapX filler contracts on Mainnet + Arbitrum, fronted by a React dashboard for strategy management, simulation, and live P&L.",
+    technologies: ["MEV", "Flashbots", "Solidity", "Arbitrum", "Cloudflare Workers", "Durable Objects", "React"],
+    link: "https://artofzeta.com/app/",
+    external: true,
+    color: "orange",
+    phase: "live",
+    buttonText: "Open the App"
+  },
+  {
+    title: "AgileGypsy — Security Audits",
+    image: agileGypsyImg,
+    description:
+      "My smart-contract security practice — vulnerability research and protocol assessments using manual review, static analysis, fuzzing, and formal verification. The home base for audit engagements and published findings.",
+    technologies: ["Security Auditing", "Solidity", "Foundry", "Slither", "Aderyn", "Echidna", "Certora"],
+    link: "https://audit.agilegypsy.com",
+    external: true,
+    color: "rose",
     phase: "live",
     buttonText: "View Audit Portfolio"
   },
   {
-    id: "devguild",
-    title: "DevGuild Protocol",
-    image: devguildImg,
-    description:
-      "Decentralized talent ecosystem implementing ERC-6551 (Token Bound Accounts) and ERC-4337 (Account Abstraction) for gasless developer onboarding and verifiable on-chain credentials.",
-    technologies: ["Solidity", "Foundry", "ERC-6551", "ERC-4337", "Base L2", "The Graph", "IPFS", "Next.js"],
-    link: "/projects/devguild",
-    color: "cyan",
-    phase: "building",
-    buttonText: "View Project Details"
-  },
-  {
-    id: "audit-brave",
-    title: "Audit.brave - Content Provenance",
-    image: auditbraveImg,
-    description:
-      "On-chain content verification system for media authenticity. Implements cryptographic stamping and immutable timestamping to combat AI-generated misinformation.",
-    technologies: ["Solidity", "IPFS", "React", "Next.js", "TypeScript", "Viem/Ethers", "Tailwind", "Layer 2s"],
-    link: "/projects/audit-brave",
-    color: "green",
-    phase: "mvp",
-    buttonText: "View Case Study"
-  },
-  {
-    id: "flux-brave",
-    title: "Flux.brave - Payment Streaming",
-    image: fluxbraveImg,
-    description:
-      "Real-time payment streaming protocol for freelancer compensation. Implements time-locked vault patterns with second-by-second token unlocking.",
-    technologies: ["Solidity", "React", "Next.js", "TypeScript", "Viem/Ethers", "Tailwind", "Layer 2s"],
-    link: "/projects/flux-brave",
-    color: "blue",
-    phase: "concept",
-    buttonText: "View Case Study"
-  },
-  {
-    id: "rental-deposit",
-    title: "Rental Deposit Vault",
+    title: "AgileGypsy Labs",
     image: rentaldepositImg,
     description:
-      "Trustless escrow smart contract for rental security deposits. Features time-locked state machines and automated release mechanisms for transparent deposit management.",
-    technologies: ["Solidity", "React", "Next.js", "TypeScript", "Viem/Ethers", "Tailwind", "Layer 2s"],
-    link: "/projects/rental-deposit",
-    color: "orange",
-    phase: "concept",
-    buttonText: "View Case Study"
+      "My Web3 engineering and security studio — where the audits, tooling, and production dApps come together: smart-contract security, AI × blockchain R&D, and full-stack delivery for teams shipping on-chain.",
+    technologies: ["Web3", "Smart Contracts", "AI", "Security", "Full-Stack"],
+    link: "https://agilegypsy.com",
+    external: true,
+    color: "blue",
+    phase: "live",
+    buttonText: "Visit AgileGypsy"
   },
   {
-    id: "creatorhub-brave",
-    title: "CreatorHub.brave - Royalty Splitter",
-    image: creatorhubImg,
+    title: "MB-agentic — Overmind Engine",
+    image: devguildImg,
     description:
-      "Automated royalty distribution protocol for creator collectives. Implements PaymentSplitter patterns with minimal proxy factories for gas-efficient deployment.",
-    technologies: ["Solidity", "React", "Next.js", "TypeScript", "Viem/Ethers", "Tailwind", "Layer 2s"],
-    link: "/projects/creatorhub-brave",
-    color: "rose",
-    phase: "concept",
-    buttonText: "View Case Study"
+      "The engine behind the swarm: an autonomous multi-agent orchestration system with a security-hardened governance layer (AgilePM). Specialized agents coordinate over MCP with sovereign governance verbs, operator-walled authority, and forgery-resistant agent identity. In active development.",
+    technologies: ["AI Agents", "MCP", "TypeScript", "Cloudflare Workers", "Durable Objects", "Governance"],
+    link: "https://github.com/jw3b-dev/MB-agentic",
+    external: true,
+    color: "cyan",
+    phase: "building",
+    buttonText: "View on GitHub"
+  },
+  {
+    title: "AgileCEO",
+    image: project2,
+    description:
+      "The governed business brain that agentic coding lacks — so an AI swarm ships a viable, fit-for-purpose product instead of blind code. You act as CEO; the governed agent fleet is your executive team, run on the proven AgilePM® / DSDM® delivery method.",
+    technologies: ["AI Agents", "AgilePM / DSDM", "Governance", "Multi-Agent Systems"],
+    color: "green",
+    phase: "building",
+    buttonText: "Coming Soon"
   },
 ];
 

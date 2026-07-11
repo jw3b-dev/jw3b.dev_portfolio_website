@@ -63,9 +63,11 @@ John operates with a **Web3-First** delivery model. To secure his services, the 
 ---
 
 ## 🛠️ PROJECTS
-- **DevGuild Protocol**: Talent ecosystem with ERC-6551 Token Bound Accounts and ERC-4337 for gasless HR onboarding.
-- **Audit.brave**: Content provenance data layer ensuring authenticity.
-- **Flux.brave**: Real-time payment streams with atomic release locks.
+- **KTHULHU Overmind** (kthulhu.co): Autonomous, AI-driven smart-contract auditing engineered for near-zero false positives — multi-agent ensemble reasoning + adversarial red-teaming, formal verification (Halmos), and dynamic EVM fork testing. Live with a USDC credit system.
+- **Kointel** (kointel.co.za): AI crypto tax-compliance SaaS for South Africa — turns raw exchange exports into SARS-ready ITR12 capital-gains reports. Edge-native on Cloudflare; live in production.
+- **Art of Zeta** (artofzeta.com): Autonomous multi-agent crypto trading platform for MEV, triangular, and ZAR arbitrage, with on-chain MEVExecutor/UniswapX filler contracts on Mainnet + Arbitrum.
+- **AgileGypsy Audits** (audit.agilegypsy.com): John's smart-contract security practice — vulnerability research and protocol assessments.
+- **MB-agentic** & **AgileCEO** (in development): the Overmind multi-agent orchestration engine and its governed "AI-swarm-as-executive-team" layer, built on the AgilePM/DSDM method.
 
 ---
 

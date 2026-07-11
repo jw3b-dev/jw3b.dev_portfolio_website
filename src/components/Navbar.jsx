@@ -14,6 +14,7 @@ const Navbar = () => {
     const menuItems = [
         { label: 'About', href: '#about' },
         { label: 'Services', href: '#services' },
+        { label: 'AI Auditor', href: '/audit', highlight: true },
         { label: 'Hire Me', href: '/hire-me', highlight: true },
         {
             label: 'Experience',
@@ -29,11 +30,11 @@ const Navbar = () => {
             label: 'Projects',
             href: '#projects',
             dropdown: [
-                { label: 'DevGuild Protocol', href: '/projects/devguild' },
-                { label: 'Audit.brave', href: '/projects/audit-brave' },
-                { label: 'Flux.brave', href: '/projects/flux-brave' },
-                { label: 'Rental Deposit Vault', href: '/projects/rental-deposit' },
-                { label: 'CreatorHub.brave', href: '/projects/creatorhub-brave' }
+                { label: 'KTHULHU Overmind', href: 'https://kthulhu.co' },
+                { label: 'Kointel', href: 'https://kointel.co.za' },
+                { label: 'Art of Zeta', href: 'https://artofzeta.com/app/' },
+                { label: 'AgileGypsy Audits', href: 'https://audit.agilegypsy.com' },
+                { label: 'AgileGypsy Labs', href: 'https://agilegypsy.com' }
             ]
         },
         {
