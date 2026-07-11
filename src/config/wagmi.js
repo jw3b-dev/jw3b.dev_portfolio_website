@@ -12,7 +12,8 @@ export const config = getDefaultConfig({
 // Contract addresses (to be updated after deployment)
 export const CONTRACTS = {
     escrow: {
-        address: null, // Will be set after deployment
+        // MilestoneEscrow (contracts/src/MilestoneEscrow.sol). Set after deploy — see DEFERRED.md.
+        address: null,
         chainId: base.id,
     },
     sbt: {

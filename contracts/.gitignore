@@ -1,0 +1,7 @@
+# Foundry
+out/
+cache/
+broadcast/
+
+# Vendored deps (re-fetch with: git clone --depth 1 https://github.com/foundry-rs/forge-std lib/forge-std)
+lib/

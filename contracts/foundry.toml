@@ -1,0 +1,14 @@
+[profile.default]
+src = "src"
+out = "out"
+test = "test"
+libs = ["lib"]
+solc = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+# Deterministic, thorough property testing for a security showcase.
+fuzz = { runs = 512 }
+invariant = { runs = 64, depth = 64, fail_on_revert = false }
+
+# jw3b.dev on-chain service layer — MilestoneEscrow (USDC on Base).
+# Self-contained: no external libs, so `forge test` runs with zero submodules.

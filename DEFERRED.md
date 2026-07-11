@@ -21,7 +21,9 @@ the site is green (lint/tests/coverage/build) without them.
 
 ## Larger roadmap phases (need contracts/infra you deploy)
 - [ ] **RAG** over real audit reports → create a Vectorize index + ingest corpus.
-- [ ] **Milestone escrow** (Foundry) → deploy to Base + paste address into `src/config/wagmi.js`.
+- [x] **Milestone escrow** — `contracts/MilestoneEscrow.sol` built + tested (28 forge tests incl. fuzz + invariants, slither-reviewed) and the `useEscrow` Simulate→Write→Wait hook is wired.
+  - [ ] Deploy to Base (`forge script`), paste the address into `src/config/wagmi.js` → `CONTRACTS.escrow.address`, and build the escrow UI panel.
+  - [ ] `contracts/lib/` is gitignored — run `git clone --depth 1 https://github.com/foundry-rs/forge-std contracts/lib/forge-std` before `forge test`.
 - [ ] **EAS audit attestations** → register an EAS schema on Base.
 - [ ] **Gasless USDC "hire me"** (ERC-4337) → CDP/Pimlico paymaster policy + funded sponsor.
 - [ ] **Testnet CTF** → deploy the vulnerable contract to Base Sepolia + `leaderboard` D1 table.
