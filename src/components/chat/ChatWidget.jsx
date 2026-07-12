@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Send, X, Minimize2, Maximize2, Shield, User, Mic, Volume2, VolumeX } from 'lucide-react';
-import { useXMTP } from '../../hooks/useXMTP';
+import { MessageSquare, Send, X, Minimize2, Maximize2, Shield, Mic, Volume2, VolumeX } from 'lucide-react';
 import { usePortfolioAgent } from '../../hooks/usePortfolioAgent';
 import { useAccount } from 'wagmi';
-import { AGENT_TTS_URL, AGENT_STT_URL, XMTP_RECIPIENT } from '../../config/worker';
+import { AGENT_TTS_URL, AGENT_STT_URL } from '../../config/worker';
 
 const PricingCard = () => (
     <div className="mt-2 p-3 bg-cyan-950/30 border border-cyan-500/30 rounded-xl space-y-2 backdrop-blur-sm">
@@ -220,13 +219,11 @@ const applyBoldAndLinks = (str) => {
 };
 
 const ChatWidget = () => {
-    const { address, isConnected } = useAccount();
-    const { connect, status, sendMessage, messages: xmtpMessages } = useXMTP();
+    const { address } = useAccount();
     const { messages: aiMessages, askAgent, isLoading: aiLoading } = usePortfolioAgent();
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [input, setInput] = useState("");
-    const [mode, setMode] = useState('AI'); // 'AI' or 'XMTP'
     const messagesEndRef = useRef(null);
     
     // 🎙️ VOICE CAPTURE STATES (Phase 3 Big & Fancy)
@@ -389,10 +386,10 @@ const ChatWidget = () => {
 
     useEffect(() => {
         // Only auto-scroll if loading OR if it's the very first open
-        if (aiLoading || xmtpMessages.length > 0 || aiMessages.length > 0) {
+        if (aiLoading || aiMessages.length > 0) {
             scrollToBottom(aiLoading ? "auto" : "smooth"); // instant scroll during stream
         }
-    }, [xmtpMessages, aiMessages, aiLoading, isOpen]);
+    }, [aiMessages, aiLoading, isOpen]);
 
     useEffect(() => {
         const handleToolTrigger = (e) => {
@@ -419,18 +416,9 @@ const ChatWidget = () => {
         
         const userMsg = input;
         setInput(""); // 🚀 Instant Feedback: Clear input immediately
-        initAudio(); 
-        
-        if (mode === 'AI') {
-            await askAgent(userMsg, address);
-        } else {
-            try {
-                await sendMessage(XMTP_RECIPIENT, userMsg);
-            } catch (err) {
-                console.error("Failed to send message:", err);
-                setInput(userMsg); // Redraw if failed
-            }
-        }
+        initAudio();
+
+        await askAgent(userMsg, address);
     };
 
     // if (!isConnected) return null;
@@ -468,21 +456,7 @@ const ChatWidget = () => {
                                     <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
                                         <Shield size={16} />
                                     </div>
-                                    <span className="text-sm font-bold tracking-tight text-white uppercase">{mode === 'AI' ? 'SENTINEL AI' : 'XMTP SECURE'}</span>
-                                </div>
-                                <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/10">
-                                    <button 
-                                        onClick={() => setMode('AI')}
-                                        className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${mode === 'AI' ? 'bg-cyan-500 text-black' : 'text-stone-500 hover:text-white'}`}
-                                    >
-                                        AI
-                                     </button>
-                                    <button 
-                                        onClick={() => setMode('XMTP')}
-                                        className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${mode === 'XMTP' ? 'bg-cyan-500 text-black' : 'text-stone-500 hover:text-white'}`}
-                                    >
-                                        E2E
-                                    </button>
+                                    <span className="text-sm font-bold tracking-tight text-white uppercase">SENTINEL AI</span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -506,7 +480,6 @@ const ChatWidget = () => {
                             <>
                                 {/* Chat Body */}
                                 <div className="flex-grow overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
-                                    {mode === 'AI' ? (
                                         <div className="space-y-4">
                                             {aiMessages.length === 0 && (
                                                 <div className="h-full flex flex-col items-center justify-center py-10 text-center opacity-50">
@@ -554,52 +527,6 @@ const ChatWidget = () => {
                                             )}
                                             <div ref={messagesEndRef} />
                                         </div>
-                                    ) : !isConnected ? (
-                                        <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                                            <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-stone-500">
-                                                <User size={24} />
-                                            </div>
-                                            <div>
-                                                <h4 className="text-white text-sm font-bold">Wallet Required</h4>
-                                                <p className="text-stone-500 text-xs mt-1">Connect your wallet to start a secure conversation.</p>
-                                            </div>
-                                            <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                                <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-bold">Use the header Connect button</p>
-                                            </div>
-                                        </div>
-                                    ) : status === 'disconnected' ? (
-                                        <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                                            <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-stone-500">
-                                                <User size={24} />
-                                            </div>
-                                            <div>
-                                                <h4 className="text-white text-sm font-bold">Initialize Secure Layer</h4>
-                                                <p className="text-stone-500 text-xs mt-1">Sign a message to enable end-to-end encrypted messaging.</p>
-                                            </div>
-                                            <button 
-                                                onClick={connect}
-                                                className="px-6 py-2 rounded-lg bg-cyan-500 text-black text-xs font-bold hover:scale-105 transition-all"
-                                            >
-                                                CONNECT XMTP
-                                            </button>
-                                        </div>
-                                    ) : status === 'connecting' ? (
-                                        <div className="h-full flex items-center justify-center">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500"></div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            {/* Messages Placeholder */}
-                                            <div className="flex flex-col items-center justify-center py-10 opacity-20">
-                                                <MessageSquare size={48} className="text-stone-400 mb-2" />
-                                                <span className="text-xs text-stone-500">End-to-end encrypted channel established</span>
-                                            </div>
-                                            
-                                            {/* Messages from Hook would go here */}
-
-                                            <div ref={messagesEndRef} />
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* Input Area */}
@@ -610,39 +537,37 @@ const ChatWidget = () => {
                                                 type="text"
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
-                                                disabled={(mode === 'XMTP' && status !== 'connected') || isTranscribing}
-                                                placeholder={isTranscribing ? "Transcribing voice..." : (mode === 'AI' ? "Ask Sentinel AI..." : "Secure message...")}
+                                                disabled={isTranscribing}
+                                                placeholder={isTranscribing ? "Transcribing voice..." : "Ask Sentinel AI..."}
                                                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white placeholder:text-stone-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
                                             />
                                             <button 
                                                 type="submit"
-                                                disabled={!input.trim() || (mode === 'XMTP' && status !== 'connected') || isTranscribing}
+                                                disabled={!input.trim() || isTranscribing}
                                                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-cyan-500 text-black disabled:bg-stone-800 disabled:text-stone-600 transition-colors"
                                             >
                                                 <Send size={16} />
                                             </button>
                                         </div>
-                                        
-                                        {mode === 'AI' && (
-                                            <button
-                                                type="button"
-                                                onClick={handleVoiceInput}
-                                                disabled={isTranscribing}
-                                                className={`p-3 rounded-xl border transition-all ${
-                                                    isRecording 
-                                                        ? 'bg-red-500/20 border-red-500 text-red-500 animate-pulse' 
-                                                        : 'bg-white/5 border-white/10 text-stone-400 hover:text-white hover:bg-white/10'
-                                                }`}
-                                                title={isRecording ? "Stop Recording" : "Send Voice Message"}
-                                            >
-                                                <Mic size={16} className={isTranscribing ? 'animate-spin' : ''} />
-                                            </button>
-                                        )}
+
+                                        <button
+                                            type="button"
+                                            onClick={handleVoiceInput}
+                                            disabled={isTranscribing}
+                                            className={`p-3 rounded-xl border transition-all ${
+                                                isRecording
+                                                    ? 'bg-red-500/20 border-red-500 text-red-500 animate-pulse'
+                                                    : 'bg-white/5 border-white/10 text-stone-400 hover:text-white hover:bg-white/10'
+                                            }`}
+                                            title={isRecording ? "Stop Recording" : "Send Voice Message"}
+                                        >
+                                            <Mic size={16} className={isTranscribing ? 'animate-spin' : ''} />
+                                        </button>
                                     </div>
                                     <div className="mt-2 flex items-center justify-center gap-1 opacity-20 hover:opacity-100 transition-opacity">
-                                        <Shield size={10} className={mode === 'AI' ? 'text-cyan-500' : 'text-green-500'} />
+                                        <Shield size={10} className="text-cyan-500" />
                                         <span className="text-[10px] text-stone-500 uppercase tracking-tighter">
-                                            {mode === 'AI' ? 'Powered by Cloudflare AI' : 'E2E Encrypted via XMTP'}
+                                            Powered by Cloudflare AI
                                         </span>
                                     </div>
                                 </form>

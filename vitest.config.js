@@ -18,7 +18,6 @@ export default defineConfig({
         'src/components/jw3b.devParticleCanvas.jsx',
         'src/components/chat/ChatWidget.jsx',
         'src/components/pricing/UnlockPaywall.jsx',
-        'src/hooks/useXMTP.js',
         'src/hooks/usePortfolioAgent.js',
         'src/hooks/useAgentStream.js',
         'src/hooks/useContractAuditor.js',

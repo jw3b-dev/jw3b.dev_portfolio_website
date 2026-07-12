@@ -1,13 +1,8 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import ChatWidget, { FormattedMessage } from '../ChatWidget';
 import { useAccount } from 'wagmi';
-import { useXMTP } from '../../../hooks/useXMTP';
 import { usePortfolioAgent } from '../../../hooks/usePortfolioAgent';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-
-vi.mock('../../../hooks/useXMTP', () => ({
-    useXMTP: vi.fn(),
-}));
 
 vi.mock('../../../hooks/usePortfolioAgent', () => ({
     usePortfolioAgent: vi.fn(),
@@ -19,12 +14,6 @@ describe('ChatWidget', () => {
         
         // Default connected state
         vi.mocked(useAccount).mockReturnValue({ isConnected: true, address: '0x123' });
-        vi.mocked(useXMTP).mockReturnValue({
-            connect: vi.fn(),
-            status: 'disconnected',
-            sendMessage: vi.fn(),
-            messages: []
-        });
         vi.mocked(usePortfolioAgent).mockReturnValue({
             messages: [],
             askAgent: vi.fn(),
@@ -185,16 +174,6 @@ describe('ChatWidget', () => {
         expect(screen.getByPlaceholderText('Ask Sentinel AI...')).toBeInTheDocument();
     });
 
-    it('should show wallet required state in XMTP mode when disconnected', () => {
-        vi.mocked(useAccount).mockReturnValue({ isConnected: false });
-        render(<ChatWidget />);
-        fireEvent.click(screen.getByRole('button'));
-        
-        // Switch to XMTP
-        fireEvent.click(screen.getByText('E2E'));
-        expect(screen.getByText('Wallet Required')).toBeInTheDocument();
-    });
-
     it('should allow sending messages in AI mode and render messages', async () => {
         const askAgent = vi.fn().mockResolvedValue({});
         vi.mocked(usePortfolioAgent).mockReturnValue({
@@ -225,47 +204,6 @@ describe('ChatWidget', () => {
         });
     });
 
-    it('should successfully send messages in XMTP mode', async () => {
-        const sendMessage = vi.fn().mockResolvedValue({});
-        vi.mocked(useXMTP).mockReturnValue({
-            connect: vi.fn(),
-            status: 'connected',
-            sendMessage,
-            messages: []
-        });
-
-        render(<ChatWidget />);
-        fireEvent.click(screen.getByRole('button'));
-        fireEvent.click(screen.getByText('E2E'));
-
-        const input = screen.getByPlaceholderText('Secure message...');
-        fireEvent.change(input, { target: { value: 'Secure message' } });
-        fireEvent.click(screen.getByTestId('icon-send').parentElement);
-
-        await waitFor(() => {
-            expect(sendMessage).toHaveBeenCalledWith(expect.any(String), 'Secure message');
-        });
-        expect(input.value).toBe(''); // Verify input is cleared
-    });
-
-    it('should handle XMTP connection flow', async () => {
-        const connect = vi.fn();
-        vi.mocked(useXMTP).mockReturnValue({
-            connect,
-            status: 'disconnected',
-            sendMessage: vi.fn(),
-            messages: []
-        });
-
-        render(<ChatWidget />);
-        fireEvent.click(screen.getByRole('button'));
-        fireEvent.click(screen.getByText('E2E'));
-
-        expect(screen.getByText('Initialize Secure Layer')).toBeInTheDocument();
-        fireEvent.click(screen.getByText('CONNECT XMTP'));
-        expect(connect).toHaveBeenCalled();
-    });
-
     it('should minimize and maximize the terminal', async () => {
         render(<ChatWidget />);
         
@@ -281,30 +219,6 @@ describe('ChatWidget', () => {
         const maximizeBtn = screen.getByTestId('icon-maximize').parentElement;
         fireEvent.click(maximizeBtn);
         expect(screen.getByTestId('icon-minimize')).toBeInTheDocument();
-    });
-
-    it('should handle sendMessage error', async () => {
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-        const sendMessage = vi.fn().mockRejectedValue(new Error('Send failed'));
-        vi.mocked(useXMTP).mockReturnValue({
-            connect: vi.fn(),
-            status: 'connected',
-            sendMessage,
-            messages: []
-        });
-
-        render(<ChatWidget />);
-        fireEvent.click(screen.getByRole('button'));
-        fireEvent.click(screen.getByText('E2E'));
-
-        const input = screen.getByPlaceholderText('Secure message...');
-        fireEvent.change(input, { target: { value: 'Bad message' } });
-        fireEvent.click(screen.getByTestId('icon-send').parentElement);
-
-        await waitFor(() => {
-            expect(consoleSpy).toHaveBeenCalledWith('Failed to send message:', expect.any(Error));
-        });
-        consoleSpy.mockRestore();
     });
 
     it('should show loading state while waiting for AI', async () => {
@@ -330,19 +244,6 @@ describe('ChatWidget', () => {
         expect(document.querySelector('.animate-bounce')).toBeInTheDocument();
     });
 
-    it('should switch back to AI mode', () => {
-        render(<ChatWidget />);
-        fireEvent.click(screen.getByRole('button'));
-        
-        // Switch to E2E
-        fireEvent.click(screen.getByText('E2E'));
-        expect(screen.getByText('XMTP SECURE')).toBeInTheDocument();
-        
-        // Switch back to AI
-        fireEvent.click(screen.getByText('AI'));
-        expect(screen.getByText('SENTINEL AI')).toBeInTheDocument();
-    });
-
     it('should close the terminal', () => {
         render(<ChatWidget />);
         fireEvent.click(screen.getByRole('button'));
@@ -350,21 +251,6 @@ describe('ChatWidget', () => {
 
         fireEvent.click(screen.getByTestId('icon-x').parentElement);
         expect(screen.queryByText('SENTINEL AI')).not.toBeInTheDocument();
-    });
-
-    it('should show loading state in XMTP mode', () => {
-        vi.mocked(useXMTP).mockReturnValue({
-            connect: vi.fn(),
-            status: 'connecting',
-            sendMessage: vi.fn(),
-            messages: []
-        });
-
-        render(<ChatWidget />);
-        fireEvent.click(screen.getByRole('button'));
-        fireEvent.click(screen.getByText('E2E'));
-
-        expect(document.querySelector('.animate-spin')).toBeInTheDocument();
     });
 
     it('should toggle voice active state', () => {
