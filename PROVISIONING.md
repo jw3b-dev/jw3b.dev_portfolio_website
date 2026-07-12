@@ -24,9 +24,14 @@ Vulnerable + fixed vaults + a passing exploit PoC. To make it interactive on the
 - [ ] Create the D1 leaderboard table (I can do this via the Cloudflare API): `CREATE TABLE ctf_solves (address TEXT, tx_hash TEXT, ts INTEGER, PRIMARY KEY(address))`.
 - [ ] I'll add the `/ctf` page + a worker `/ctf/verify` route that confirms a drain on-chain before recording a solve.
 
-## 3. RAG concierge (cite real audit findings) — Cloudflare Vectorize
-- [ ] Provide a corpus of your real audit reports/findings (markdown files) — this is the only blocker; I can create the index + ingest.
-- [ ] `wrangler vectorize create jw3b-audit-findings --dimensions=1024 --metric=cosine`, add the `[[vectorize]]` binding, run ingestion (embeddings via Workers AI `bge-large-en-v1.5`).
+## 3. RAG-augmented auditor (cite real audit findings) — ✅ DONE (reuses KTHULHU's KB)
+Instead of building a new Vectorize index, the `/audit` route now reuses the **existing**
+shared Neon Postgres + pgvector knowledge base from the KTHULHU project — **9,525 real
+findings** (6,910 **Solodit** + 1,384 Sherlock + 823 DeFiHackLabs + 408 vulns DB), already
+embedded with `@cf/baai/bge-m3` (1024-dim). Sentinel retrieves the top-3 nearest precedents
+by cosine distance and cites them by title/SWC + source. Wired in `workers/portfolio-agent/src/rag.js`.
+- Access is via the `NEON_DATABASE_URL` **Worker secret** (set; not committed). Fail-open: if the DB is unreachable the audit still runs, just without precedent.
+- Nothing needed from you. (Optional later: point at a jw3b-only corpus of *your* published reports if you'd rather not share KTHULHU's table.)
 
 ## 4. On-chain audit attestations (EAS on Base) — `sbt` stub
 - [ ] Register an EAS schema on Base (e.g. `bytes32 engagementId, string scope, uint8 severityResolved, string reportURI`) → gives a `schemaUID`.
