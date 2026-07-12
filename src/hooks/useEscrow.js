@@ -16,8 +16,9 @@ import { CONTRACTS } from '../config/wagmi';
 export function useEscrow() {
     const config = useConfig();
     const address = CONTRACTS.escrow.address; // null until deployed
+    const chainId = CONTRACTS.escrow.chainId; // pin reads/writes to the deploy chain (Base Sepolia)
     const enabled = Boolean(address);
-    const readOpts = (functionName) => ({ address, abi: escrowAbi, functionName, query: { enabled } });
+    const readOpts = (functionName) => ({ address, abi: escrowAbi, functionName, chainId, query: { enabled } });
 
     const { data: totalAmount } = useReadContract(readOpts('totalAmount'));
     const { data: outstanding } = useReadContract(readOpts('outstanding'));
@@ -32,10 +33,10 @@ export function useEscrow() {
     const send = useCallback(
         async (functionName, args = []) => {
             if (!address) throw new Error('Escrow address is not configured yet.');
-            const { request } = await simulateContract(config, { address, abi: escrowAbi, functionName, args });
+            const { request } = await simulateContract(config, { address, abi: escrowAbi, functionName, args, chainId });
             return writeContractAsync(request);
         },
-        [config, address, writeContractAsync],
+        [config, address, chainId, writeContractAsync],
     );
 
     return {

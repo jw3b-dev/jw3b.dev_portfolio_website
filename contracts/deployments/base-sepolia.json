@@ -1,0 +1,32 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "deployer": "0xeAba6e69827062Df0CaFFC792435D6FB6786e81a",
+  "testTokens": {
+    "USDC": {
+      "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "decimals": 6,
+      "note": "Circle test USDC on Base Sepolia"
+    }
+  },
+  "contracts": {
+    "ReentrantVault": {
+      "address": "0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240",
+      "txHash": "0x7314929b150e7493aaba2a135bbc14f2e96c60694b68a739e5e764be092d4b53",
+      "purpose": "CTF honeypot (offensive showcase) - reentrancy exploit playground. TESTNET ONLY.",
+      "constructorArgs": []
+    },
+    "MilestoneEscrow": {
+      "address": "0xF75ea6Ba560b8aC3314a8196cb74fDF99672B543",
+      "txHash": "0xb81f775aab557e2a4aed0e9f642d65295e3d0870709a87f6e06d3ae54d41f848",
+      "purpose": "Milestone escrow (defensive showcase) - DEMO on testnet.",
+      "constructorArgs": {
+        "client": "0xeAba6e69827062Df0CaFFC792435D6FB6786e81a",
+        "provider": "0xC6016E351c144CEDb1034E93e64C78d63cc2435F",
+        "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        "deadline": 1791671394,
+        "amounts": ["100000000", "150000000", "250000000"]
+      }
+    }
+  }
+}
