@@ -1,6 +1,7 @@
 import { KNOWLEDGE_BASE } from './knowledge.js';
 import { claudeSSEStream, staticSSEStream } from './llm.js';
 import { runHeuristics, findingsToMarkdownTable } from './auditHeuristics.js';
+import { searchKnowledgeBase, formatKnowledgeContext } from './rag.js';
 
 const CLAUDE_MODEL_DEFAULT = 'claude-opus-4-8';
 
@@ -147,17 +148,23 @@ export default {
                     });
                 }
 
+                // RAG: pull related precedents from the shared pgvector knowledge base
+                // (~13k audit findings, reused from the KTHULHU project). Fail-open.
+                const ragQuery = (findings.map((f) => f.title).join('. ') + '\n' + code).trim();
+                const kbContext = formatKnowledgeContext(await searchKnowledgeBase(env, ragQuery));
+
                 const auditSystem = `You are "Sentinel", John Wellard's smart-contract security auditor AI. You are given Solidity source and a JSON array of findings from a deterministic static scan.
 
 Rules:
 - Explain ONLY the findings provided. Do NOT invent new vulnerabilities.
 - For each finding: one line on why it's exploitable and a concrete fix. Be precise and technical.
 - If a finding looks like a false positive in context, say so plainly.
+- Where a retrieved known finding genuinely matches, cite it briefly (title/SWC) as precedent.
 - End with a one-line overall risk read. Keep it tight — no padding, no preamble.
 - Markdown only (no [AUDIO] tags here). Use bold severity labels.
 
 STATIC FINDINGS (JSON):
-${JSON.stringify(findings)}`;
+${JSON.stringify(findings)}${kbContext}`;
 
                 const auditMessages = [{ role: "user", content: "Here is the Solidity to review:\n\n```solidity\n" + code.slice(0, 24000) + "\n```" }];
                 const stream = claudeSSEStream({
