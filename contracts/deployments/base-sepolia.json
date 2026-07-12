@@ -14,7 +14,9 @@
       "address": "0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240",
       "txHash": "0x7314929b150e7493aaba2a135bbc14f2e96c60694b68a739e5e764be092d4b53",
       "purpose": "CTF honeypot (offensive showcase) - reentrancy exploit playground. TESTNET ONLY.",
-      "constructorArgs": []
+      "constructorArgs": [],
+      "verified": true,
+      "explorer": "https://sepolia.basescan.org/address/0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240#code"
     },
     "MilestoneEscrow": {
       "address": "0xF75ea6Ba560b8aC3314a8196cb74fDF99672B543",
@@ -26,7 +28,9 @@
         "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
         "deadline": 1791671394,
         "amounts": ["100000000", "150000000", "250000000"]
-      }
+      },
+      "verified": true,
+      "explorer": "https://sepolia.basescan.org/address/0xF75ea6Ba560b8aC3314a8196cb74fDF99672B543#code"
     }
   }
 }
