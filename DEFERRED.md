@@ -12,12 +12,11 @@ the site is green (lint/tests/coverage/build) without them.
       so chat + auditor + fuzz + tx run on Claude, with a bounded 429 retry and Llama fallback.
 - [ ] (optional) `ANTHROPIC_MODEL` var to override the default `claude-opus-4-8`
       (e.g. `claude-sonnet-4-6` — cheaper, eases the subscription rate limit).
-- [ ] (optional) **Cloudflare AI Gateway** for rate limits + caching + observability (KTHULHU RULE-001).
-      Worker is gateway-ready — create a gateway in the CF dashboard (AI → AI Gateway), then set:
-      `wrangler secret put ANTHROPIC_BASE_URL` =
-      `https://gateway.ai.cloudflare.com/v1/04bf3d7c95516d3e9a2af68fc8f6619b/<gateway-id>/anthropic`
-      (I couldn't create it — wrangler's OAuth token lacks AI-Gateway API scope; a scoped API token or
-      the dashboard is needed.)
+- [x] **Cloudflare AI Gateway LIVE** (KTHULHU RULE-001): gateway `jw3b-portfolio-agent` created via the
+      Cloudflare API — rate limiting (60 req / 60s, sliding), 1h response cache, 2× exponential retry,
+      and request logging in front of Claude. Worker routes through it via `ANTHROPIC_BASE_URL`
+      (wrangler.toml `[vars]`). Verified in the gateway logs (claude-opus-4-8, 200). Tune limits/cache in
+      the CF dashboard (AI → AI Gateway → jw3b-portfolio-agent) any time.
 
 ## Projects section — assets & links
 - [ ] Replace interim card screenshots in `src/assets/projects/` (currently reused old assets):

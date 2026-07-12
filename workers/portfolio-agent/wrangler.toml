@@ -7,9 +7,11 @@ compatibility_flags = ["nodejs_compat"]  # required to bundle @anthropic-ai/sdk
 binding = "AI"
 
 # Claude concierge/auditor. Set the key with:  wrangler secret put ANTHROPIC_API_KEY
+[vars]
+# Route Claude through the Cloudflare AI Gateway (rate limiting, caching, observability).
+ANTHROPIC_BASE_URL = "https://gateway.ai.cloudflare.com/v1/04bf3d7c95516d3e9a2af68fc8f6619b/jw3b-portfolio-agent/anthropic"
 # Optional model override (defaults to claude-opus-4-8):
-# [vars]
-# ANTHROPIC_MODEL = "claude-haiku-4-5"
+# ANTHROPIC_MODEL = "claude-sonnet-4-6"
 
 [observability]
 enabled = true
