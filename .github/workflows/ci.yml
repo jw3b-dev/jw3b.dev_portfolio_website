@@ -6,9 +6,14 @@ on:
   pull_request:
     branches: [main]
 
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
-    name: Lint, Test & Build
+    name: Lint, Test (coverage) & Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,18 +32,48 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test
-        run: npx vitest run
+      - name: Test (with coverage gate)
+        run: npx vitest run --coverage
 
       - name: Build
         run: npm run build
 
-  deploy:
-    name: Deploy to Cloudflare Pages
+  deploy-backend:
+    name: Deploy Worker (backend)
     runs-on: ubuntu-latest
-    # Only deploy production from main, and only after verify passes
     needs: verify
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v2-upgrade')
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # The worker bundles @anthropic-ai/sdk, so its deps must be installed.
+      - name: Install worker dependencies
+        run: npm ci
+        working-directory: workers/portfolio-agent
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/portfolio-agent
+          command: deploy
+        # Note: worker secrets (ANTHROPIC_API_KEY) persist across deploys — set once
+        # with `wrangler secret put`; `wrangler deploy` never removes them.
+
+  deploy-frontend:
+    name: Deploy Frontend (Cloudflare Pages)
+    runs-on: ubuntu-latest
+    needs: verify
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v2-upgrade')
     permissions:
       contents: read
       deployments: write
@@ -58,9 +93,9 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Pages (production)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=jw3b-dev-portfolio
+          command: pages deploy dist --project-name=jw3b-dev-portfolio --branch=main

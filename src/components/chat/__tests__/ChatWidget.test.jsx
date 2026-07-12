@@ -868,4 +868,47 @@ This is a **bold** statement with a [link](https://example.com/cvs/file.pdf).
         fireEvent.submit(container.querySelector('form'));
         expect(askAgent).not.toHaveBeenCalled();
     });
+
+    it('handles ai_tool_trigger with no detail and an unknown anchor', () => {
+        render(<ChatWidget />);
+        // No detail → the `e.detail || {}` fallback branch
+        act(() => { window.dispatchEvent(new CustomEvent('ai_tool_trigger')); });
+        // navigate to a non-existent anchor → getElementById returns null (the `if (element)` false branch)
+        act(() => {
+            window.dispatchEvent(new CustomEvent('ai_tool_trigger', { detail: { action: 'navigate', anchor: 'no-such-anchor' } }));
+        });
+        expect(screen.getByRole('button')).toBeInTheDocument(); // no throw = both branches exercised
+    });
+
+    it('appends a transcription to existing input text', async () => {
+        render(<ChatWidget />);
+        fireEvent.click(screen.getByRole('button'));
+        const input = screen.getByPlaceholderText('Ask Sentinel AI...');
+        fireEvent.change(input, { target: { value: 'existing' } });
+
+        const mic = screen.getByTitle('Send Voice Message');
+        await act(async () => { fireEvent.click(mic); });                 // start
+        await act(async () => { fireEvent.click(mic); await new Promise((r) => setTimeout(r, 0)); }); // stop → transcribe
+
+        // prev is truthy → `${prev} ${data.text}` branch
+        await waitFor(() => expect(input.value).toBe('existing Hello from mic'));
+    });
+
+    it('ignores an empty transcription result', async () => {
+        global.fetch.mockImplementation((url) => {
+            if (url && url.includes('speech-to-text')) {
+                return Promise.resolve({ ok: true, json: vi.fn().mockResolvedValue({}) }); // no `text`
+            }
+            return Promise.resolve({ ok: true, blob: vi.fn().mockResolvedValue(new Blob([''], { type: 'audio/mpeg' })) });
+        });
+
+        render(<ChatWidget />);
+        fireEvent.click(screen.getByRole('button'));
+        const mic = screen.getByTitle('Send Voice Message');
+        await act(async () => { fireEvent.click(mic); });
+        await act(async () => { fireEvent.click(mic); await new Promise((r) => setTimeout(r, 0)); });
+
+        // data.text is falsy → input stays empty
+        expect(screen.getByPlaceholderText('Ask Sentinel AI...').value).toBe('');
+    });
 });
