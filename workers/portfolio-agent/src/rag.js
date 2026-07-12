@@ -23,9 +23,12 @@ export async function searchKnowledgeBase(env, queryText, topK = 3) {
         if (!vec || !vec.length) return [];
         const literal = `[${vec.join(',')}]`;
         const sql = neon(env.NEON_DATABASE_URL);
+        // Corpus spans Solodit (~6.9k), Sherlock, DeFiHackLabs, and a vulns DB —
+        // all in one table, tagged by `source`. Guard NULL embeddings like KTHULHU.
         const rows = await sql`
             SELECT title, description, severity, swc_id, source
             FROM knowledge_base_findings
+            WHERE embedding IS NOT NULL
             ORDER BY embedding <=> ${literal}::vector
             LIMIT ${topK}
         `;
@@ -36,18 +39,28 @@ export async function searchKnowledgeBase(env, queryText, topK = 3) {
     }
 }
 
+// Human-readable provenance for each corpus source (raw `source` column values).
+const SOURCE_LABELS = {
+    solodit_all_findings: 'Solodit',
+    sherlock: 'Sherlock',
+    defihacklabs: 'DeFiHackLabs',
+    vulnerabilities_database: 'Vulns DB',
+};
+
 /** Format retrieved findings as an LLM-digestible precedent block for the audit prompt. */
 export function formatKnowledgeContext(rows) {
     if (!rows.length) return '';
     const items = rows
         .map((r, i) => {
             const tag = r.swc_id ? ` (${r.swc_id})` : '';
+            const src = SOURCE_LABELS[r.source] || r.source || 'KB';
             const desc = (r.description || '').replace(/\s+/g, ' ').slice(0, 320);
-            return `${i + 1}. [${r.severity}] ${r.title}${tag} — ${desc}`;
+            return `${i + 1}. [${r.severity}] ${r.title}${tag} — ${desc} (source: ${src})`;
         })
         .join('\n');
     return (
-        `\n\nRELATED KNOWN FINDINGS (retrieved from a ~13k-finding audit knowledge base — treat as ` +
-        `precedent, and cite by title/SWC when a finding genuinely matches this code):\n${items}\n`
+        `\n\nRELATED KNOWN FINDINGS (retrieved by semantic similarity from a ~9.5k-finding audit ` +
+        `knowledge base — Solodit, Sherlock contests, DeFiHackLabs, and a vulnerability database. ` +
+        `Treat as precedent, and cite by title/SWC + source when a finding genuinely matches this code):\n${items}\n`
     );
 }
