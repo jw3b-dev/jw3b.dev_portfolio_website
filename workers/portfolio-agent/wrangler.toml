@@ -12,6 +12,9 @@ binding = "AI"
 ANTHROPIC_BASE_URL = "https://gateway.ai.cloudflare.com/v1/04bf3d7c95516d3e9a2af68fc8f6619b/jw3b-portfolio-agent/anthropic"
 # Optional model override (defaults to claude-opus-4-8):
 # ANTHROPIC_MODEL = "claude-sonnet-4-6"
+# CTF: the deployed ReentrantVault + the RPC used to verify captures (public, non-secret).
+CTF_VAULT_ADDRESS = "0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240"
+CTF_RPC_URL = "https://sepolia.base.org"
 
 [observability]
 enabled = true

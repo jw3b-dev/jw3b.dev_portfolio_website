@@ -34,7 +34,9 @@ the site is green (lint/tests/coverage/build) without them.
   - [ ] `contracts/lib/` is gitignored — run `git clone --depth 1 https://github.com/foundry-rs/forge-std contracts/lib/forge-std` before `forge test`.
 - [ ] **EAS audit attestations** → register an EAS schema on Base.
 - [ ] **Gasless USDC "hire me"** (ERC-4337) → CDP/Pimlico paymaster policy + funded sponsor.
-- [ ] **Testnet CTF** → deploy the vulnerable contract to Base Sepolia + `leaderboard` D1 table.
+- [x] **Testnet CTF** — LIVE at `/ctf`. `ReentrantVault` deployed + verified on Base Sepolia; one-click
+      wallet exploit (deploy Attacker → drain → auto-verify); Worker `/ctf/verify` confirms the drain
+      on-chain (balance at block-1 vs block) before recording to the `ctf_solves` D1 leaderboard.
 - [ ] **ZK proof-of-reputation** → deploy the verifier + publish the Merkle root.
 - [ ] Replace the dead XMTP "E2E" tab with **Push Protocol** (feature-flag XMTP off first).
 

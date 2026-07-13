@@ -35,3 +35,12 @@ CREATE TABLE IF NOT EXISTS rate_limits (
     count INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (ip, window_start)
 );
+
+-- 4. CTF leaderboard — one row per wallet that has drained the ReentrantVault.
+-- IF NOT EXISTS so it can be applied without dropping analytics data.
+CREATE TABLE IF NOT EXISTS ctf_solves (
+    address TEXT PRIMARY KEY,          -- solver EOA (lowercased)
+    tx_hash TEXT NOT NULL UNIQUE,      -- the winning drain transaction
+    block_number INTEGER NOT NULL,
+    ts INTEGER NOT NULL                -- epoch seconds of the capture
+);

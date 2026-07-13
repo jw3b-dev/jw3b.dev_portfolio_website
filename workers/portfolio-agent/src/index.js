@@ -2,6 +2,7 @@ import { KNOWLEDGE_BASE } from './knowledge.js';
 import { claudeSSEStream, staticSSEStream } from './llm.js';
 import { runHeuristics, findingsToMarkdownTable } from './auditHeuristics.js';
 import { searchKnowledgeBase, formatKnowledgeContext } from './rag.js';
+import { verifyCapture } from './ctf.js';
 
 const CLAUDE_MODEL_DEFAULT = 'claude-opus-4-8';
 
@@ -76,6 +77,53 @@ export default {
         }
 
         const url = new URL(request.url);
+
+        // 🕹️ CTF — public leaderboard of ReentrantVault captures
+        if (url.pathname.endsWith("/ctf/leaderboard")) {
+            if (!env.DB) {
+                return new Response(JSON.stringify({ solves: [] }), {
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                });
+            }
+            const { results } = await env.DB.prepare(
+                "SELECT address, tx_hash, block_number, ts FROM ctf_solves ORDER BY ts ASC LIMIT 100"
+            ).all();
+            return new Response(JSON.stringify({ solves: results || [] }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+        }
+
+        // 🕹️ CTF — verify an on-chain reentrancy capture, then record it
+        if (url.pathname.endsWith("/ctf/verify")) {
+            let body;
+            try { body = await request.json(); } catch { body = {}; }
+            const address = (body.address || "").toLowerCase();
+            const txHash = (body.txHash || "").toLowerCase();
+
+            const result = await verifyCapture(env, address, txHash);
+            if (!result.ok) {
+                return new Response(JSON.stringify({ ok: false, reason: result.reason }), {
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                });
+            }
+
+            let alreadySolved = false;
+            let rank = null;
+            if (env.DB) {
+                const existing = await env.DB.prepare("SELECT 1 FROM ctf_solves WHERE address = ?").bind(address).first();
+                alreadySolved = Boolean(existing);
+                await env.DB.prepare(
+                    "INSERT OR IGNORE INTO ctf_solves (address, tx_hash, block_number, ts) VALUES (?, ?, ?, ?)"
+                ).bind(address, txHash, result.blockNumber, Math.floor(Date.now() / 1000)).run();
+                const rankRow = await env.DB.prepare(
+                    "SELECT COUNT(*) AS n FROM ctf_solves WHERE ts <= (SELECT ts FROM ctf_solves WHERE address = ?)"
+                ).bind(address).first();
+                rank = rankRow ? rankRow.n : null;
+            }
+            return new Response(JSON.stringify({ ok: true, alreadySolved, rank, drained: result.drained }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+        }
 
         // 🎙️ SPEECH-TO-TEXT ROUTE
         if (url.pathname.endsWith("/speech-to-text")) {

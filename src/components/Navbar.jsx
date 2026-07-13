@@ -15,6 +15,7 @@ const Navbar = () => {
         { label: 'About', href: '#about' },
         { label: 'Services', href: '#services' },
         { label: 'AI Console', href: '/audit', highlight: true },
+        { label: 'CTF', href: '/ctf', highlight: true },
         { label: 'Hire Me', href: '/hire-me', highlight: true },
         {
             label: 'Experience',

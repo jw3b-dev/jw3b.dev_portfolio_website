@@ -17,3 +17,7 @@ export const AGENT_STT_URL = `${WORKER_URL}/speech-to-text`;
 export const AGENT_AUDIT_URL = `${WORKER_URL}/audit`;
 export const AGENT_FUZZ_URL = `${WORKER_URL}/fuzz`;
 export const AGENT_TX_URL = `${WORKER_URL}/tx-explain`;
+
+// CTF (Capture the Vault) — verify an on-chain reentrancy drain + the leaderboard.
+export const AGENT_CTF_VERIFY_URL = `${WORKER_URL}/ctf/verify`;
+export const AGENT_CTF_LEADERBOARD_URL = `${WORKER_URL}/ctf/leaderboard`;
