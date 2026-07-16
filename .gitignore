@@ -51,6 +51,9 @@ src/archive/
 # Testing
 coverage/
 
+# Scratch / planning artifacts
+artifacts/
+
 # Development Agent
 development_agent/
 

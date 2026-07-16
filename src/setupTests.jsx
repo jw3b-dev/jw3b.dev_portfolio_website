@@ -72,13 +72,6 @@ vi.mock('wagmi', () => ({
   useSignMessage: vi.fn(() => ({ signMessageAsync: vi.fn() })),
 }));
 
-// Mock XMTP client
-vi.mock('@xmtp/xmtp-js', () => ({
-  Client: {
-    create: vi.fn(),
-  },
-}));
-
 // Mock framer-motion to avoid animation issues
 vi.mock('framer-motion', () => ({
   motion: {

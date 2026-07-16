@@ -356,18 +356,6 @@ const TechCard = ({ category, index }) => {
                                                 value={activeItem.data.usedIn}
                                                 color={category.color}
                                             />
-                                            {activeItem.data.linkedProject && (
-                                                <div className="flex items-center justify-between text-xs pt-1 border-t border-white/5">
-                                                    <span className="text-stone-500 font-medium">Project:</span>
-                                                    <Link
-                                                        to={`/projects/${activeItem.data.linkedProject}`}
-                                                        className="font-medium hover:underline transition-colors"
-                                                        style={{ color: category.color }}
-                                                    >
-                                                        View →
-                                                    </Link>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 ) : (

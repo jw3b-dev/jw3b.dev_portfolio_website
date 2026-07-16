@@ -12,7 +12,6 @@ import Background from "./components/Background";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-const ProjectDetails = lazy(() => import("./components/ProjectDetails"));
 const MissionControl = lazy(() => import("./components/MissionControl"));
 const AgentTest = lazy(() => import("./components/AgentTest"));
 const AuditConsole = lazy(() => import("./components/audit/AuditConsole"));
@@ -46,7 +45,6 @@ const App = () => {
                     <Route path="/hire-me" element={<MissionControl />} />
                     <Route path="/audit" element={<AuditConsole />} />
                     <Route path="/ctf" element={<CtfChallenge />} />
-                    <Route path="/projects/:id" element={<ProjectDetails />} />
                     <Route path="/test-agent" element={<AgentTest />} />
                   </Routes>
                 </Suspense>
