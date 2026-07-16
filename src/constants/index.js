@@ -462,11 +462,12 @@ export const PROJECTS = [
     description:
       "The engine behind the swarm: an autonomous multi-agent orchestration system with a security-hardened governance layer (AgilePM). Specialized agents coordinate over MCP with sovereign governance verbs, operator-walled authority, and forgery-resistant agent identity. In active development.",
     technologies: ["AI Agents", "MCP", "TypeScript", "Cloudflare Workers", "Durable Objects", "Governance"],
-    link: "https://github.com/jw3b-dev/MB-agentic",
-    external: true,
+    // Repo is private (in active development) — no public CTA until it's made public.
+    // To restore: make github.com/jw3b-dev/MB-agentic public, then re-add
+    // `link: "https://github.com/jw3b-dev/MB-agentic", external: true` + buttonText "View on GitHub".
     color: "cyan",
     phase: "building",
-    buttonText: "View on GitHub"
+    buttonText: "Coming Soon"
   },
   {
     title: "AgileCEO",
