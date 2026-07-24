@@ -1,14 +1,18 @@
 import profilePic from "../assets/johnWellardProfile.webp";
 import digitalFortress from "../assets/digital_fortress.webp";
-import { HERO_CONTENT } from "../constants";
+import { HERO_CONTENT, HATS, HAT_ORDER } from "../constants";
+import { COLORS } from "../constants/colors";
 import { useState, useEffect } from "react";
-import { Download, Shield, Rocket } from "lucide-react";
+import { Download, Shield, Rocket, Code2, Kanban } from "lucide-react";
 import { motion } from "framer-motion";
 import ParticleCanvas from "./jw3b.devParticleCanvas";
 import { useAccount } from "wagmi";
 import ConnectButton from "./wallet/ConnectButton";
 
-const ROLES = ["Blockchain Developer", "Security Researcher", "DeFi Architect"];
+const iconMap = { Code2, Shield, Kanban, Rocket };
+// Typing line cycles the four hat titles; the static hat strip below carries
+// the "all four at once" message so the identity never hides behind one role.
+const ROLES = HAT_ORDER.map((id) => HATS[id].title);
 
 const Hero = () => {
     const { isConnected } = useAccount();
@@ -16,9 +20,6 @@ const Hero = () => {
     const [roleIndex, setRoleIndex] = useState(0);
     const [charIndex, setCharIndex] = useState(0);
     const [isDeleting, setIsDeleting] = useState(false);
-
-    // Services offered
-    const availabilityOptions = ["Smart Contract Dev", "Security Auditing", "Full-Stack dApps", "Consulting"];
 
     useEffect(() => {
         const currentRole = ROLES[roleIndex];
@@ -65,27 +66,33 @@ const Hero = () => {
                             <span className="font-bold tracking-wider">OPEN FOR WORK</span>
                         </motion.div>
 
-                        {/* Animated Service Tags */}
+                        {/* Four-hat strip — all roles lit at once, each in its hat color */}
                         <div className="flex flex-wrap gap-2 mb-6 justify-center lg:justify-start">
-                            {availabilityOptions.map((service, index) => (
-                                <motion.span
-                                    key={service}
-                                    initial={{ opacity: 0, scale: 0.8, x: -20 }}
-                                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                                    transition={{
-                                        delay: 0.8 + index * 0.15,
-                                        type: "spring",
-                                        stiffness: 200
-                                    }}
-                                    whileHover={{
-                                        scale: 1.05,
-                                        boxShadow: "0 0 20px rgba(139, 92, 246, 0.5)"
-                                    }}
-                                    className="px-3 py-1 text-[11px] font-mono font-medium text-purple-300 bg-purple-500/10 rounded-full border border-purple-500/30 cursor-default hover:text-white hover:border-purple-400/60 transition-colors"
-                                >
-                                    {service}
-                                </motion.span>
-                            ))}
+                            {HAT_ORDER.map((id, index) => {
+                                const hat = HATS[id];
+                                const c = COLORS[hat.color];
+                                const Icon = iconMap[hat.icon];
+                                return (
+                                    <motion.a
+                                        key={id}
+                                        href="#about"
+                                        title={hat.title}
+                                        initial={{ opacity: 0, scale: 0.8, x: -20 }}
+                                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                                        transition={{ delay: 0.8 + index * 0.12, type: "spring", stiffness: 200 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        className="flex items-center gap-1.5 px-3 py-1 text-[11px] font-mono font-semibold rounded-full border cursor-pointer transition-colors"
+                                        style={{
+                                            color: c.primary,
+                                            backgroundColor: `${c.primary}12`,
+                                            borderColor: `${c.primary}40`
+                                        }}
+                                    >
+                                        <Icon className="w-3 h-3" />
+                                        {hat.tag}
+                                    </motion.a>
+                                );
+                            })}
                         </div>
 
                         <h1 className="pb-2 text-5xl font-bold tracking-tighter lg:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-200 to-stone-400 glitch-effect">

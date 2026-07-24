@@ -4,6 +4,7 @@ import Projects from "./Projects"
 import Education from "./Education"
 import Certifications from "./Certifications"
 import AuditStats from "./AuditStats"
+import DeliveryRecord from "./DeliveryRecord"
 import Contact from "./Contact"
 import About from "./About"
 import Services from "./Services"
@@ -22,6 +23,7 @@ const Home = () => {
                 <Hero />
             </ErrorBoundary>
             <AuditStats />
+            <DeliveryRecord />
             <About />
             <Services />
             <Experience />

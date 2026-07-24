@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import { Shield, Bot, Landmark, Layers, Code2, Rocket, ChevronRight, ExternalLink } from "lucide-react";
 import { SERVICES } from "../constants";
+import { HatFilter, HatChips } from "./HatFilter";
 
 // Icon mapping
 // Icon mapping
@@ -148,8 +149,9 @@ const DustParticles = ({ color, isActive }) => {
     );
 };
 
-// Service Card with 3D tilt effect
-const ServiceCard = ({ service, index, isActive, onClick, onHover, onLeave }) => {
+// Service Card with 3D tilt effect. `dimmed` = a hat filter is active and this
+// card isn't in it — dim, never hide (the hats IA keeps the full range visible).
+const ServiceCard = ({ service, index, isActive, dimmed, onClick, onHover, onLeave }) => {
     const cardRef = useRef(null);
     const [rotateX, setRotateX] = useState(0);
     const [rotateY, setRotateY] = useState(0);
@@ -186,9 +188,9 @@ const ServiceCard = ({ service, index, isActive, onClick, onHover, onLeave }) =>
     return (
         <motion.div
             ref={cardRef}
-            className="relative cursor-pointer"
+            className="relative cursor-pointer transition-[filter] duration-300"
             initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: dimmed ? 0.25 : 1, y: 0 }}
             transition={{ duration: 0.6, delay: index * 0.15 }}
             viewport={{ once: true }}
             onMouseMove={handleMouseMove}
@@ -203,7 +205,8 @@ const ServiceCard = ({ service, index, isActive, onClick, onHover, onLeave }) =>
             }}
             onClick={onClick}
             style={{
-                perspective: "1000px"
+                perspective: "1000px",
+                filter: dimmed ? "saturate(0.2)" : "none"
             }}
         >
             {/* Fixed overlay link - doesn't transform with tilt */}
@@ -348,6 +351,11 @@ const ServiceCard = ({ service, index, isActive, onClick, onHover, onLeave }) =>
                         transition={{ duration: 2, repeat: Infinity }}
                     />
 
+                    {/* Which hats this service belongs to */}
+                    <div className="absolute bottom-6 right-8">
+                        <HatChips hats={service.hats} />
+                    </div>
+
 
                     {/* Description */}
                     <div className="mb-6">
@@ -396,6 +404,7 @@ const ServiceCard = ({ service, index, isActive, onClick, onHover, onLeave }) =>
 const Services = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const [hoveredIndex, setHoveredIndex] = useState(null);
+    const [activeHat, setActiveHat] = useState(null);
     const containerRef = useRef(null);
 
     // Auto-rotate only when not hovering any card
@@ -467,6 +476,9 @@ const Services = () => {
                     </p>
                 </motion.div>
 
+                {/* Filter by hat — dims non-matching, never hides */}
+                <HatFilter active={activeHat} onChange={setActiveHat} />
+
                 {/* Services Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {SERVICES.map((service, index) => (
@@ -475,6 +487,7 @@ const Services = () => {
                             service={service}
                             index={index}
                             isActive={activeIndex === index}
+                            dimmed={activeHat !== null && !(service.hats || []).includes(activeHat)}
                             onClick={() => setActiveIndex(index)}
                             onHover={(index) => {
                                 setActiveIndex(index);

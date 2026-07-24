@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { PROJECTS } from "../constants";
 import { COLORS } from "../constants/colors";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { HatFilter, HatChips } from "./HatFilter";
 
 // Phase badge configuration - highly visible
 const PHASE_CONFIG = {
@@ -39,6 +41,7 @@ const TECH_COLORS = {
 };
 
 const Projects = () => {
+    const [activeHat, setActiveHat] = useState(null);
     return (
         <div className="min-h-[calc(100vh-10rem)] pb-24 flex flex-col" id="projects">
             {/* Header */}
@@ -69,18 +72,23 @@ const Projects = () => {
                     Projects and protocols that demonstrate my security-first mindset and practical approach to solving complex Web3 challenges.
                 </p>
             </motion.div>
+            {/* Filter by hat — dims non-matching, never hides */}
+            <HatFilter active={activeHat} onChange={setActiveHat} />
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 {PROJECTS.map((project, index) => {
                     const projectColor = COLORS[project.color] || COLORS.cyan;
+                    const dimmed = activeHat !== null && !(project.hats || []).includes(activeHat);
                     return (
                         <motion.div
                             key={index}
                             initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            whileInView={{ opacity: dimmed ? 0.25 : 1, y: 0 }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                            className="group relative rounded-2xl overflow-hidden glass-panel h-full flex flex-col"
+                            className="group relative rounded-2xl overflow-hidden glass-panel h-full flex flex-col transition-[filter] duration-300"
                             style={{
-                                borderColor: `${projectColor.primary}20`
+                                borderColor: `${projectColor.primary}20`,
+                                filter: dimmed ? "saturate(0.2)" : "none"
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.borderColor = `${projectColor.primary}40`;
@@ -120,6 +128,10 @@ const Projects = () => {
                                             boxShadow: `0 0 12px ${projectColor.glow}`
                                         }}
                                     ></div>
+                                </div>
+                                {/* Which hats this project belongs to */}
+                                <div className="absolute bottom-3 right-3 z-30">
+                                    <HatChips hats={project.hats} />
                                 </div>
                             </div>
 

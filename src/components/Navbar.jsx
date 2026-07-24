@@ -10,9 +10,19 @@ const Navbar = () => {
     const [openDropdown, setOpenDropdown] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Menu structure with dropdowns
+    // Menu structure with dropdowns. About lists the four hats — each anchors
+    // to its always-visible card in the About grid (ids set in About.jsx).
     const menuItems = [
-        { label: 'About', href: '#about' },
+        {
+            label: 'About',
+            href: '#about',
+            dropdown: [
+                { label: 'Engineer — Build', href: '#hat-engineer' },
+                { label: 'Auditor — Secure', href: '#hat-auditor' },
+                { label: 'PM — Deliver', href: '#hat-pm' },
+                { label: 'Founder — Grow', href: '#hat-founder' }
+            ]
+        },
         { label: 'Services', href: '#services' },
         { label: 'AI Console', href: '/audit', highlight: true },
         { label: 'CTF', href: '/ctf', highlight: true },
