@@ -17,7 +17,59 @@ export const HERO_CONTENT = `Founder of AgileGypsy — 15+ years delivering proj
 
 export const ABOUT_TEXT = `I'm a blockchain developer specializing in smart contract security, trained at Cyfrin Updraft and Dapp University. As an active security researcher on CodeHawks, I conduct vulnerability assessments on DeFi protocols using Foundry, Slither, and Echidna. I'm advancing toward formal verification with Certora and exploring the intersection of AI × Blockchain for autonomous security testing. My mission is to protect decentralized systems while continuously expanding my expertise.`;
 
-export const ABOUT_INTRO = `Blockchain Developer with 15+ years of project leadership now delivering in Web3. I bring disciplined engineering practices from water infrastructure and business development into smart contract development and security auditing. Currently offering development and security services while advancing toward institutional-grade formal verification. Select a persona below to explore my capabilities.`;
+export const ABOUT_INTRO = `Blockchain Developer with 15+ years of project leadership now delivering in Web3. I bring disciplined engineering practices from water infrastructure and business development into smart contract development and security auditing. One person, four hats — I build, secure, deliver, and grow Web3 products end to end.`;
+
+// ── Canonical "hats" model ──────────────────────────────────────────────
+// Single source of truth for the multi-role IA. Every identity-bearing
+// section (Hero, About, Services, Projects, Navbar) reads from here so all
+// four hats stay simultaneously visible and consistently colored, instead of
+// being hidden behind a one-at-a-time selector.
+//
+//   engineer → cyan   auditor → purple   pm → green   founder → orange
+//
+// `id` matches the ROLE_PROFILES key (rich bio + image). SERVICES and PROJECTS
+// below are tagged with `hats: [...]` so each section can filter and badge by
+// hat. The order reads as a narrative: Build · Secure · Deliver · Grow.
+export const HAT_ORDER = ["engineer", "auditor", "pm", "founder"];
+
+export const HATS = {
+  engineer: {
+    id: "engineer",
+    tag: "ENGINEER",
+    verb: "Build",
+    title: "Full-Stack Blockchain Engineer",
+    tagline: "Production dApps & protocols, from Solidity to gasless UX.",
+    color: "cyan",
+    icon: "Code2"
+  },
+  auditor: {
+    id: "auditor",
+    tag: "AUDITOR",
+    verb: "Secure",
+    title: "Smart Contract Security Auditor",
+    tagline: "I break protocols before attackers do.",
+    color: "purple",
+    icon: "Shield"
+  },
+  pm: {
+    id: "pm",
+    tag: "PM",
+    verb: "Deliver",
+    title: "Web3 Agile Project Manager",
+    tagline: "Complex launches shipped on time, whitepaper to mainnet.",
+    color: "green",
+    icon: "Kanban"
+  },
+  founder: {
+    id: "founder",
+    tag: "FOUNDER",
+    verb: "Grow",
+    title: "Founder & Business Development",
+    tagline: "Turning Web3 tech into businesses that ship.",
+    color: "orange",
+    icon: "Rocket"
+  }
+};
 
 export const ROLE_PROFILES = {
   engineer: {
@@ -59,7 +111,7 @@ export const ROLE_PROFILES = {
     color: "purple",
     icon: "Shield",
     image: personaAuditor,
-    description: "I protect high-value DeFi protocols against sophisticated attack vectors through rigorous security assessments. Active on Code4rena, Sherlock, and Immunefi, I've developed an adversarial mindset honed through competitive auditing and continuous research into emerging exploit patterns.\n\nMy security toolkit includes Foundry for invariant testing, Slither and Aderyn for static analysis, Echidna and Medusa for property-based fuzzing, and Certora for formal verification. I hold the Advanced Web3 Wallet Security certification from Cyfrin and specialize in reentrancy, oracle manipulation, flash loan attacks, and cross-chain bridge vulnerabilities.\n\nEvery audit combines manual code review with AI-enhanced fuzzing to catch edge cases that automated tools miss. My mission is to find critical vulnerabilities before attackers do, ensuring protocols launch with institutional-grade security.",
+    description: "I protect DeFi protocols against sophisticated attack vectors through rigorous security assessments. A ranked competitive auditor on CodeHawks — rank #124 with 17 contest findings (8 High) — and active on Code4rena, I've developed an adversarial mindset honed through competitive auditing and continuous research into emerging exploit patterns.\n\nMy security toolkit includes Foundry for invariant testing, Slither and Aderyn for static analysis, Echidna and Medusa for property-based fuzzing, and Certora for formal verification. I hold the Advanced Web3 Wallet Security certification from Cyfrin and specialize in reentrancy, oracle manipulation, flash loan attacks, and cross-chain bridge vulnerabilities.\n\nEvery audit combines manual code review with AI-enhanced fuzzing to catch edge cases that automated tools miss. My mission is to find critical vulnerabilities before attackers do — with a public, verifiable contest record behind every claim.",
     highlights: [
       { text: "Foundry", color: "purple" },
       { text: "Slither", color: "rose" },
@@ -92,6 +144,7 @@ export const SERVICES = [
     subtitle: "Battle-Hardened Protocol Protection.",
     description: "Protecting assets against next-generation attack vectors. I provide comprehensive vulnerability detection, formal verification, and AI-enhanced security analysis for DeFi protocols, bridges, and modular architectures.",
     features: ["AI-Vector Analysis", "Formal Verification", "Cross-Chain Security", "Detailed Audit Reports"],
+    hats: ["auditor"],
     color: "purple",
     link: "https://audit.agilegypsy.com"
   },
@@ -100,6 +153,7 @@ export const SERVICES = [
     subtitle: "Building the Autonomous Web3 Workforce.",
     description: "Engineering intelligent agents that operate 24/7. I build MEV-aware trading bots, automated portfolio managers, and intent-based transaction agents that execute complex strategies without human intervention.",
     features: ["Autonomous Agents", "Intent Solvers & MEV", "Automated Treasury Ops", "Multi-Agent Systems"],
+    hats: ["engineer"],
     color: "cyan",
     link: "https://artofzeta.com/app/"
   },
@@ -108,6 +162,7 @@ export const SERVICES = [
     subtitle: "Institutional-Grade On-Chain Infrastructure.",
     description: "Bridging real-world value to the blockchain. I engineer compliance-ready token standards (ERC-3643), decentralized identity (DID) integrations, and settlement layers for real estate, private credit, and treasury bills.",
     features: ["Regulatory Compliance", "Asset Fractionalization", "Identity & Whitelisting", "Restricted Token Standards"],
+    hats: ["engineer", "founder"],
     color: "green",
     link: "https://agilegypsy.com"
   },
@@ -116,6 +171,7 @@ export const SERVICES = [
     subtitle: "Future-Proof Protocol Design.",
     description: "Designing for the modular & privacy-first era. I provide expert guidance on Zero-Knowledge rollup implementation, app-chain deployment, and sustainable tokenomics simulation to ensure your protocol scales securely.",
     features: ["ZK & Modular Strategy", "Tokenomics Design", "App-Chain Architecture", "Protocol Strategy"],
+    hats: ["auditor", "founder"],
     color: "orange",
     link: "https://kthulhu.co"
   },
@@ -124,6 +180,7 @@ export const SERVICES = [
     subtitle: "Production-Grade dApp Development.",
     description: "Building secure, scalable applications with seamless UX. From high-performance smart contracts in Solidity/Rust to user-friendly interfaces using Account Abstraction (ERC-4337) for gasless, key-free experiences.",
     features: ["Secure Smart Contracts", "DeFi & Yield Integration", "Gasless UX (ERC-4337)", "Cross-Chain Interoperability"],
+    hats: ["engineer"],
     color: "blue",
     link: "https://kointel.co.za"
   },
@@ -132,6 +189,7 @@ export const SERVICES = [
     subtitle: "End-to-End Delivery Assurance.",
     description: "Steering complex initiatives from whitepaper to mainnet. I provide rigorous roadmap execution, cross-functional coordination, and quality assurance to ensure high-stakes launches succeed without critical failures.",
     features: ["Roadmap Execution", "Mainnet Launch Strategy", "Team Coordination", "Quality Assurance"],
+    hats: ["pm"],
     color: "rose",
     link: "https://agilegypsy.com"
   }
@@ -331,7 +389,7 @@ export const EXPERIENCES = [
     year: "Feb 2025 - Present",
     role: "Smart Contract Security Auditor",
     company: "AgileGypsy / Independent",
-    description: "Conducting security assessments and formal verification for DeFi protocols. Active on Code4rena, Sherlock, and Immunefi. Specializing in reentrancy, oracle manipulation, and cross-chain exploits.",
+    description: "Conducting security assessments for DeFi protocols as a ranked competitive auditor — CodeHawks rank #124, 17 contest findings (8 High), active on Code4rena. Specializing in reentrancy, oracle manipulation, and cross-chain exploits.",
     technologies: ["Foundry", "Slither", "Echidna", "Certora", "AI Fuzzing"],
     color: "purple"
   },
@@ -398,6 +456,7 @@ export const EXPERIENCES = [
 export const PROJECTS = [
   {
     title: "KTHULHU Overmind",
+    hats: ["engineer", "auditor"],
     image: auditbraveImg,
     description:
       "Autonomous, AI-driven smart-contract auditing engineered for near-zero false positives. A multi-agent system pairs ensemble LLM reasoning and adversarial red-teaming with formal verification (Halmos) and dynamic EVM fork testing — every finding is reproduced on a mainnet fork before it ships. Live with a USDC credit system.",
@@ -410,6 +469,7 @@ export const PROJECTS = [
   },
   {
     title: "Kointel — AI Crypto Tax",
+    hats: ["engineer", "founder"],
     image: creatorhubImg,
     description:
       "AI-powered crypto tax compliance for South Africa — turning raw exchange exports into SARS-ready ITR12 capital-gains reports. AI classifies every transaction with confidence-banded review, a FIFO engine computes gains under SARS rules, and the whole stack runs edge-native on Cloudflare. 70K+ LOC, live in production.",
@@ -422,6 +482,7 @@ export const PROJECTS = [
   },
   {
     title: "Art of Zeta — MEV Trading Engine",
+    hats: ["engineer"],
     image: fluxbraveImg,
     description:
       "An autonomous multi-agent crypto trading platform for MEV, triangular, and ZAR arbitrage. A Cloudflare Workers orchestration layer drives high-frequency execution through on-chain MEVExecutor and UniswapX filler contracts on Mainnet + Arbitrum, fronted by a React dashboard for strategy management, simulation, and live P&L.",
@@ -434,6 +495,7 @@ export const PROJECTS = [
   },
   {
     title: "AgileGypsy — Security Audits",
+    hats: ["auditor"],
     image: agileGypsyImg,
     description:
       "My smart-contract security practice — vulnerability research and protocol assessments using manual review, static analysis, fuzzing, and formal verification. The home base for audit engagements and published findings.",
@@ -446,6 +508,7 @@ export const PROJECTS = [
   },
   {
     title: "AgileGypsy Labs",
+    hats: ["founder", "engineer"],
     image: rentaldepositImg,
     description:
       "My Web3 engineering and security studio — where the audits, tooling, and production dApps come together: smart-contract security, AI × blockchain R&D, and full-stack delivery for teams shipping on-chain.",
@@ -458,6 +521,7 @@ export const PROJECTS = [
   },
   {
     title: "MB-agentic — Overmind Engine",
+    hats: ["engineer", "pm"],
     image: devguildImg,
     description:
       "The engine behind the swarm: an autonomous multi-agent orchestration system with a security-hardened governance layer (AgilePM). Specialized agents coordinate over MCP with sovereign governance verbs, operator-walled authority, and forgery-resistant agent identity. In active development.",
@@ -471,6 +535,7 @@ export const PROJECTS = [
   },
   {
     title: "AgileCEO",
+    hats: ["pm", "founder"],
     image: project2,
     description:
       "The governed business brain that agentic coding lacks — so an AI swarm ships a viable, fit-for-purpose product instead of blind code. You act as CEO; the governed agent fleet is your executive team, run on the proven AgilePM® / DSDM® delivery method.",
@@ -702,16 +767,11 @@ export const CONTACT = {
   discordId: "1224731505620942960",
   telegram: "@agilegypsy",
 
-  // Security Audit Platforms
+  // Security Audit Platforms — only profiles with a real public record are
+  // published (PORTFOLIO_REFERENCE.md §0). Re-add others only once they hold
+  // actual findings.
   codehawks: "https://profiles.cyfrin.io/u/agilegypsy",
   code4rena: "https://code4rena.com/@AgileGypsy",
-  sherlock: "https://audits.sherlock.xyz/watson/JW3B.DEV",
-  cantina: "https://cantina.xyz/u/agilegypsy",
-  immunefi: "https://immunefi.com/profile/agilegypsy",
-  hackerone: "https://hackerone.com/jw3b-dev",
-  hackenproof: "https://hackenproof.com/hackers/agilegypsy",
-  auditone: "https://app.auditone.io/u/agilegypsy",
-  hats: "https://app.hats.finance/profile/agilegypsy",
 
   website: "https://jw3b.dev"
 };

@@ -1,7 +1,7 @@
 import { animate, useInView, motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 
-const StatItem = ({ value, label, suffix = "" }) => {
+const StatItem = ({ value, label, suffix = "", prefix = "" }) => {
     const ref = useRef(null);
     const isInView = useInView(ref);
 
@@ -11,12 +11,12 @@ const StatItem = ({ value, label, suffix = "" }) => {
             const controls = animate(0, value, {
                 duration: 2,
                 onUpdate: (value) => {
-                    node.textContent = Math.floor(value).toLocaleString() + suffix;
+                    node.textContent = prefix + Math.floor(value).toLocaleString() + suffix;
                 },
             });
             return () => controls.stop();
         }
-    }, [isInView, value, suffix]);
+    }, [isInView, value, suffix, prefix]);
 
     return (
         <motion.div
@@ -49,14 +49,28 @@ const AuditStats = () => {
             {/* Section Header Line */}
             <div className="absolute top-10 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-900/50 to-transparent"></div>
 
+            {/* Verified competitive-audit record (CodeHawks/Cyfrin, Jan 2026) — see
+                docs/PORTFOLIO_REFERENCE.md §1b. Real scoreboard only: no aggregate
+                TVL / protocols-secured / lines-audited claims (unsupported). */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                <StatItem value={50000} label="Lines Audited" suffix="+" />
-                <StatItem value={15} label="High/Critical Findings" />
-                <StatItem value={25} label="Protocols Secured" suffix="+" />
-                <StatItem value={100} label="Eth Secured (TVL)" suffix="M+" />
+                <StatItem value={124} label="CodeHawks Rank" prefix="#" />
+                <StatItem value={17} label="Contest Findings" />
+                <StatItem value={8} label="High Severity" />
+                <StatItem value={1430} label="CodeHawks EXP" />
             </div>
 
-            <style jsx>{`
+            <div className="mt-6 text-center">
+                <a
+                    href="https://profiles.cyfrin.io/u/agilegypsy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-mono text-stone-500 hover:text-cyan-400 transition-colors"
+                >
+                    Live record → profiles.cyfrin.io/u/agilegypsy · Jan 2026
+                </a>
+            </div>
+
+            <style>{`
                 @keyframes scan {
                     0% { transform: translateY(-100%); }
                     100% { transform: translateY(400%); }

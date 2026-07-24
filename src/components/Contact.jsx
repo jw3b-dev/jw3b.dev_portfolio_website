@@ -41,17 +41,12 @@ const Contact = () => {
         }
     };
 
-    // Security Audit Platforms - Primary Focus
+    // Security Audit Platforms — only the two with a real public record
+    // (docs/PORTFOLIO_REFERENCE.md §0: the other seven profiles are empty and
+    // undermine the verified CodeHawks #124 / 17-findings record).
     const auditPlatforms = [
-        { key: "CODEHAWKS", handle: "Cyfrin Auditor", link: CONTACT.codehawks, color: "text-orange-400" },
+        { key: "CODEHAWKS", handle: "Rank #124 · 17 findings", link: CONTACT.codehawks, color: "text-orange-400" },
         { key: "CODE4RENA", handle: "Warden", link: CONTACT.code4rena, color: "text-green-400" },
-        { key: "SHERLOCK", handle: "Watson", link: CONTACT.sherlock, color: "text-blue-400" },
-        { key: "CANTINA", handle: "Security Researcher", link: CONTACT.cantina, color: "text-purple-400" },
-        { key: "IMMUNEFI", handle: "Bug Hunter", link: CONTACT.immunefi, color: "text-cyan-400" },
-        { key: "HACKERONE", handle: "Security Researcher", link: CONTACT.hackerone, color: "text-red-400" },
-        { key: "HACKENPROOF", handle: "Researcher", link: CONTACT.hackenproof, color: "text-yellow-400" },
-        { key: "AUDITONE", handle: "Auditor", link: CONTACT.auditone, color: "text-emerald-400" },
-        { key: "HATS", handle: "Auditor", link: CONTACT.hats, color: "text-pink-400" },
     ];
 
     // Professional & Social
