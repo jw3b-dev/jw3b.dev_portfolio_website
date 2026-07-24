@@ -136,6 +136,29 @@ describe('ChatWidget', () => {
         expect(container).toBeEmptyDOMElement();
     });
 
+    // Regression: raw protocol tags must never reach the visible transcript.
+    // Each case asserts ABSENCE of the tag marker in rendered text, not just
+    // that something rendered.
+    it('does not leak protocol tags into the visible transcript', () => {
+        const cases = [
+            'Here are your rates. [AUDIO: "I have three tiers"]',           // complete AUDIO
+            'Streaming a summary now [AUDIO: "partial mid-stream',           // unterminated AUDIO
+            'Done [TOOL_CALL: {"name":"quote","args":["premium","base"]}]',  // nested-JSON TOOL_CALL
+            'Working on it [TOOL_CALL: {"name":"quo',                        // unterminated TOOL_CALL
+            'See card [RENDER_CARD: "pricing_tier_card"] below',            // complete RENDER_CARD
+            'Loading [RENDER_CARD: "pricing',                               // unterminated RENDER_CARD
+        ];
+        for (const content of cases) {
+            const { container, unmount } = render(<FormattedMessage content={content} isUser={false} />);
+            const text = container.textContent;
+            expect(text).not.toMatch(/\[AUDIO:/);
+            expect(text).not.toMatch(/\[TOOL_CALL:/);
+            expect(text).not.toMatch(/\[RENDER_CARD:/);
+            expect(text).not.toMatch(/\}\]/); // no dangling nested-JSON fragment
+            unmount();
+        }
+    });
+
     it('should render PricingCard when token is present', () => {
         render(
             <ChatWidget />

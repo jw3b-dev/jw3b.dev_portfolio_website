@@ -33,13 +33,21 @@ export const FormattedMessage = ({ content, isUser }) => {
     
     // 🎙️ Extract Audio Summary (Phase 17 refinement)
     // We strip [AUDIO: "..."] from the visible content but it stays in the raw for TTS
+    // Strip protocol tags from the visible text (they stay in the raw content for
+    // TTS / card rendering). Each family needs THREE guards: complete tag,
+    // nested-JSON-tolerant complete tag, and an unterminated tag mid-stream —
+    // the typewriter reveal shows partial tags one char at a time.
+    // `(?:[^[\]]|\[[^\]]*\])*` tolerates one level of nested [] inside a payload
+    // (e.g. [TOOL_CALL: {"args":["a","b"]}]) that a lazy `.*?\]` truncates at the
+    // inner ] and leaks the trailing `}]`.
     const cleaned = content
         .replace(/\[AUDIO:\s*".*?"\]/gs, '')
-        .replace(/\[TOOL_CALL:[\s\S]*?\]/g, '')
-        .replace(/\[TOOL_CALL:\s*[^\]]*$/g, '') 
+        .replace(/\[AUDIO:[\s\S]*$/g, '')                       // unterminated AUDIO (mid-stream)
+        .replace(/\[TOOL_CALL:(?:[^[\]]|\[[^\]]*\])*\]/g, '')   // complete, nested-[] tolerant
+        .replace(/\[TOOL_CALL:[\s\S]*$/g, '')                   // unterminated (mid-stream)
         .replace(/\*\*TOOL_CALL:[\s\S]*?\*\*/g, '')
-        .replace(/\[RENDER_CARD:[\s\S]*?\]/g, '')
-        .replace(/\[RENDER_CARD:\s*[^\]]*$/g, '') 
+        .replace(/\[RENDER_CARD:(?:[^[\]]|\[[^\]]*\])*\]/g, '') // complete, nested-[] tolerant
+        .replace(/\[RENDER_CARD:[\s\S]*$/g, '')                 // unterminated (mid-stream)
         .trim();
 
     // 🛠️ Pre-process: Bridge hanging bullets (bullet on own line)
