@@ -59,3 +59,13 @@ development_agent/
 
 # Personal enquiries (PRIVATE - never commit)
 enquirys/
+
+# --- session scratch / sensitive (added 2026-07-24) ---
+.claude.bak/
+.claude/skills/jw3b-skills-workspace/
+.claude/settings.kointel-reference.json
+CLAUDE.kointel-reference.md
+docs/PORTFOLIO_REFERENCE.md
+.playwright-mcp/
+/*.png
+graphify-out/
