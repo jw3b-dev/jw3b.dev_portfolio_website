@@ -66,6 +66,32 @@ Install with `npm ci` / `npm install` (they inherit that flag).
 - CI lives in `.github/workflows/ci.yml` — `verify` job (lint → test → build) on push/PR, plus a Cloudflare Pages `deploy` job gated on `main`.
 - Coverage thresholds in `vitest.config.js` are high (100% lines/functions) but scoped to a short include-list — adding covered files can break the gate.
 
+## Context discipline (long sessions — these rules must survive compaction)
+
+- **Query the graph, don't read it.** With `graphify-out/` present, answer codebase questions via
+  `graphify query|path|explain|affected` (or the `graphify` MCP server registered in `.mcp.json`,
+  once approved). Never read `GRAPH_REPORT.md` or `graph.json` wholesale into context — retrieve
+  only the nodes/paths the current prompt needs. Rebuilds: `graphify . --code-only` (local AST, no
+  key) or `--backend claude-cli` for docs/images (uses Claude Code subscription auth; plain
+  `--backend claude` needs `ANTHROPIC_API_KEY` and will fail without it).
+- **Pipe bulky output to disk, then grep it.** Forge/vitest/build logs and exploit tracebacks go to
+  a scratch file (`cmd > "$LOG" 2>&1`), queried with grep/tail — never dumped raw into chat history.
+- **Suggest `/compact` at task boundaries** (a landed feature, a passed verification) with a focus
+  hint, rather than letting auto-compact fire mid-task.
+- **The 4-hat IA rule.** Engineer=cyan, Auditor=purple, PM=green, Founder=orange (`HATS` in
+  `src/constants/index.js`). Identity surfaces show all four hats at once; filters dim cards, never
+  hide them.
+- **Claims discipline.** Every number/credential the site presents as fact must match
+  `docs/PORTFOLIO_REFERENCE.md` (the evidence register). No TVL / protocols-secured / lines-audited
+  claims. The citable audit record: CodeHawks #124 · 17 findings (8 High) · 1,430 EXP.
+- **Subagent discipline.** Before delegating, do the graph legwork in the parent (`graphify query`
+  / `affected`) and hand the subagent surgical coordinates — the exact files and the one task —
+  not "go figure out the codebase" (children don't inherit conversation context, but they can
+  re-explore expensively). Require digest-only returns: changes written to disk, reply =
+  status + files touched + test result, no code blocks or tracebacks. Route mechanical fan-out
+  (sweeps, bulk triage) to a cheaper model via the Agent/Workflow `model`/`effort` overrides;
+  keep stable reusable agent definitions so child spawns stay prompt-cache-identical.
+
 ## Dependency constraints
 
 - **Don't upgrade wagmi to 3.x.** RainbowKit (even latest 2.2.11) peer-requires `wagmi ^2.9.0`; there is no RainbowKit release for wagmi 3. Forcing wagmi 3 breaks the wallet UI and the build (drops the transitive `buffer` polyfill that `main.jsx` imports). Stay on wagmi 2.x / viem 2.x / RainbowKit 2.x until RainbowKit ships wagmi-3 support.
