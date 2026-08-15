@@ -5,6 +5,10 @@ import { searchKnowledgeBase, formatKnowledgeContext } from './rag.js';
 import { verifyCapture } from './ctf.js';
 
 const CLAUDE_MODEL_DEFAULT = 'claude-opus-4-8';
+// Concierge chat uses a fast model (Haiku 4.5) for low first-token latency — Opus is
+// reserved for the heavy security-analysis endpoints (/audit, /fuzz, /tx-explain).
+// Bump to Sonnet/Opus via the ANTHROPIC_CHAT_MODEL var without touching that default.
+const CHAT_MODEL_DEFAULT = 'claude-haiku-4-5-20251001';
 
 // Workers AI (Llama) stream in the same `data:{response}` SSE format — used as the
 // graceful fallback when Claude is unavailable (no key, rate limit, etc.).
@@ -421,7 +425,7 @@ Want me to open Mission Control so you can put a request together?
                 const stream = claudeSSEStream({
                     apiKey: env.ANTHROPIC_API_KEY,
                     baseURL: env.ANTHROPIC_BASE_URL, // optional Cloudflare AI Gateway route
-                    model: env.ANTHROPIC_MODEL || CLAUDE_MODEL_DEFAULT,
+                    model: env.ANTHROPIC_CHAT_MODEL || CHAT_MODEL_DEFAULT,
                     system: systemPrompt,
                     messages, // user/assistant turns; system goes in its own param for Claude
                     maxTokens: 2560, // chat: thinking omitted for lowest first-token latency
