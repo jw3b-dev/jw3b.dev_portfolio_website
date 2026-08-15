@@ -1,0 +1,30 @@
+name: Restore apex on Worker (one-shot)
+
+# jw3b.dev's DNS record was removed when the Pages project was deleted, so the
+# apex is down. With the conflicting record gone, attach jw3b.dev (and www) to
+# the jw3b-dev-site Worker as CUSTOM DOMAINS — this auto-creates the DNS + cert.
+on:
+  push:
+    branches: [v2-upgrade]
+    paths: ['.github/workflows/restore-apex.yml']
+  workflow_dispatch: {}
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Attach apex + www to the Worker as custom domains
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -uo pipefail
+          CF=https://api.cloudflare.com/client/v4
+          ZONE=$(curl -s -H "Authorization: Bearer $T" "$CF/zones?name=jw3b.dev" | jq -r '.result[0].id')
+          echo "zone=$ZONE"
+          for d in jw3b.dev www.jw3b.dev; do
+            echo "=== attach $d -> jw3b-dev-site ==="
+            curl -s -X PUT -H "Authorization: Bearer $T" -H "Content-Type: application/json" \
+              -d "{\"environment\":\"production\",\"hostname\":\"$d\",\"service\":\"jw3b-dev-site\",\"zone_id\":\"$ZONE\"}" \
+              "$CF/accounts/$A/workers/domains" | jq -c '{success, errors, hostname: .result.hostname}'
+          done
