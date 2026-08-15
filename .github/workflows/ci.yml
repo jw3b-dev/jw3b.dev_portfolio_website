@@ -71,7 +71,7 @@ jobs:
         # deploys — set once with `wrangler secret put`; `wrangler deploy` never removes them.
 
   deploy-frontend:
-    name: Deploy Frontend (Cloudflare Pages)
+    name: Deploy Frontend (Workers Static Assets)
     runs-on: ubuntu-latest
     needs: verify
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v2-upgrade')
@@ -85,7 +85,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'   # wrangler v4 needs Node >=22
           cache: 'npm'
 
       - name: Install dependencies
@@ -94,9 +94,12 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to Cloudflare Pages (production)
+      # Migrated off Cloudflare Pages (project deleted after its git integration
+      # was hijacked by another repo). The SPA is now a Workers Static Assets
+      # site (wrangler.jsonc → jw3b-dev-site), served on jw3b.dev + www.
+      - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=jw3b-dev-portfolio --branch=main
+          command: deploy
