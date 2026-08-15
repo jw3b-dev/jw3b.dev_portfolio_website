@@ -8,6 +8,9 @@ name: Fix Pages Wiring (one-shot)
 
 on:
   workflow_dispatch: {}
+  push:
+    branches: [v2-upgrade]
+    paths: ['.github/workflows/fix-pages-wiring.yml']  # only when THIS file changes
 
 jobs:
   fix:
