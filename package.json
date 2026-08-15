@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.11",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@tanstack/react-query": "^5.90.17",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.562.0",
@@ -19,6 +21,7 @@
     "react-helmet-async": "^2.0.5",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.12.0",
+    "three": "^0.171.0",
     "viem": "^2.55.0",
     "vite-plugin-node-polyfills": "^0.2.0",
     "wagmi": "^2.19.5"
@@ -46,7 +49,8 @@
     "sharp": "^0.34.5",
     "tailwindcss": "https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.4.3.tgz",
     "vite": "^6.3.5",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "wrangler": "^4.123.0"
   },
   "overrides": {
     "elliptic": "^6.6.1",
