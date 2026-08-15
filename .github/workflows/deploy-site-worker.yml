@@ -8,6 +8,7 @@ on:
     branches: [v2-upgrade]
     paths:
       - 'wrangler.jsonc'
+      - 'worker.js'
       - '.github/workflows/deploy-site-worker.yml'
   workflow_dispatch: {}
 
