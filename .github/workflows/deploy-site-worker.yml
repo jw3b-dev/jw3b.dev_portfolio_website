@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'   # wrangler v4 (repo dep) needs Node >=22; else action falls back to v3 which can't read the assets+main config
       - run: npm ci
       - run: npm run build
       - name: Deploy to Workers (static assets)
