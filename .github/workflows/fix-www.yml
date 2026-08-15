@@ -1,0 +1,55 @@
+name: Fix www Domain (one-shot)
+
+# www.jw3b.dev returns 522 (proxied DNS record to a dead origin, and www is not a
+# custom domain on the Pages project). Inspect the zone/DNS, repoint www's record
+# to the Pages project (proxied CNAME), and attach www as a Pages custom domain so
+# Cloudflare serves it. All steps print results; DNS steps are best-effort in case
+# the token lacks Zone:DNS scope.
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [v2-upgrade]
+    paths: ['.github/workflows/fix-www.yml']
+
+jobs:
+  www:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repoint + attach www.jw3b.dev
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -uo pipefail
+          CF="https://api.cloudflare.com/client/v4"
+          PAGES="$CF/accounts/$A/pages/projects/jw3b-dev-portfolio"
+
+          echo "=== Pages project domains (before) ==="
+          curl -s -H "Authorization: Bearer $T" "$PAGES/domains" | jq -c '{success, errors, domains: [.result[]?.name]}'
+
+          echo "=== zone lookup ==="
+          ZID=$(curl -s -H "Authorization: Bearer $T" "$CF/zones?name=jw3b.dev" | jq -r '.result[0].id // empty')
+          echo "zone_id=${ZID:-<none/no-zone-scope>}"
+
+          if [ -n "${ZID:-}" ]; then
+            echo "=== existing www DNS record ==="
+            REC=$(curl -s -H "Authorization: Bearer $T" "$CF/zones/$ZID/dns_records?name=www.jw3b.dev")
+            echo "$REC" | jq -c '{success, errors, records: [.result[]? | {id,type,content,proxied}]}'
+            RID=$(echo "$REC" | jq -r '.result[0].id // empty')
+            DNSBODY='{"type":"CNAME","name":"www","content":"jw3b-dev-portfolio.pages.dev","proxied":true,"ttl":1}'
+            if [ -n "${RID:-}" ]; then
+              echo "=== repoint existing www record -> pages.dev (proxied) ==="
+              curl -s -X PATCH -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$DNSBODY" "$CF/zones/$ZID/dns_records/$RID" | jq -c '{success, errors, type: .result.type, content: .result.content, proxied: .result.proxied}'
+            else
+              echo "=== create www CNAME -> pages.dev (proxied) ==="
+              curl -s -X POST -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$DNSBODY" "$CF/zones/$ZID/dns_records" | jq -c '{success, errors, type: .result.type, content: .result.content, proxied: .result.proxied}'
+            fi
+          else
+            echo "(token has no Zone scope — skipping DNS repoint; the Pages custom-domain step below may still set it up)"
+          fi
+
+          echo "=== attach www as a Pages custom domain ==="
+          curl -s -X POST -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d '{"name":"www.jw3b.dev"}' "$PAGES/domains" | jq -c '{success, errors, name: .result.name, status: .result.status}'
+
+          echo "Done. Cert/edge propagation for a new custom domain can take a few minutes."
