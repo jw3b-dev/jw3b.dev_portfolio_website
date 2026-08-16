@@ -15,6 +15,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { HATS } from '../../constants/index.js'
 import { isEnabled } from '../../config/features.js'
+import { framingOriginAllowed } from '../../config/embeds.js'
 
 export const KOINTEL_URL = 'https://kointel.co.za'
 
@@ -25,7 +26,7 @@ const DIMENSIONS = HATS.filter((h) => h.key === 'auditor' || h.key === 'founder'
 // popups (external links open in a new tab). No forms, no top-navigation, no pointer-lock.
 const SANDBOX = 'allow-scripts allow-same-origin allow-popups'
 
-export default function Kointel({ url = KOINTEL_URL, embed = isEnabled('kointelEmbed'), blockTimeoutMs = 6000 }) {
+export default function Kointel({ url = KOINTEL_URL, embed = isEnabled('kointelEmbed') && framingOriginAllowed(), blockTimeoutMs = 6000 }) {
   const [status, setStatus] = useState('loading') // loading → live | blocked
 
   const timer = useRef(null)

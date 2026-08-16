@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { RECORDED_RUNS } from '../../data/recorded-runs/index.js'
 import { isEnabled } from '../../config/features.js'
+import { framingOriginAllowed } from '../../config/embeds.js'
 
 // The live product host. Framing is allowed for https://jw3b.dev only (see file header).
 export const KTHULHU_URL = 'https://kthulhu.co'
@@ -23,7 +24,7 @@ const SANDBOX = 'allow-scripts allow-same-origin allow-popups'
 // preview copy can't drift from the fallback fixture. Shown as the fallback when not embedding.
 const WALKTHROUGH = RECORDED_RUNS['kthulhu-intro']
 
-export default function KthulhuEmbed({ url = KTHULHU_URL, embed = isEnabled('kthulhuEmbed'), blockTimeoutMs = 6000 }) {
+export default function KthulhuEmbed({ url = KTHULHU_URL, embed = isEnabled('kthulhuEmbed') && framingOriginAllowed(), blockTimeoutMs = 6000 }) {
   const [status, setStatus] = useState('loading') // loading → live | blocked
   const timer = useRef(null)
 
