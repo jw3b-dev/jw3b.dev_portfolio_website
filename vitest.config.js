@@ -37,6 +37,7 @@ export default defineConfig({
         'src/lib/escrowFlow.js',
         'src/lib/unlockPaywall.js',
         'src/lib/checkoutRouting.js',
+        'src/lib/ctfFlow.js',
       ],
       thresholds: {
         lines: 100,

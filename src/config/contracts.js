@@ -6,6 +6,8 @@
  * (FR-032/OD-03). No `0x000…0` placeholder that could masquerade as a live deployment.
  */
 import MilestoneEscrowAbi from './abis/MilestoneEscrow.json'
+import AttackerAbi from './abis/Attacker.json'
+import { ATTACKER_BYTECODE } from './abis/Attacker.bytecode.js'
 
 // Base mainnet USDC (6-decimal) — the settlement token for escrow payments (BR-06).
 export const USDC_ADDRESS = {
@@ -37,6 +39,21 @@ export function unlockLockFor(key) {
 /** True only when at least one real Unlock lock is deployed. */
 export function unlockProvisioned() {
   return Object.values(UNLOCK_LOCKS).some((l) => isRealAddress(l?.address))
+}
+
+// CTF (P2-09) — the owner-deployed ReentrantVault on Base Sepolia. The Attacker ABI +
+// bytecode ship in the bundle because the VISITOR deploys their own attacker (the challenge).
+// `vaultAddress: null` until provisioned → the CTF console degrades / the route stays gated.
+export const CTF = Object.freeze({
+  vaultAddress: null, // ← Base Sepolia ReentrantVault address (owner-provisioned)
+  chainId: 84532, // Base Sepolia — TESTNET, no real funds (BR-09/FR-024)
+  attackerAbi: AttackerAbi,
+  attackerBytecode: ATTACKER_BYTECODE,
+})
+
+/** True only when the CTF vault has a real deployed address to attack. */
+export function ctfProvisioned() {
+  return isRealAddress(CTF.vaultAddress)
 }
 
 /** A real, non-zero EVM address — the gate between "provisioned" and "degrade to floor". */

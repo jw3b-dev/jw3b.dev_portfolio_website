@@ -3,6 +3,7 @@
 // honest gate (P1-21) rather than a bare placeholder.
 import { isEnabled } from '../config/features.js'
 import RouteGate from '../components/layout/RouteGate.jsx'
+import CtfChallenge from '../components/ctf/CtfChallenge.jsx'
 
 export default function Ctf() {
   if (!isEnabled('ctf')) {
@@ -16,6 +17,6 @@ export default function Ctf() {
       />
     )
   }
-  // Live CTF console mounts here when P2-09 lands and the flag flips on.
-  return null
+  // Live CTF console (P2-09) — mounts when the `ctf` flag is on.
+  return <CtfChallenge />
 }
