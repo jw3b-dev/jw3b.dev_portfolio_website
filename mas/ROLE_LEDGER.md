@@ -34,4 +34,5 @@ Legend — SKILL-LOADED: `y` = role skill loaded this session before the work ·
 | P1-05 | audit-heuristics-engineer | domain-engine (no such skill) | y | ad81ff3 |
 | P1-04 | backend-specialist | backend-specialist | y | cc5d236 |
 | P1-06 | backend-specialist | backend-specialist | y | 2bb633e |
+| P1-07 | full-stack-integrator | frontend-engineer (no such skill) | y | 289560f |
 | P1-18a | domain-engine | domain-engine | y | 2bb633e (retainer.json catalog seed; loadout logic pending in P1-18) |

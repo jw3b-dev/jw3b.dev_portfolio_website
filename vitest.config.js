@@ -23,6 +23,7 @@ export default defineConfig({
         'src/lib/replay.js',
         'src/lib/knowledgeBase.js',
         'src/lib/conciergeClient.js',
+        'src/lib/auditClient.js',
       ],
       thresholds: {
         lines: 100,
