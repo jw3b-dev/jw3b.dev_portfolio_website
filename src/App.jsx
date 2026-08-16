@@ -9,6 +9,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 import { config } from './config/wagmi'
 import ChatWidget from './components/chat/ChatWidget'
 import HireSpine from './components/layout/HireSpine'
+import SiteFooter from './components/layout/SiteFooter'
 
 // Lazy-loaded routes — each page is code-split and loads behind the single
 // <Suspense> boundary in RootLayout. Heavy Web3 (and future R3F) libs are
@@ -35,6 +36,9 @@ function RootLayout() {
           <Outlet />
         </Suspense>
       </main>
+      {/* Global footer — mounts on every route (404 + the PII-collection surfaces), carrying
+          the privacy link the compliance gate requires be reachable from every collection point. */}
+      <SiteFooter />
       <ChatWidget />
     </>
   )
