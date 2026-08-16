@@ -82,8 +82,19 @@ export default function ChatWidget() {
                 AI-generated · grounded to John&rsquo;s verified record
               </p>
             </div>
-            {/* FR-016 — voice output toggle (spoken replies via TTS) */}
-            <SpeakerToggle voiceOn={voiceOn} onToggle={toggleVoice} />
+            {/* FR-016 — voice output toggle (spoken replies via TTS). Enabling it speaks the last
+                reply immediately (within the click gesture) so voice is discoverable + audibly confirmed. */}
+            <SpeakerToggle
+              voiceOn={voiceOn}
+              onToggle={() => {
+                const turningOn = !voiceOn
+                toggleVoice()
+                if (turningOn) {
+                  const last = [...messages].reverse().find((m) => m.role === 'assistant' && !m.pending && m.audio)
+                  if (last) speak(last.audio, { force: true })
+                }
+              }}
+            />
           </header>
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">

@@ -65,9 +65,11 @@ export function useVoice() {
 
   /** Speak `text` once via TTS (dedup). No-op when voice is off, text is empty, or on any error. */
   const speak = useCallback(
-    async (text) => {
+    async (text, { force = false } = {}) => {
+      // `force` speaks even if `voiceOn` reads false this tick — used when the user just clicked the
+      // speaker ON (setVoiceOn hasn't committed yet), so enabling voice plays the last reply at once.
       const t = String(text || '').trim()
-      if (!voiceOn || !t || spokenRef.current.has(t)) return
+      if ((!voiceOn && !force) || !t || spokenRef.current.has(t)) return
       spokenRef.current.add(t)
       try {
         const res = await fetch(AGENT_TTS_URL, {

@@ -177,5 +177,12 @@ so the client saw an empty reply and dropped to its Tier-2 bundled run. Fix (ful
 backend-specialist): `conciergeLiveStream` pumps Anthropic → falls back to Llama IN THE SAME response on
 empty/errored Claude (mirroring v1's `!emittedContent` fallback); both-empty → empty stream → client
 Tier-2 floor. +4 tests. Gate: lint · 71 files / 458 tests · coverage 99.15/95.41/100/100 · build 0-warn ·
-claims · secret-scan. **Separately flagged (open):** the oat-token identity block leaks into the persona —
-the concierge introduces itself as "Claude Code"; needs a prompt-ordering/model fix.
+claims · secret-scan.
+
+**Concierge persona + voice UX fix (John caught both live).** (1) Identity leak — Haiku introduced itself
+as "Claude Code, Anthropic's official CLI" because the oat-token auth requires that identity as the FIRST
+system block: added a `PERSONA_GUARD` to the concierge's own system block that overrides it for the
+visitor-facing persona. (2) "No audio" — the pipeline was intact (verified live: Aura TTS returns
+audio/wav, CORS allow-origin + preflight OK, the `[AUDIO:"…"]` tag parses from the accumulated stream);
+it's opt-in, so enabling the speaker now speaks the last reply immediately (within the click gesture →
+discoverable + autoplay-permitted). Gate green.

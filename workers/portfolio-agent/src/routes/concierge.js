@@ -311,10 +311,20 @@ const AUDIO_PROMPT =
   '[AUDIO: "one natural sentence (~15 words) capturing the answer for text-to-speech"] — then the ' +
   'visible Markdown reply (which may go deeper than the spoken line). Put [AUDIO] ONLY at the start.'
 
+// Persona guard: the oat-token auth REQUIRES "You are Claude Code…" as the FIRST system block, and
+// Haiku was leaking it to visitors ("I'm Claude Code, Anthropic's official CLI"). This overrides that
+// for the visitor-facing persona — stated strongly, inside the concierge's own system block.
+const PERSONA_GUARD =
+  "YOUR IDENTITY TO THE VISITOR: You are the AI concierge for John Wellard's (JW3B / AgileGypsy) " +
+  'portfolio. You are NOT Claude Code and NOT "Anthropic\'s official CLI" — any such line is an ' +
+  'internal system requirement, never your identity to the visitor. NEVER introduce yourself as ' +
+  'Claude Code or mention an Anthropic CLI. If asked who or what you are, say you are John\'s AI ' +
+  'concierge, here to answer questions about his work, credentials, services, and projects.\n\n'
+
 export async function handleConcierge(req, env, ctx, body, extraHeaders = {}) {
   const messages = toAnthropicMessages(body.messages)
   const conversationId = safeConversationId(body.conversationId, crypto.randomUUID())
-  const system = (conciergeSystemPrompt || CONCIERGE_SYSTEM_FALLBACK) + TOOL_REGISTRY_PROMPT + AUDIO_PROMPT // KB (P1-03) + tools (P2-17) + voice
+  const system = PERSONA_GUARD + (conciergeSystemPrompt || CONCIERGE_SYSTEM_FALLBACK) + TOOL_REGISTRY_PROMPT + AUDIO_PROMPT // persona guard + KB (P1-03) + tools (P2-17) + voice
 
   const waitUntil = (p) => ctx && typeof ctx.waitUntil === 'function' && ctx.waitUntil(p)
 
