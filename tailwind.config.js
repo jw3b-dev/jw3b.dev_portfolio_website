@@ -17,11 +17,13 @@ export default {
           muted: 'var(--color-text-muted)',
           inverse: 'var(--color-text-inverse)',
         },
-        cyan: 'var(--color-cyan)',
+        // Accents that carry alpha use the RGB-channel tokens so `cyan/40`, `bg-cyan/5`,
+        // `border-failed/50` etc. resolve to real colors (hex tokens stay the source).
+        cyan: 'rgb(var(--color-cyan-rgb) / <alpha-value>)',
         'cyan-dim': 'var(--color-cyan-dim)',
-        verified: 'var(--color-verified)',
-        failed: 'var(--color-failed)',
-        caution: 'var(--color-caution)',
+        verified: 'rgb(var(--color-cyan-rgb) / <alpha-value>)',
+        failed: 'rgb(var(--color-failed-rgb) / <alpha-value>)',
+        caution: 'rgb(var(--color-caution-rgb) / <alpha-value>)',
         hat: {
           engineer: 'var(--color-hat-engineer)',
           auditor: 'var(--color-hat-auditor)',

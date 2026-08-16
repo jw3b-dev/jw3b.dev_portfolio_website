@@ -39,6 +39,13 @@
   --color-failed:    #FB5E6A; /* honest failure — failures surface + real errors ONLY — 6.4:1 */
   --color-caution:   #F5C542; /* testnet · RECORDED RUN · AI-disclosure · disclaimer — steady — 12:1 */
 
+  /* RGB channels for the accents that carry alpha (edge-lights, tints, badge borders).
+     Tailwind maps these via rgb(var(--…-rgb) / <alpha-value>) so `cyan/40` etc. resolve
+     to real colors — the hex tokens above stay the source; keep the two in sync. */
+  --color-cyan-rgb:    34 211 238;
+  --color-failed-rgb:  251 94 106;
+  --color-caution-rgb: 245 197 66;
+
   /* Per-hat accents — one per pillar (§4). Founder-gold is Founder-scoped ONLY. */
   --color-hat-engineer: #22D3EE; /* = lead cyan */
   --color-hat-auditor:  #A78BFA; /* violet — 7.2:1 */

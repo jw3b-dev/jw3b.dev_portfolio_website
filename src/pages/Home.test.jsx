@@ -1,11 +1,24 @@
 import { render, screen } from '@testing-library/react'
 import Home from './Home'
 
-// Scaffold smoke test (P0-01) — proves the Vitest + Testing Library + jsdom
-// toolchain renders a route placeholder. The full provider-tree mount is verified
-// via the dev server + production build; wagmi/RainbowKit need mocks in jsdom, so
-// they are deliberately out of this trivial test.
-test('Home route placeholder renders', () => {
+// Home renders the operable proof-first hero (P1-09). This smoke test asserts the
+// three load-bearing pieces of the brief: the position-line heading (LCP element),
+// the OPERABLE console (an editable Solidity input — the anti-"static résumé" proof),
+// and a verified <Claim> in the rail. The Hero pulls no wagmi/RainbowKit, so it mounts
+// cleanly in jsdom without the provider tree.
+test('Home renders the operable hero: position line + editable auditor + a claim', () => {
   render(<Home />)
-  expect(screen.getByRole('heading', { name: /home/i })).toBeInTheDocument()
+
+  // 1. position line is the H1 (LCP)
+  expect(
+    screen.getByRole('heading', { name: /multi-agent systems that survive production/i }),
+  ).toBeInTheDocument()
+
+  // 2. the console is operable before any scroll — an editable contract, pre-loaded
+  const editor = screen.getByLabelText(/editable solidity contract/i)
+  expect(editor).toBeInTheDocument()
+  expect(editor.value).toMatch(/contract Vault/)
+
+  // 3. a cleared claim renders from the register (CodeHawks findings)
+  expect(screen.getByText(/17 findings/)).toBeInTheDocument()
 })
