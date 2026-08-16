@@ -1,0 +1,21 @@
+# Foundry config — jw3b.dev on-chain rails (P2). MilestoneEscrow (Base) lives here;
+# the CTF ReentrantVault/Attacker (P2-02) land alongside it. Owner-deployed/funded.
+[profile.default]
+src = "src"
+out = "out"
+test = "test"
+script = "script"
+libs = ["lib"]
+solc = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+remappings = [
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/",
+    "forge-std/=lib/forge-std/src/",
+]
+
+[fuzz]
+runs = 256
+
+[profile.ci.fuzz]
+runs = 1000

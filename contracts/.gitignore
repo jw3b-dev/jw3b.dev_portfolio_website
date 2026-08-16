@@ -1,0 +1,5 @@
+# Foundry build artifacts + fetched deps (reproducible via foundry.toml remappings).
+out/
+cache/
+broadcast/
+lib/
