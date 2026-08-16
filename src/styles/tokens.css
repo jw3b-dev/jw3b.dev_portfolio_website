@@ -1,0 +1,111 @@
+/*
+ * jw3b.dev v2 — DESIGN TOKEN LAYER  ·  owner: brand-architect (MAS P0-03)
+ * ─────────────────────────────────────────────────────────────────────────────
+ * The single source of visual truth. Implements design/design-story.md:
+ *   §4 color · §5 typography · §6 motion · §7 spatial/elevation.
+ * THE LAW (design-story §8/§9.12): every color/space/motion value in the app resolves
+ * from a token here. Components consume the semantic Tailwind classes (tailwind.config.js);
+ * JS/Framer consumes src/styles/tokens.js. ZERO raw hex outside this file.
+ *
+ * Naming: --{category}-{variant}-{state}.  Budgets held: color ≤20 · duration 5 · easing 4
+ * · blur 2 · shadow 4.  WCAG: every text/accent pairing validated AA+ on --color-void —
+ * matrix in design/tokens-contrast.md.
+ *
+ * Distinct-from-studio (C7): cool graphite void (NOT studio oceanic #02060d) · cyan lead
+ * tuned distinct from studio #00E5FF · FLAT panels + cyan EDGE-LIGHT (NOT glassmorphism) ·
+ * NO identity gradient · Geist grotesk + IBM Plex Mono (NOT Orbitron).
+ */
+
+:root {
+  /* ── COLOR ──────────────────────────────────────────────────────────────────────── */
+  /* Ground: cool graphite, depth = liveness (void → panel → raised), §7 */
+  --color-void:      #0A0C10; /* page ground */
+  --color-panel:     #11141A; /* evidence surface (one step up) */
+  --color-raised:    #171B22; /* live console / resolved overlay — comes forward */
+  --color-hairline:  #232A35; /* 1px borders — elevation is drawn, not blurred */
+
+  /* Text ramp — validated AA+ on --color-void */
+  --color-text-primary:   #F2F5F8; /* figures / headings — 17:1 (AAA) */
+  --color-text-secondary: #9BA6B4; /* workhorse body / label — 7.9:1 (AAA) */
+  --color-text-muted:     #78828F; /* de-emphasis — 4.95:1 (AA body) */
+  --color-text-inverse:   #06090E; /* text ON a cyan/accent fill — 9:1 on cyan */
+
+  /* Lead accent = CYAN = live & verified (tuned distinct from studio #00E5FF) */
+  --color-cyan:      #22D3EE; /* the signature: powered-on + checks-out — 10.7:1 */
+  --color-cyan-dim:  #0E7C8C; /* inactive rails / edges */
+
+  /* Verdict grammar — reserved SIGNAL colors, never decorative (§4) */
+  --color-verified:  #22D3EE; /* passed · live · reproduced (= lead cyan) */
+  --color-failed:    #FB5E6A; /* honest failure — failures surface + real errors ONLY — 6.4:1 */
+  --color-caution:   #F5C542; /* testnet · RECORDED RUN · AI-disclosure · disclaimer — steady — 12:1 */
+
+  /* Per-hat accents — one per pillar (§4). Founder-gold is Founder-scoped ONLY. */
+  --color-hat-engineer: #22D3EE; /* = lead cyan */
+  --color-hat-auditor:  #A78BFA; /* violet — 7.2:1 */
+  --color-hat-pm:       #34D399; /* green — 10:1 */
+  --color-hat-founder:  #E0A22E; /* WARM GOLD, Founder contexts only — tuned off studio #FF8C00 — 8.7:1 */
+
+  /* Overlay scrim (glass demoted to rare accent, §7) */
+  --color-scrim: rgba(6, 9, 14, 0.72);
+
+  /* ── OPACITY ────────────────────────────────────────────────────────────────────── */
+  --opacity-disabled: 0.4;
+  --opacity-edge:     0.22; /* cyan edge-light border alpha (see shadows) */
+
+  /* ── TYPOGRAPHY (§5) — engineered grotesk display + load-bearing mono ─────────────── */
+  --font-display: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+
+  --text-xs:   0.6875rem; /* 11px — micro-labels / eyebrows (uppercase) */
+  --text-sm:   0.8125rem; /* 13px */
+  --text-base: 0.9375rem; /* 15px — body */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.5rem;    /* 24px — section titles */
+  --text-2xl:  1.75rem;   /* 28px */
+  --text-marquee: clamp(2.5rem, 6vw, 4.5rem); /* hero display 40→72px, tight, sentence case */
+
+  --tracking-tight: -0.01em; /* display */
+  --tracking-label:  0.2em;  /* uppercase micro-labels */
+  --leading-tight: 1.05;  --leading-normal: 1.5;
+
+  /* ── SPACING (8-pt; generous air BETWEEN instrument panels, §7) ───────────────────── */
+  --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;  --space-4: 1rem;
+  --space-6: 1.5rem;   --space-8: 2rem;     --space-12: 3rem;    --space-16: 4rem;  --space-24: 6rem;
+  --space-section: clamp(4rem, 9vw, 7rem);
+
+  /* ── BORDER RADIUS ────────────────────────────────────────────────────────────────── */
+  --radius-sm: 4px;  --radius-md: 8px;  --radius-lg: 12px;  --radius-pill: 999px;
+
+  /* ── ELEVATION — hairline + faint cyan EDGE-LIGHT on live elements (NOT blur/glass, §7) */
+  --shadow-panel:  0 1px 0 0 rgba(255,255,255,0.02) inset, 0 8px 24px -16px rgba(0,0,0,0.8);
+  --shadow-raised: 0 1px 0 0 rgba(255,255,255,0.03) inset, 0 16px 40px -20px rgba(0,0,0,0.9);
+  --shadow-edge-cyan:   0 0 0 1px rgba(34,211,238,0.22), 0 0 16px -3px rgba(34,211,238,0.30); /* "this one is live" */
+  --shadow-edge-failed: 0 0 0 1px rgba(251,94,106,0.28), 0 0 16px -3px rgba(251,94,106,0.30);
+
+  /* ── BLUR — permitted ONLY as a low scrim behind overlay/nav, never surface identity ── */
+  --blur-scrim: 8px;
+  --blur-nav:   10px;
+
+  /* ── MOTION (§6) — signal, not decoration. Mirrored in src/styles/tokens.js ──────────── */
+  --duration-instant:  100ms; /* micro state flips */
+  --duration-verdict:  180ms; /* the signature: asserted→checking→VERIFIED, then STILL */
+  --duration-normal:   260ms; /* panel transitions */
+  --duration-entrance: 400ms; /* one rise/fade per section on scroll-in, once */
+  --duration-slow:     600ms;
+
+  --ease-out-expo:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard:   cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* ── ELEVATION Z ──────────────────────────────────────────────────────────────────── */
+  --z-base: 0; --z-raised: 10; --z-nav: 40; --z-overlay: 50; --z-toast: 60;
+}
+
+/* Reduced motion → instant, globally (NFR-05, FR-007). Framer also reads it (motion.js). */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms; --duration-verdict: 0ms; --duration-normal: 0ms;
+    --duration-entrance: 0ms; --duration-slow: 0ms;
+  }
+}

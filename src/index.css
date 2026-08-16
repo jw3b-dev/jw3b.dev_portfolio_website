@@ -1,8 +1,35 @@
 /*
- * Tailwind pipeline entry (plumbing only).
- * The design-token layer (src/styles/tokens.css) + semantic token classes are
- * added in P0-03 (brand-architect). No colors, fonts, or component styles here.
+ * Tailwind pipeline entry + base layer. Token layer is src/styles/tokens.css (imported
+ * in main.jsx before this file). Components use semantic token classes — zero raw hex.
  */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root { color-scheme: dark; } /* dark-only design; the void ground IS the theme */
+
+  html, body, #root { min-height: 100%; }
+
+  body {
+    /* Geist grotesk = body/identity voice; mono is applied on instruments/numerals. §5 */
+    @apply bg-void text-content-secondary font-display antialiased;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    @apply text-content-primary font-display;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+  }
+
+  /* Numerals align everywhere the site shows a figure (§5). */
+  .font-mono { font-variant-numeric: tabular-nums; }
+
+  /* Selection + focus wear the live cyan signal. */
+  ::selection { background: var(--color-cyan); color: var(--color-text-inverse); }
+  :focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px; border-radius: var(--radius-sm); }
+}
