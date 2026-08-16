@@ -1,0 +1,11 @@
+{
+  "key": "concierge-intro",
+  "surface": "concierge",
+  "label": "Recorded run",
+  "capturedAt": "2026-08-16",
+  "note": "SEED placeholder for the P0-10 mechanism. synthetic-data (SD) replaces/expands this with real recorded runs later. Any number in a recorded run must still trace to the evidence register (DE-07).",
+  "frames": [
+    { "response": "This is a recorded run of the concierge, replayed because live inference is currently unavailable. " },
+    { "response": "You can still explore John's shipped systems, the audit record, and the hire flow — the live agent returns automatically when the service is reachable again." }
+  ]
+}
