@@ -45,3 +45,12 @@ CTF_RPC_URL = ""                                # Base Sepolia RPC (owner-provis
 # Secrets (NEVER in this file — set via `wrangler secret put`):
 #   ANTHROPIC_API_KEY   — Anthropic via AI Gateway (ADR-05)
 #   DEV_ORIGIN          — optional localhost origin allowed in dev only (absent in prod)
+
+# Vectorize — /audit edge-RAG vuln corpus (P2-14 · OD-06). Owner-provisioned:
+#   wrangler vectorize create jw3b-vuln-corpus --dimensions=768 --metric=cosine
+#   (seed from src/data/vuln-corpus via corpusRecords() + the AI embeddings model)
+# Absent binding → the /audit narrative runs without RAG (degrades cleanly). Concierge KB
+# is untouched (stays the curated cleared-claims grounding, P1-03).
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "jw3b-vuln-corpus" # owner-provisioned

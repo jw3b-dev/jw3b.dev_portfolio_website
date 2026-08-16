@@ -10,6 +10,7 @@
 import { sseFrame, SSE_DONE, SSE_HEADERS } from '../tagProtocol.js'
 import { runKvKey } from '../replay.js'
 import { auditSolidity, formatFindingsText, AUDIT_DISCLAIMER } from '../auditHeuristics.js'
+import { retrieveAuditContext } from '../auditRag.js'
 import { anthropicDelta, workersAiDelta, anthropicGatewayUrl } from './concierge.js'
 
 export const AUDIT_MODEL = 'claude-opus-4-8' // ADR-05: reserve the stronger model for security (env-overridable)
@@ -22,16 +23,17 @@ const AUDIT_SYSTEM =
   'and conservatively. Do NOT invent vulnerabilities or overstate severity. This is an ' +
   'automated first-pass screen, not a full manual audit.'
 
-function narrativeMessages(source, findingsText) {
+function narrativeMessages(source, findingsText, ragContext = '') {
+  const refs = ragContext ? `\n\nRetrieved vulnerability references (for grounding — do not treat as findings):\n${ragContext}` : ''
   return [
     {
       role: 'user',
-      content: `Contract:\n\n${source}\n\nHeuristic first-pass findings:\n${findingsText}\n\nExplain the risks and the concrete fixes.`,
+      content: `Contract:\n\n${source}\n\nHeuristic first-pass findings:\n${findingsText}${refs}\n\nExplain the risks and the concrete fixes.`,
     },
   ]
 }
 
-async function tryAnthropicNarrative(env, source, findingsText) {
+async function tryAnthropicNarrative(env, source, findingsText, ragContext = '') {
   const url = anthropicGatewayUrl(env)
   if (!url || !env.ANTHROPIC_API_KEY) return null
   try {
@@ -46,7 +48,7 @@ async function tryAnthropicNarrative(env, source, findingsText) {
         model: env.AUDIT_MODEL || AUDIT_MODEL,
         max_tokens: 1500,
         system: AUDIT_SYSTEM,
-        messages: narrativeMessages(source, findingsText),
+        messages: narrativeMessages(source, findingsText, ragContext),
         stream: true,
       }),
     })
@@ -56,11 +58,11 @@ async function tryAnthropicNarrative(env, source, findingsText) {
   }
 }
 
-async function tryLlamaNarrative(env, source, findingsText) {
+async function tryLlamaNarrative(env, source, findingsText, ragContext = '') {
   if (!env || !env.AI) return null
   try {
     const stream = await env.AI.run(env.AUDIT_LLAMA_MODEL || AUDIT_LLAMA_MODEL, {
-      messages: [{ role: 'system', content: AUDIT_SYSTEM }, ...narrativeMessages(source, findingsText)],
+      messages: [{ role: 'system', content: AUDIT_SYSTEM }, ...narrativeMessages(source, findingsText, ragContext)],
       stream: true,
     })
     return stream instanceof ReadableStream ? stream : null
@@ -148,17 +150,22 @@ export function handleAudit(req, env, ctx, body, extraHeaders = {}) {
       // 2) AI-assisted-first-pass disclaimer (BR-10).
       controller.enqueue(encoder.encode(sseFrame(AUDIT_DISCLAIMER)))
 
-      // 3) stronger-model narrative: Anthropic (Opus) → Llama → KV recorded → graceful note.
+      // 3) edge-RAG: retrieve vuln context from Vectorize (safety-guarded). Degrades to '' when
+      //    unprovisioned, leaving the narrative unchanged. Runs AFTER the heuristics (floor kept).
+      const rag = await retrieveAuditContext(env, source)
+      if (rag.used) controller.enqueue(encoder.encode(sseFrame(`\n— Retrieved ${rag.matches} vulnerability reference(s) —\n`)))
+
+      // 4) stronger-model narrative: Anthropic (Opus) → Llama → KV recorded → graceful note.
       let source_tier = 'live'
       let narrated = false
-      const anthropic = await tryAnthropicNarrative(env, source, findingsText)
+      const anthropic = await tryAnthropicNarrative(env, source, findingsText, rag.context)
       if (anthropic) {
         controller.enqueue(encoder.encode(sseFrame('\n— Analysis —\n')))
         await pumpInto(controller, anthropic, anthropicDelta, encoder)
         narrated = true
       }
       if (!narrated) {
-        const llama = await tryLlamaNarrative(env, source, findingsText)
+        const llama = await tryLlamaNarrative(env, source, findingsText, rag.context)
         if (llama) {
           controller.enqueue(encoder.encode(sseFrame('\n— Analysis —\n')))
           await pumpInto(controller, llama, workersAiDelta, encoder)
