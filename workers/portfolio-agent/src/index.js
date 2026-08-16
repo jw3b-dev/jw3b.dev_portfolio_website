@@ -8,13 +8,11 @@ import { sseFrame, SSE_DONE, SSE_HEADERS } from './tagProtocol.js'
 import { checkRateLimit, rateLimitedResponse, routeLimit } from './rateLimit.js'
 import { handleConcierge } from './routes/concierge.js'
 import { handleAudit } from './routes/audit.js'
+import { handleEngagement, handleBookACall } from './routes/engagement.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
 const SOURCE_CAP = 24000 // FR-013: contract source size cap
-const OBJECTIVES = ['security', 'engineering', 'pm']
-const ENGAGEMENTS = ['project', 'retainer']
-const ROUTES = ['book_a_call', 'escrow', 'unlock']
 
 // ── CORS (locked to allowlist; dev origin only via the DEV_ORIGIN secret, absent in prod) ──
 function allowedOrigin(req, env) {
@@ -117,22 +115,13 @@ export default {
       // ── Conversion ──────────────────────────────────────────────────────────────────────
       if (pathname === '/engagement' && method === 'POST') {
         const b = await readJson(req)
-        if (!b) return bad('body required', req, env)
-        if (!OBJECTIVES.includes(b.objective)) return bad('invalid objective', req, env)
-        if (!ENGAGEMENTS.includes(b.engagement)) return bad('invalid engagement', req, env)
-        if (!ROUTES.includes(b.route)) return bad('invalid route', req, env)
-        if (typeof b.contact !== 'string' || !b.contact.trim() || b.contact.length > 200)
-          return bad('contact required', req, env)
-        if (b.contact.includes('@') && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(b.contact))
-          return bad('invalid email', req, env)
-        if (b.wallet && !ADDRESS.test(b.wallet)) return bad('invalid wallet', req, env)
-        return json({ id: crypto.randomUUID(), status: 'submitted' }, req, env) // stub; D1 insert in P1
+        const out = await handleEngagement(req, env, ctx, b)
+        return out.error ? bad(out.error, req, env, out.status) : json(out.body, req, env, out.status)
       }
       if (pathname === '/book-a-call' && method === 'POST') {
         const b = await readJson(req)
-        if (!b || typeof b.contact !== 'string' || !b.contact.trim())
-          return bad('contact required', req, env)
-        return json({ ok: true, scheduler_url: null }, req, env) // stub; scheduler owner-provisioned
+        const out = handleBookACall(req, env, b)
+        return out.error ? bad(out.error, req, env, out.status) : json(out.body, req, env, out.status)
       }
 
       return json({ error: 'not found' }, req, env, 404)

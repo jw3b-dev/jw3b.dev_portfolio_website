@@ -1,0 +1,61 @@
+{
+  "$comment": "jw3b.dev v2 — engagement pricing catalog (P1-18 seed; consumed by P1-06 engagement route + P1-17/19 Mission Control). SINGLE SOURCE for tiers + indicative_price (BR-12): the Worker copies indicative_price FROM here; the client never sends a price. Tier ids/structure are stable. indicative_price is OWNER-PROVISIONED — left \"\" with price_provisioned:false until John supplies figures (same pattern as the on-chain address placeholders). The book-a-call floor (FR-036) works with no pricing.",
+  "currency": "USDC",
+  "chain": "base",
+  "tiers": [
+    {
+      "id": "audit-sprint",
+      "name": "Security Audit Sprint",
+      "objective": "security",
+      "engagement": "project",
+      "indicative_price": "",
+      "price_provisioned": false,
+      "summary": "Time-boxed smart-contract security review with a written findings report."
+    },
+    {
+      "id": "secure-build",
+      "name": "Secure Build",
+      "objective": "engineering",
+      "engagement": "project",
+      "indicative_price": "",
+      "price_provisioned": false,
+      "summary": "Design and implementation of an agentic or on-chain system, security-first."
+    },
+    {
+      "id": "delivery-lead",
+      "name": "Delivery Lead",
+      "objective": "pm",
+      "engagement": "project",
+      "indicative_price": "",
+      "price_provisioned": false,
+      "summary": "AgilePM-led delivery of a defined scope, from charter to handover."
+    },
+    {
+      "id": "security-retainer",
+      "name": "Security Retainer",
+      "objective": "security",
+      "engagement": "retainer",
+      "indicative_price": "",
+      "price_provisioned": false,
+      "summary": "Ongoing review and advisory capacity, billed monthly."
+    },
+    {
+      "id": "engineering-retainer",
+      "name": "Engineering Retainer",
+      "objective": "engineering",
+      "engagement": "retainer",
+      "indicative_price": "",
+      "price_provisioned": false,
+      "summary": "Ongoing build capacity for an agentic/on-chain roadmap, billed monthly."
+    },
+    {
+      "id": "fractional-lead",
+      "name": "Fractional Delivery Lead",
+      "objective": "pm",
+      "engagement": "retainer",
+      "indicative_price": "",
+      "price_provisioned": false,
+      "summary": "Part-time delivery leadership across a portfolio of work, billed monthly."
+    }
+  ]
+}
