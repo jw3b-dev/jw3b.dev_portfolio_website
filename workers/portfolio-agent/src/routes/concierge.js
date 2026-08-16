@@ -83,6 +83,34 @@ export function anthropicGatewayUrl(env) {
   return `https://gateway.ai.cloudflare.com/v1/${account}/${gateway}/anthropic/v1/messages`
 }
 
+// REQUIRED as the FIRST system block when the credential is a Claude Code OAuth token
+// (sk-ant-oat…) — without it Anthropic 401s or spuriously 429s (see docs / prior worker).
+export const CLAUDE_CODE_IDENTITY = "You are Claude Code, Anthropic's official CLI for Claude."
+
+/**
+ * Anthropic Messages-API auth, handling BOTH credential types (pure → testable). Returns the
+ * request `headers` and the `system` value to send:
+ *  - `sk-ant-oat…` (Claude Code OAuth token): `Authorization: Bearer` + `anthropic-beta:
+ *    oauth-2025-04-20`, and the first `system` block MUST be the Claude Code identity (the real
+ *    prompt follows as a second block).
+ *  - anything else (raw `sk-ant-api…` key): `x-api-key`, `system` passed through unchanged.
+ * The secret name is ANTHROPIC_API_KEY either way, so the same-named worker's existing secret is
+ * reused; only the transport differs by token type.
+ */
+export function anthropicAuth(apiKey, system) {
+  const base = { 'content-type': 'application/json', 'anthropic-version': '2023-06-01' }
+  if (typeof apiKey === 'string' && apiKey.startsWith('sk-ant-oat')) {
+    return {
+      headers: { ...base, authorization: `Bearer ${apiKey}`, 'anthropic-beta': 'oauth-2025-04-20' },
+      system: [
+        { type: 'text', text: CLAUDE_CODE_IDENTITY },
+        { type: 'text', text: String(system ?? '') },
+      ],
+    }
+  }
+  return { headers: { ...base, 'x-api-key': apiKey }, system }
+}
+
 // ── Streaming bridge ──────────────────────────────────────────────────────────────────────
 
 /**
@@ -136,17 +164,14 @@ async function tryAnthropic(env, messages, system) {
   const url = anthropicGatewayUrl(env)
   if (!url || !env.ANTHROPIC_API_KEY) return null
   try {
+    const auth = anthropicAuth(env.ANTHROPIC_API_KEY, system)
     const res = await fetch(url, {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
+      headers: auth.headers,
       body: JSON.stringify({
         model: env.CONCIERGE_MODEL || CONCIERGE_MODEL,
         max_tokens: 1024,
-        system,
+        system: auth.system,
         messages,
         stream: true,
       }),

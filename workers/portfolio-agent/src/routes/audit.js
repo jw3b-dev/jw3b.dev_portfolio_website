@@ -11,7 +11,7 @@ import { sseFrame, SSE_DONE, SSE_HEADERS } from '../tagProtocol.js'
 import { runKvKey } from '../replay.js'
 import { auditSolidity, formatFindingsText, AUDIT_DISCLAIMER } from '../auditHeuristics.js'
 import { retrieveAuditContext } from '../auditRag.js'
-import { anthropicDelta, workersAiDelta, anthropicGatewayUrl } from './concierge.js'
+import { anthropicDelta, workersAiDelta, anthropicGatewayUrl, anthropicAuth } from './concierge.js'
 
 export const AUDIT_MODEL = 'claude-opus-4-8' // ADR-05: reserve the stronger model for security (env-overridable)
 export const AUDIT_LLAMA_MODEL = '@cf/meta/llama-3.1-70b-instruct'
@@ -37,17 +37,14 @@ async function tryAnthropicNarrative(env, source, findingsText, ragContext = '')
   const url = anthropicGatewayUrl(env)
   if (!url || !env.ANTHROPIC_API_KEY) return null
   try {
+    const auth = anthropicAuth(env.ANTHROPIC_API_KEY, AUDIT_SYSTEM)
     const res = await fetch(url, {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
+      headers: auth.headers,
       body: JSON.stringify({
         model: env.AUDIT_MODEL || AUDIT_MODEL,
         max_tokens: 1500,
-        system: AUDIT_SYSTEM,
+        system: auth.system,
         messages: narrativeMessages(source, findingsText, ragContext),
         stream: true,
       }),
