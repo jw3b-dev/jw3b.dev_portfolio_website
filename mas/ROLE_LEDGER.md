@@ -46,3 +46,4 @@ Legend — SKILL-LOADED: `y` = role skill loaded this session before the work ·
 | P1-13 | frontend-engineer | frontend-engineer | y | c390640 |
 | P1-17 | app-ui-engineer | app-ui-engineer | y | d4d9cb0 |
 | P1-18 | domain-engine | domain-engine | y | 1beb03f |
+| P1-19 | app-ui-engineer | app-ui-engineer | y | 90a0d9c |
