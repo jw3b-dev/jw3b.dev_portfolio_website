@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { isCleared, validateRegister, scanTextForForbidden } from '../claimsValidate.js'
 import { getClaim, isClaimCleared } from '../claimsRegister.js'
+import register from '../../data/evidence-register.json'
 
 describe('isCleared', () => {
   const ok = { id: 'x', value: '17 findings', label: 'l', status: 'cleared', evidence_pointer: 'https://e' }
@@ -27,9 +28,27 @@ describe('scanTextForForbidden', () => {
     expect(scanTextForForbidden('PMP certified').length).toBeGreaterThan(0)
     expect(scanTextForForbidden('PRINCE2 Practitioner').length).toBeGreaterThan(0)
   })
+  it('catches the credential/experience inflation the register declares (Neo4j GDS, combined experience, dollar bounties)', () => {
+    expect(scanTextForForbidden('Neo4j GDS certified').length).toBeGreaterThan(0)
+    expect(scanTextForForbidden('decades of combined experience').length).toBeGreaterThan(0)
+    expect(scanTextForForbidden('$5M in dollar bounties').length).toBeGreaterThan(0)
+  })
   it('passes legitimate copy', () => {
     expect(scanTextForForbidden('17 findings, 8 High, 1,430 EXP')).toEqual([])
     expect(scanTextForForbidden('AgilePM Practitioner')).toEqual([]) // NOT PMP/PRINCE2-Practitioner
+    // The legit owner-attested delivery claim mentions "decades" but is NOT the forbidden
+    // "combined experience" trope — the precise pattern must let it through.
+    expect(scanTextForForbidden('Two decades of water-infrastructure delivery across 7 countries')).toEqual([])
+    expect(scanTextForForbidden('Neo4j Certified Professional')).toEqual([]) // real cert ≠ the fake GDS one
+  })
+
+  // Structural guard (portfolio-evidence): the regex blocklist must ENFORCE every item the
+  // register declares forbidden. This is the check that catches a declared-but-unenforced
+  // forbidden claim — exactly the gap the compliance-officer substitute left open.
+  it('enforces every forbidden item the register declares', () => {
+    for (const item of register.forbidden ?? []) {
+      expect(scanTextForForbidden(item).length, `not enforced: "${item}"`).toBeGreaterThan(0)
+    }
   })
 })
 

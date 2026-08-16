@@ -16,8 +16,11 @@ export const FORBIDDEN_PATTERNS = [
   /\$\s?[\d.,]+\s*[mkb]?\s+(secured|protected|locked|tvl)/i, // "$5M secured", "$1.2B protected"
   /\b\d+\+?\s*audits\s+(completed|done|delivered)/i,
   /\b50\+?\s*audits\b/i,
+  /\bdollar\s+bounties\b/i, // "$ secured / dollar bounties" — no bounty-total claims (register forbidden #1)
   /\bPMP\b/i, // "PMP certified" — John holds AgilePM Practitioner, NOT PMP
   /PRINCE2\s+Practitioner/i, // holds PRINCE2 Foundation, not Practitioner
+  /\bNeo4j\s+GDS\b/i, // no such credential exists among the verified GraphAcademy certs (register forbidden #5)
+  /\bcombined\s+(experience|expertise)\b/i, // "decades of combined experience" inflation (register forbidden #6)
 ]
 
 export function scanTextForForbidden(text) {
