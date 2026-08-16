@@ -3,6 +3,7 @@ import Hero from '../components/hero/Hero.jsx'
 import FourHats from '../components/identity/FourHats.jsx'
 import CodeHawksLink from '../components/proof/CodeHawksLink.jsx'
 import DeliveryAnchor from '../components/proof/DeliveryAnchor.jsx'
+import FailuresSurface from '../components/proof/FailuresSurface.jsx'
 
 // Home / marquee route. The operable, proof-first hero (P1-09) leads; the four-hat
 // identity (P1-11, FR-003) and the credibility surfaces (P1-14: CodeHawks #124 deep-link
@@ -17,6 +18,7 @@ export default function Home() {
         <CodeHawksLink />
         <DeliveryAnchor />
       </div>
+      <FailuresSurface className="mx-auto max-w-6xl px-5 pb-20 sm:px-8" />
     </>
   )
 }
