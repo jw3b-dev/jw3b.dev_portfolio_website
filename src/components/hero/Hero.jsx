@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion'
 import { duration, ease, prefersReducedMotion } from '../../styles/motion.js'
 import Claim from '../Claim.jsx'
+import { HATS } from '../../constants/index.js'
 import { auditSolidity, SAMPLE_CONTRACT, SEVERITY_META } from '../../lib/auditHeuristics.js'
 
 /*
@@ -16,12 +17,8 @@ import { auditSolidity, SAMPLE_CONTRACT, SEVERITY_META } from '../../lib/auditHe
 
 const RECORDED_DATE = '2026-08-16'
 
-const HATS = [
-  { key: 'engineer', label: 'Engineer', dot: 'bg-hat-engineer', text: 'text-hat-engineer' },
-  { key: 'auditor', label: 'Auditor', dot: 'bg-hat-auditor', text: 'text-hat-auditor' },
-  { key: 'pm', label: 'PM', dot: 'bg-hat-pm', text: 'text-hat-pm' },
-  { key: 'founder', label: 'Founder', dot: 'bg-hat-founder', text: 'text-hat-founder' },
-]
+// HATS is the canonical four-hat identity (constants/index.js · FR-003). The hero strip
+// shows the labels; the operable dim-filter surface is <FourHats /> (P1-11) on Home.
 
 function LivenessTick({ live }) {
   return (
