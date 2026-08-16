@@ -155,46 +155,64 @@ export async function anthropicFetch(url, init, { retries = 2, capMs = 3000, sle
 // ── Streaming bridge ──────────────────────────────────────────────────────────────────────
 
 /**
- * Bridge an upstream token stream to OUR SSE frames while accumulating the full text.
- * `deltaFn` maps one upstream `data:` payload to a text delta; `onComplete(fullText)` runs
- * once at end-of-stream (schedule the D1 append there via ctx.waitUntil).
+ * Pump one upstream SSE body into `emit(text)`, returning whether it emitted ANY text. Swallows a
+ * mid-stream read error (keeping whatever it had) so the caller can fall back to another upstream.
  */
-function bridgeStream(upstream, deltaFn, onComplete) {
-  const encoder = new TextEncoder()
+async function pumpTextInto(upstream, deltaFn, emit) {
   const decoder = new TextDecoder()
   const reader = upstream.getReader()
   let buffer = ''
-  let full = ''
-  return new ReadableStream({
-    async pull(controller) {
+  let any = false
+  const flush = (line) => {
+    if (!line.startsWith('data:')) return
+    const t = deltaFn(line.slice(5).trim())
+    if (t) {
+      any = true
+      emit(t)
+    }
+  }
+  try {
+    for (;;) {
       const { done, value } = await reader.read()
-      if (done) {
-        if (buffer.startsWith('data:')) {
-          const t = deltaFn(buffer.slice(5).trim())
-          if (t) {
-            full += t
-            controller.enqueue(encoder.encode(sseFrame(t)))
-          }
-        }
-        controller.enqueue(encoder.encode(SSE_DONE))
-        controller.close()
-        onComplete(full)
-        return
-      }
+      if (done) break
       buffer += decoder.decode(value, { stream: true })
       const lines = buffer.split('\n')
       buffer = lines.pop() // retain the trailing partial line
-      for (const line of lines) {
-        if (!line.startsWith('data:')) continue
-        const text = deltaFn(line.slice(5).trim())
-        if (text) {
-          full += text
-          controller.enqueue(encoder.encode(sseFrame(text)))
-        }
+      for (const line of lines) flush(line)
+    }
+    if (buffer) flush(buffer)
+  } catch {
+    // mid-stream error → treat this upstream as failed; the caller falls back
+  }
+  return any
+}
+
+/**
+ * The Tier-0 live stream with an IN-RESPONSE fallback: Anthropic (Haiku) → Workers AI (Llama).
+ * Crucially, a 200-then-empty or mid-stream-errored Claude reply falls back to Llama in the SAME
+ * response instead of streaming nothing — a bare empty stream makes the client degrade to the
+ * recorded run (the intermittent Haiku-via-oat bug). If BOTH emit nothing, the stream ends empty
+ * and the client shows its labelled Tier-2 bundled run (the guaranteed floor). `onComplete(full)`
+ * schedules the PII-min D1 append.
+ */
+function conciergeLiveStream(env, messages, system, onComplete) {
+  const encoder = new TextEncoder()
+  let full = ''
+  return new ReadableStream({
+    async start(controller) {
+      const emit = (t) => {
+        full += t
+        controller.enqueue(encoder.encode(sseFrame(t)))
       }
-    },
-    cancel(reason) {
-      reader.cancel(reason)
+      const anthropic = await tryAnthropic(env, messages, system)
+      let emitted = anthropic ? await pumpTextInto(anthropic, anthropicDelta, emit) : false
+      if (!emitted) {
+        const llama = await tryLlama(env, messages, system)
+        emitted = llama ? await pumpTextInto(llama, workersAiDelta, emit) : false
+      }
+      controller.enqueue(encoder.encode(SSE_DONE))
+      controller.close()
+      onComplete(full)
     },
   })
 }
@@ -309,12 +327,11 @@ export async function handleConcierge(req, env, ctx, body, extraHeaders = {}) {
     if (parsed.text) waitUntil(appendMessage(env, conversationId, 'assistant', parsed.text, source, parsed.audio ? 1 : 0))
   }
 
-  // Tier-0 live: Anthropic (Haiku) → Workers AI (Llama).
+  // Tier-0 live: Anthropic (Haiku) → Workers AI (Llama), with the fallback INSIDE one response so a
+  // 200-then-empty/errored Claude stream falls to Llama instead of stranding the client empty
+  // (which degrades to the recorded run). Both-empty → empty stream → client Tier-2 floor.
   if (messages.length > 0) {
-    const anthropic = await tryAnthropic(env, messages, system)
-    if (anthropic) return sseResponse(bridgeStream(anthropic, anthropicDelta, persist('live')), conversationId, 'live', extraHeaders)
-    const llama = await tryLlama(env, messages, system)
-    if (llama) return sseResponse(bridgeStream(llama, workersAiDelta, persist('live')), conversationId, 'live', extraHeaders)
+    return sseResponse(conciergeLiveStream(env, messages, system, persist('live')), conversationId, 'live', extraHeaders)
   }
 
   // Tier-1: labelled KV recorded run (independent failure domain).

@@ -168,3 +168,14 @@ lazy-routed in App.jsx, article-typed SEO (branded + content-gap search), cross-
 and into the audit console (no orphans/dead-ends), and surfaced from the site footer for crawl
 discovery. Claims-safe (no numeric claims — claims-gate clean). +1 render/link smoke test. Gate:
 lint · 70 files / 454 tests · coverage 99.15/95.41/100/100 · build 0-warn · claims · secret-scan.
+
+**Concierge degrade fix (found while John tested P3).** The preview concierge intermittently degraded
+to the recorded run. Root cause (diagnosed by hitting the live workers directly — /audit/Opus worked,
+concierge/Haiku returned a 200 then a 0-byte body): the concierge committed to the Anthropic (Haiku via
+oat) response on its initial 200 and never fell back when that stream then errored or came back EMPTY,
+so the client saw an empty reply and dropped to its Tier-2 bundled run. Fix (full-stack-integrator +
+backend-specialist): `conciergeLiveStream` pumps Anthropic → falls back to Llama IN THE SAME response on
+empty/errored Claude (mirroring v1's `!emittedContent` fallback); both-empty → empty stream → client
+Tier-2 floor. +4 tests. Gate: lint · 71 files / 458 tests · coverage 99.15/95.41/100/100 · build 0-warn ·
+claims · secret-scan. **Separately flagged (open):** the oat-token identity block leaks into the persona —
+the concierge introduces itself as "Claude Code"; needs a prompt-ordering/model fix.
