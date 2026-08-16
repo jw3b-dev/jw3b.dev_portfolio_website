@@ -36,6 +36,7 @@ export default defineConfig({
         'src/lib/web3Guards.js',
         'src/lib/escrowFlow.js',
         'src/lib/unlockPaywall.js',
+        'src/lib/checkoutRouting.js',
       ],
       thresholds: {
         lines: 100,
