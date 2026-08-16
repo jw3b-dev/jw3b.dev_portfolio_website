@@ -30,3 +30,4 @@ Legend — SKILL-LOADED: `y` = role skill loaded this session before the work ·
 | P1-09 | frontend-engineer | frontend-engineer | y | 2364d2a |
 | P1-01 | backend-specialist | backend-specialist | y | 57cc24c |
 | P1-02 | backend-specialist | backend-specialist | y | 66d59ac |
+| P1-03 | domain-engine | domain-engine | y | 14651bb |
