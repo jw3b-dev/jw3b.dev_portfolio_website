@@ -1,3 +1,4 @@
+import Seo from '../components/seo/Seo.jsx'
 import Hero from '../components/hero/Hero.jsx'
 import FourHats from '../components/identity/FourHats.jsx'
 import CodeHawksLink from '../components/proof/CodeHawksLink.jsx'
@@ -9,6 +10,7 @@ import DeliveryAnchor from '../components/proof/DeliveryAnchor.jsx'
 export default function Home() {
   return (
     <>
+      <Seo />
       <Hero />
       <FourHats className="mx-auto max-w-6xl px-5 pt-16 sm:px-8" />
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-5 py-16 sm:px-8 lg:grid-cols-2">
