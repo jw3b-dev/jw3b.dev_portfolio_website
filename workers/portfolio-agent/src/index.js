@@ -5,6 +5,7 @@
  * CORS is locked to the origin allowlist (NFR-04) — never "*". Secrets come from env only.
  */
 import { sseFrame, SSE_DONE, SSE_HEADERS } from './tagProtocol.js'
+import { checkRateLimit, rateLimitedResponse, routeLimit } from './rateLimit.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -57,7 +58,15 @@ export default {
 
     if (method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(req, env) })
 
-    // TODO(P1-01): per-IP/per-endpoint rate-limit (D1 window + AI-Gateway ceiling) before handlers.
+    // Per-IP/per-endpoint rate-limit (D1 fixed window) BEFORE any handler — defense-in-depth
+    // behind the AI-Gateway spend ceiling (P1-01, FR-051). Fails open on a DB error.
+    const limit = routeLimit(method, pathname)
+    if (limit) {
+      const rl = await checkRateLimit(env, req, limit.endpoint, Date.now())
+      if (rl.limited) {
+        return rateLimitedResponse({ retryAfter: rl.retryAfter, sse: limit.sse, headers: cors(req, env) })
+      }
+    }
 
     try {
       // ── Concierge ──────────────────────────────────────────────────────────────────────

@@ -31,7 +31,10 @@ binding = "R2"
 bucket_name = "jw3b-recorded-runs"
 
 [vars]
-AI_GATEWAY = "jw3b-portfolio-agent"           # Cloudflare AI Gateway slug (ADR-05 cost choke)
+AI_GATEWAY = "jw3b-portfolio-agent"           # Cloudflare AI Gateway slug (ADR-05 cost choke).
+                                              # Per-model rate/spend CEILING is set gateway-side in the
+                                              # AI Gateway dashboard (owner) — the outer limit above the
+                                              # per-IP D1 rate-limit in rateLimit.js (P1-01 defense-in-depth).
 ALLOWED_ORIGINS = "https://jw3b.dev,https://www.jw3b.dev" # CORS allowlist (NFR-04); dev origin gated by DEV_ORIGIN secret
 CTF_VAULT_ADDRESS = ""                          # Base Sepolia ReentrantVault (owner-provisioned, P2)
 CTF_RPC_URL = ""                                # Base Sepolia RPC (owner-provisioned, P2)

@@ -1,0 +1,99 @@
+/*
+ * jw3b.dev v2 — per-IP fixed-window rate limiting (P1-01, FR-051, ADR-04)  ·  backend-specialist
+ * Defense-in-depth BEHIND the AI-Gateway ceiling (which caps model spend gateway-side): this
+ * layer bounds per-IP/per-endpoint request rate in D1 so one visitor can't drain the free tier
+ * or hammer a route. Heavier-compute endpoints get tighter budgets. Parameterized UPSERT only.
+ * Window math is pure + unit-tested; the D1 I/O is isolated and FAILS OPEN (a portfolio site
+ * favors availability — a DB blip must not lock everyone out).
+ */
+import { SSE_HEADERS, sseFrame, SSE_DONE } from './tagProtocol.js'
+
+export const WINDOW_SEC = 60
+
+// Requests per window, per IP, per endpoint. Tune HERE, never inline at a call site.
+export const BUDGETS = {
+  chat: 20, // concierge SSE
+  audit: 10, // heavy: model narrative over a contract
+  fuzz: 10,
+  tx_explain: 20,
+  stt: 10, // Whisper
+  tts: 20, // Aura
+  ctf: 15, // on-chain verify
+  light: 60, // leaderboard / engagement / book-a-call — never throttle the conversion floor hard
+}
+export const DEFAULT_BUDGET = 30
+
+export function budgetFor(endpoint) {
+  return Object.prototype.hasOwnProperty.call(BUDGETS, endpoint) ? BUDGETS[endpoint] : DEFAULT_BUDGET
+}
+
+/** PURE — the fixed-window bucket start (unix seconds) for a timestamp. */
+export function windowStart(nowMs, windowSec = WINDOW_SEC) {
+  const nowSec = Math.floor(nowMs / 1000)
+  return nowSec - (nowSec % windowSec)
+}
+
+/** Client IP from Cloudflare's TRUSTED header — never a client-settable one. */
+export function clientIp(req) {
+  return req.headers.get('CF-Connecting-IP') || 'unknown'
+}
+
+/**
+ * Increment + check the per-IP/per-endpoint counter (parameterized D1 UPSERT).
+ * @returns {Promise<{limited:boolean, count:number, budget:number, retryAfter:number}>}
+ */
+export async function checkRateLimit(env, req, endpoint, nowMs) {
+  const budget = budgetFor(endpoint)
+  // No DB bound (local dev without D1) → don't block; the Gateway ceiling still applies live.
+  if (!env || !env.DB) return { limited: false, count: 0, budget, retryAfter: 0 }
+  const ip = clientIp(req)
+  const ws = windowStart(nowMs)
+  try {
+    const row = await env.DB.prepare(
+      `INSERT INTO rate_limits (ip, endpoint, window_start, count) VALUES (?1, ?2, ?3, 1)
+       ON CONFLICT(ip, endpoint, window_start) DO UPDATE SET count = count + 1
+       RETURNING count`,
+    )
+      .bind(ip, endpoint, ws)
+      .first()
+    const count = (row && row.count) || 1
+    const limited = count > budget
+    const retryAfter = limited ? ws + WINDOW_SEC - Math.floor(nowMs / 1000) : 0
+    return { limited, count, budget, retryAfter }
+  } catch {
+    return { limited: false, count: 0, budget, retryAfter: 0 } // fail open — never lock out on a DB error
+  }
+}
+
+/** Uniform 429 — SSE frame for streaming routes, JSON for the rest. Safe message only. */
+export function rateLimitedResponse({ retryAfter, sse = false, headers = {} }) {
+  const h = { 'Retry-After': String(Math.max(1, retryAfter || WINDOW_SEC)), ...headers }
+  if (sse) {
+    return new Response(
+      sseFrame('Rate limit reached — please wait a moment and try again.') + SSE_DONE,
+      { status: 429, headers: { ...SSE_HEADERS, ...h } },
+    )
+  }
+  return new Response(JSON.stringify({ error: 'rate_limited', retryAfter: retryAfter || WINDOW_SEC }), {
+    status: 429,
+    headers: { 'Content-Type': 'application/json', ...h },
+  })
+}
+
+// Which endpoints are rate-limited, their budget key, and whether they stream (SSE).
+export const ROUTE_LIMITS = {
+  'POST /': { endpoint: 'chat', sse: true },
+  'POST /audit': { endpoint: 'audit', sse: true },
+  'POST /fuzz': { endpoint: 'fuzz', sse: true },
+  'POST /tx-explain': { endpoint: 'tx_explain', sse: true },
+  'POST /speech-to-text': { endpoint: 'stt', sse: false },
+  'POST /text-to-speech': { endpoint: 'tts', sse: false },
+  'POST /ctf/verify': { endpoint: 'ctf', sse: false },
+  'GET /ctf/leaderboard': { endpoint: 'light', sse: false },
+  'POST /engagement': { endpoint: 'light', sse: false },
+  'POST /book-a-call': { endpoint: 'light', sse: false },
+}
+
+export function routeLimit(method, pathname) {
+  return ROUTE_LIMITS[`${method} ${pathname}`] || null
+}
