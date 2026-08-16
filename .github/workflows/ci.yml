@@ -113,7 +113,9 @@ jobs:
           workingDirectory: workers/portfolio-agent
           # --config is REQUIRED: wrangler v4 walks up and would otherwise pick the root
           # wrangler.jsonc (the SPA) instead of this worker's wrangler.toml.
-          command: deploy --name portfolio-agent-v2 --config wrangler.toml
+          # --var ALLOWED_ORIGINS: the preview worker must allow the preview SPA origin (CORS),
+          # which production's allowlist doesn't include — override it for the preview ONLY.
+          command: deploy --name portfolio-agent-v2 --config wrangler.toml --var ALLOWED_ORIGINS:https://jw3b.dev,https://www.jw3b.dev,https://jw3b-dev-site-v2.agilegypsy.workers.dev
 
   deploy-preview-frontend:
     name: Preview — SPA (jw3b-dev-site-v2)
