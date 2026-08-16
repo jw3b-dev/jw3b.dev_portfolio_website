@@ -1,0 +1,28 @@
+{
+  "_note": "STARTER register (P0-07). Fully seeded in P0-08 (portfolio-evidence) with CR-01…10 + certs. A claim renders only if status=cleared AND it carries an evidence_pointer.",
+  "claims": [
+    {
+      "id": "codehawks-124-findings",
+      "value": "17 findings",
+      "label": "CodeHawks #124 — findings (8 High)",
+      "status": "cleared",
+      "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy",
+      "source_system": "CodeHawks #124"
+    },
+    {
+      "id": "codehawks-124-exp",
+      "value": "1,430 EXP",
+      "label": "CodeHawks #124 — competitive-audit EXP",
+      "status": "cleared",
+      "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy",
+      "source_system": "CodeHawks #124"
+    }
+  ],
+  "forbidden": [
+    "aggregate TVL / total value locked",
+    "$ secured / protocols secured",
+    "50+ audits completed",
+    "PMP certified (holds AgilePM Practitioner, not PMP)",
+    "PRINCE2 Practitioner (holds PRINCE2 Foundation)"
+  ]
+}

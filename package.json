@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "claims-gate": "node scripts/claims-gate.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

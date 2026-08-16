@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "jw3b.dev v2 Evidence Register (DE-07)",
+  "description": "The single source governing every number/credential the site may present as fact. Seeded fully in P0-08; enforced by scripts/claims-gate.mjs (P0-07).",
+  "type": "object",
+  "required": ["claims"],
+  "properties": {
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "value", "label", "status"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "value": { "type": "string" },
+          "label": { "type": "string" },
+          "status": { "enum": ["cleared", "requires_resolution", "forbidden"] },
+          "evidence_pointer": { "type": "string", "description": "URL or 'owner-attested, <system>' — REQUIRED when status=cleared" },
+          "provenance_note": { "type": "string", "description": "e.g. 'AgileGypsy Labs / EcoGraph' for studio-origin figures" },
+          "source_system": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "forbidden": {
+      "type": "array",
+      "description": "Human-readable list of claim shapes the site must never make (mirrors FORBIDDEN_PATTERNS).",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}
