@@ -41,11 +41,14 @@ export function unlockProvisioned() {
   return Object.values(UNLOCK_LOCKS).some((l) => isRealAddress(l?.address))
 }
 
-// CTF (P2-09) — the owner-deployed ReentrantVault on Base Sepolia. The Attacker ABI +
-// bytecode ship in the bundle because the VISITOR deploys their own attacker (the challenge).
-// `vaultAddress: null` until provisioned → the CTF console degrades / the route stays gated.
+// CTF (P2-09) — the ReentrantVault on Base Sepolia. The Attacker ABI + bytecode ship in the
+// bundle because the VISITOR deploys their own attacker (the challenge). This is the vault
+// already deployed + Basescan-verified in the prior work (still armed with testnet bait as of
+// 2026-08-16); it's compatible because the v2 attack calls deposit()/withdraw() (identical
+// selectors) and the Worker verifies by raw eth_getBalance, not a named view function. The
+// `ctf` feature flag still gates the route, and the Worker needs CTF_VAULT_ADDRESS set to match.
 export const CTF = Object.freeze({
-  vaultAddress: null, // ← Base Sepolia ReentrantVault address (owner-provisioned)
+  vaultAddress: '0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240', // Base Sepolia ReentrantVault (live)
   chainId: 84532, // Base Sepolia — TESTNET, no real funds (BR-09/FR-024)
   attackerAbi: AttackerAbi,
   attackerBytecode: ATTACKER_BYTECODE,
