@@ -19,6 +19,8 @@ test('Home renders the operable hero: position line + editable auditor + a claim
   expect(editor).toBeInTheDocument()
   expect(editor.value).toMatch(/contract Vault/)
 
-  // 3. a cleared claim renders from the register (CodeHawks findings)
-  expect(screen.getByText(/17 findings/)).toBeInTheDocument()
+  // 3. a cleared claim renders from the register (CodeHawks findings). Since P1-14 added a
+  // dedicated CodeHawks deep-link card below the hero, this figure now legitimately appears
+  // on more than one section of Home — assert it renders at all, not that it's unique.
+  expect(screen.getAllByText(/17 findings/).length).toBeGreaterThan(0)
 })

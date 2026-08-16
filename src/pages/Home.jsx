@@ -1,14 +1,20 @@
 import Hero from '../components/hero/Hero.jsx'
 import FourHats from '../components/identity/FourHats.jsx'
+import CodeHawksLink from '../components/proof/CodeHawksLink.jsx'
+import DeliveryAnchor from '../components/proof/DeliveryAnchor.jsx'
 
 // Home / marquee route. The operable, proof-first hero (P1-09) leads; the four-hat
-// identity surface (P1-11, FR-003) follows — one operator, four hats, shown together.
-// Further brief 03/04/07 sections mount beneath as they land.
+// identity (P1-11, FR-003) and the credibility surfaces (P1-14: CodeHawks #124 deep-link
+// FR-044 + PM/Founder delivery anchor FR-060) follow. Further brief sections mount later.
 export default function Home() {
   return (
     <>
       <Hero />
-      <FourHats className="mx-auto max-w-6xl px-5 py-16 sm:px-8" />
+      <FourHats className="mx-auto max-w-6xl px-5 pt-16 sm:px-8" />
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-5 py-16 sm:px-8 lg:grid-cols-2">
+        <CodeHawksLink />
+        <DeliveryAnchor />
+      </div>
     </>
   )
 }
