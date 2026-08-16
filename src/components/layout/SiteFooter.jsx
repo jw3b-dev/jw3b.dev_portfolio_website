@@ -17,7 +17,7 @@ export default function SiteFooter() {
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-content-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <p className="font-mono text-[11px] uppercase tracking-label">
-          JW3B<span className="text-cyan">.</span>dev — John Wellard
+          JW<span className="text-cyan">3</span>B<span className="text-cyan">.</span>dev — John Wellard
         </p>
         <nav aria-label="Footer" className="flex items-center gap-5">
           <Link

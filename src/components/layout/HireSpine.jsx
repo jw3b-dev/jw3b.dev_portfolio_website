@@ -47,7 +47,7 @@ export default function HireSpine() {
           to="/"
           className="font-display text-sm font-semibold tracking-tight text-content-primary motion-safe:transition-colors hover:text-cyan"
         >
-          JW3B<span className="text-cyan">.</span>
+          JW<span className="text-cyan">3</span>B<span className="text-cyan">.</span>
         </Link>
 
         {/* primary route nav (sm+) */}
