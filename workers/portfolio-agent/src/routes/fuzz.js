@@ -9,7 +9,7 @@
  */
 import { sseFrame, SSE_DONE, SSE_HEADERS } from '../tagProtocol.js'
 import { buildFuzzHarness } from '../../../../src/lib/fuzzHarness.js'
-import { workersAiDelta, anthropicDelta, anthropicGatewayUrl, anthropicAuth } from './concierge.js'
+import { workersAiDelta, anthropicDelta, anthropicGatewayUrl, anthropicAuth, anthropicFetch } from './concierge.js'
 import { pumpInto, recordedFrames, WORKERS_AI_MODEL } from './audit.js'
 
 export const FUZZ_ANTHROPIC_MODEL = 'claude-opus-4-8' // ADR-05: strong model for security (env-overridable)
@@ -36,7 +36,7 @@ async function tryAnthropicTips(env, source, harness) {
   if (!url || !env.ANTHROPIC_API_KEY) return null
   try {
     const auth = anthropicAuth(env.ANTHROPIC_API_KEY, FUZZ_SYSTEM)
-    const res = await fetch(url, {
+    const res = await anthropicFetch(url, {
       method: 'POST',
       headers: auth.headers,
       body: JSON.stringify({
@@ -47,7 +47,7 @@ async function tryAnthropicTips(env, source, harness) {
         stream: true,
       }),
     })
-    return res.ok && res.body ? res.body : null
+    return res && res.ok && res.body ? res.body : null
   } catch {
     return null
   }

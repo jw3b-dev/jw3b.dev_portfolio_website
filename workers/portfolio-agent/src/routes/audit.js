@@ -11,7 +11,7 @@ import { sseFrame, SSE_DONE, SSE_HEADERS } from '../tagProtocol.js'
 import { runKvKey } from '../replay.js'
 import { auditSolidity, formatFindingsText, AUDIT_DISCLAIMER } from '../auditHeuristics.js'
 import { retrieveAuditContext } from '../auditRag.js'
-import { anthropicDelta, workersAiDelta, anthropicGatewayUrl, anthropicAuth } from './concierge.js'
+import { anthropicDelta, workersAiDelta, anthropicGatewayUrl, anthropicAuth, anthropicFetch } from './concierge.js'
 
 export const AUDIT_MODEL = 'claude-opus-4-8' // ADR-05: reserve the stronger model for security (env-overridable)
 // Workers-AI fallback: Qwen2.5-Coder-32B — a CODE-specialized model (32k ctx), far better than
@@ -41,7 +41,7 @@ async function tryAnthropicNarrative(env, source, findingsText, ragContext = '')
   if (!url || !env.ANTHROPIC_API_KEY) return null
   try {
     const auth = anthropicAuth(env.ANTHROPIC_API_KEY, AUDIT_SYSTEM)
-    const res = await fetch(url, {
+    const res = await anthropicFetch(url, {
       method: 'POST',
       headers: auth.headers,
       body: JSON.stringify({
@@ -52,7 +52,7 @@ async function tryAnthropicNarrative(env, source, findingsText, ragContext = '')
         stream: true,
       }),
     })
-    return res.ok && res.body ? res.body : null
+    return res && res.ok && res.body ? res.body : null
   } catch {
     return null
   }

@@ -113,6 +113,45 @@ export function anthropicAuth(apiKey, system) {
   return { headers: { ...base, 'x-api-key': apiKey }, system }
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Backoff (ms) before retrying a transient Anthropic response: honor `Retry-After` (seconds)
+ * when present, else exponential (400·2^attempt), capped at `capMs`. Mirrors the v1 worker's
+ * llm.js bounded retry — a brief 429/529 (the shared OAuth-token pool momentarily busy) must NOT
+ * immediately demote the request to the weaker Workers-AI fallback (GAP-02). Pure → unit-tested.
+ */
+export function anthropicBackoffMs(res, attempt, capMs = 3000) {
+  const raRaw = res && res.headers && typeof res.headers.get === 'function' ? res.headers.get('retry-after') : null
+  const ra = Number(raRaw)
+  const fromHeader = Number.isFinite(ra) && ra > 0 ? ra * 1000 : 0
+  const exp = 400 * 2 ** attempt // 400, 800, 1600…
+  return Math.min(Math.max(fromHeader, exp), capMs)
+}
+
+/**
+ * `fetch()` for the Anthropic-via-Gateway call with a BOUNDED retry on transient failures
+ * (HTTP 429/529, or a network error), honoring `Retry-After`. It retries only the INITIAL
+ * response — nothing has streamed to the client yet — so it can never double-emit. Returns the
+ * final Response (ok OR not: the caller checks `.ok` and falls back to Workers-AI) or `null` when
+ * the network keeps throwing. `retries`/`capMs`/`sleepFn` are injectable for tests.
+ */
+export async function anthropicFetch(url, init, { retries = 2, capMs = 3000, sleepFn = sleep } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    let res
+    try {
+      res = await fetch(url, init)
+    } catch {
+      if (attempt >= retries) return null // network error, retry budget spent → caller falls back
+      await sleepFn(anthropicBackoffMs(null, attempt, capMs))
+      continue
+    }
+    const retryable = res.status === 429 || res.status === 529
+    if (!retryable || attempt >= retries) return res
+    await sleepFn(anthropicBackoffMs(res, attempt, capMs))
+  }
+}
+
 // ── Streaming bridge ──────────────────────────────────────────────────────────────────────
 
 /**
@@ -167,7 +206,7 @@ async function tryAnthropic(env, messages, system) {
   if (!url || !env.ANTHROPIC_API_KEY) return null
   try {
     const auth = anthropicAuth(env.ANTHROPIC_API_KEY, system)
-    const res = await fetch(url, {
+    const res = await anthropicFetch(url, {
       method: 'POST',
       headers: auth.headers,
       body: JSON.stringify({
@@ -178,7 +217,7 @@ async function tryAnthropic(env, messages, system) {
         stream: true,
       }),
     })
-    return res.ok && res.body ? res.body : null
+    return res && res.ok && res.body ? res.body : null
   } catch {
     return null
   }
