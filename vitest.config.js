@@ -25,6 +25,7 @@ export default defineConfig({
         'src/lib/conciergeClient.js',
         'src/lib/auditClient.js',
         'src/lib/motion.js',
+        'src/lib/loadout.js',
       ],
       thresholds: {
         lines: 100,
