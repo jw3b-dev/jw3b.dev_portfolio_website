@@ -9,10 +9,12 @@ import { useCallback, useRef, useState } from 'react'
 import { AGENT_CHAT_URL } from '../config/worker.js'
 import { parseSseLine } from '../lib/tagProtocol.js'
 import { buildOutgoing, shouldDegrade, degradedMessage, displayText } from '../lib/conciergeClient.js'
+import { parseTags } from '../lib/tagProtocol.js'
 
 export function usePortfolioAgent() {
   const [messages, setMessages] = useState([])
   const [streaming, setStreaming] = useState(false)
+  const [toolCall, setToolCall] = useState(null)
   const historyRef = useRef([])
 
   const commit = useCallback((updater) => {
@@ -76,7 +78,13 @@ export function usePortfolioAgent() {
           }
         }
         if (!acc.trim()) patchLast(degradedMessage())
-        else patchLast({ pending: false })
+        else {
+          patchLast({ pending: false })
+          // Surface a hire-routing tool-call (FR-019) once the reply completes — the widget
+          // dispatches it (opens Mission Control). Malformed → parseTags returns null, no-op.
+          const tc = parseTags(acc).toolCall
+          if (tc) setToolCall(tc)
+        }
       } catch {
         patchLast(degradedMessage())
       } finally {
@@ -86,5 +94,5 @@ export function usePortfolioAgent() {
     [streaming, commit, patchLast],
   )
 
-  return { messages, streaming, send }
+  return { messages, streaming, send, toolCall, clearToolCall: () => setToolCall(null) }
 }

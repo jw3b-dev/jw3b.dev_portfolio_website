@@ -210,10 +210,20 @@ function sseResponse(stream, conversationId, source, extraHeaders) {
  * client. On total upstream loss with no KV run, replies 503 + X-Replay-Fallthrough so the
  * client drops to its bundled Tier-2 run (P1-07 honors this header).
  */
+// FR-019 tool registry — appended to the grounded KB so the model can route the visitor into
+// Mission Control WITHOUT stating a price itself (pricing lives there, from retainer.json / BR-12).
+const TOOL_REGISTRY_PROMPT =
+  '\n\nTOOLS — when the visitor wants to see packages/pricing or start a booking, you MAY emit a ' +
+  'single tool call on its own line to open Mission Control:\n' +
+  '[TOOL_CALL: {"action":"openModal","type":"pricing"}]   → packages + indicative pricing\n' +
+  '[TOOL_CALL: {"action":"openModal","type":"contact"}]   → start a booking / contact\n' +
+  'Emit at most one per reply, only when it clearly helps. NEVER state a price yourself — Mission ' +
+  'Control shows the indicative pricing.'
+
 export async function handleConcierge(req, env, ctx, body, extraHeaders = {}) {
   const messages = toAnthropicMessages(body.messages)
   const conversationId = safeConversationId(body.conversationId, crypto.randomUUID())
-  const system = conciergeSystemPrompt || CONCIERGE_SYSTEM_FALLBACK // register-generated KB (P1-03)
+  const system = (conciergeSystemPrompt || CONCIERGE_SYSTEM_FALLBACK) + TOOL_REGISTRY_PROMPT // KB (P1-03) + tools (P2-17)
 
   const waitUntil = (p) => ctx && typeof ctx.waitUntil === 'function' && ctx.waitUntil(p)
 

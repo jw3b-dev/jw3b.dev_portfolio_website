@@ -6,18 +6,32 @@
  * — never a blank error. Semantic design tokens only (no raw hex); motion gated on motion-safe.
  */
 import { useState, useRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { usePortfolioAgent } from '../../hooks/usePortfolioAgent.js'
+import { toolCallTarget } from './toolCalls.js'
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
-  const { messages, streaming, send } = usePortfolioAgent()
+  const { messages, streaming, send, toolCall, clearToolCall } = usePortfolioAgent()
   const [draft, setDraft] = useState('')
   const listRef = useRef(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight
   }, [messages, open])
+
+  // FR-019: a concierge hire-routing tool-call opens Mission Control (/hire-me). Validated
+  // against the closed registry; unknown → ignored. Closes the widget so the route is visible.
+  useEffect(() => {
+    if (!toolCall) return
+    const target = toolCallTarget(toolCall)
+    clearToolCall()
+    if (target) {
+      setOpen(false)
+      navigate(`${target.path}${target.hash}`)
+    }
+  }, [toolCall, clearToolCall, navigate])
 
   const submit = (e) => {
     e.preventDefault()
