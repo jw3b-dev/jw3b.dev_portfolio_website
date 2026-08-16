@@ -21,6 +21,7 @@ export default defineConfig({
         'src/lib/tagProtocol.js',
         'src/lib/claimsValidate.js',
         'src/lib/replay.js',
+        'src/lib/knowledgeBase.js',
       ],
       thresholds: {
         lines: 100,

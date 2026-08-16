@@ -11,6 +11,7 @@
  */
 import { sseFrame, SSE_DONE, SSE_HEADERS, parseTags } from '../tagProtocol.js'
 import { serveRecordedRun } from '../replay.js'
+import { conciergeSystemPrompt } from '../knowledge.js'
 
 export const CONCIERGE_MODEL = 'claude-haiku-4-5-20251001' // ADR-05 concierge tier (env-overridable)
 export const LLAMA_FALLBACK_MODEL = '@cf/meta/llama-3.1-70b-instruct'
@@ -18,8 +19,8 @@ export const REPLAY_KEY = 'concierge-intro' // Tier-1 KV key for the concierge s
 const MAX_TURNS = 20 // cap forwarded context — cost + prompt-injection surface
 const MAX_CHARS = 4000 // per-message clamp
 
-// Seam system prompt. P1-03 REPLACES this by importing the KB generated from the sealed
-// evidence register (no hand-authored numbers) — do NOT add stats/claims here.
+// Grounding = the register-generated KB (P1-03). This tiny fallback only guards the case
+// where the generated prompt is somehow empty; it carries NO stats/claims by design.
 export const CONCIERGE_SYSTEM_FALLBACK =
   "You are the concierge for John Wellard's (JW3B) engineering portfolio. Be concise and " +
   'factual. Never invent numbers, credentials, or claims — if you do not know, say so and ' +
@@ -212,7 +213,7 @@ function sseResponse(stream, conversationId, source, extraHeaders) {
 export async function handleConcierge(req, env, ctx, body, extraHeaders = {}) {
   const messages = toAnthropicMessages(body.messages)
   const conversationId = safeConversationId(body.conversationId, crypto.randomUUID())
-  const system = CONCIERGE_SYSTEM_FALLBACK // P1-03 swaps this for the register-generated KB
+  const system = conciergeSystemPrompt || CONCIERGE_SYSTEM_FALLBACK // register-generated KB (P1-03)
 
   const waitUntil = (p) => ctx && typeof ctx.waitUntil === 'function' && ctx.waitUntil(p)
 
