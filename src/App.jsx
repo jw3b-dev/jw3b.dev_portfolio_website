@@ -4,6 +4,7 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { HelmetProvider } from 'react-helmet-async'
+import { MotionConfig } from 'framer-motion'
 import '@rainbow-me/rainbowkit/styles.css'
 import { config } from './config/wagmi'
 import ChatWidget from './components/chat/ChatWidget'
@@ -86,7 +87,12 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
           <HelmetProvider>
-            <RouterProvider router={router} />
+            {/* P1-12 / FR-007: reducedMotion="user" neutralises transform/layout animation
+                for EVERY Framer surface beneath it — the structural 100% reduced-motion guard,
+                paired with the CSS `motion-safe:` convention. */}
+            <MotionConfig reducedMotion="user">
+              <RouterProvider router={router} />
+            </MotionConfig>
           </HelmetProvider>
         </RainbowKitProvider>
       </QueryClientProvider>

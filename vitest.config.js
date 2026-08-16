@@ -24,6 +24,7 @@ export default defineConfig({
         'src/lib/knowledgeBase.js',
         'src/lib/conciergeClient.js',
         'src/lib/auditClient.js',
+        'src/lib/motion.js',
       ],
       thresholds: {
         lines: 100,
