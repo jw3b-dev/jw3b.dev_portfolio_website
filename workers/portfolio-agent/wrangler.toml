@@ -39,8 +39,8 @@ AI_GATEWAY = "jw3b-portfolio-agent"           # Cloudflare AI Gateway slug (ADR-
                                               # AI Gateway dashboard (owner) — the outer limit above the
                                               # per-IP D1 rate-limit in rateLimit.js (P1-01 defense-in-depth).
 ALLOWED_ORIGINS = "https://jw3b.dev,https://www.jw3b.dev" # CORS allowlist (NFR-04); dev origin gated by DEV_ORIGIN secret
-CTF_VAULT_ADDRESS = ""                          # Base Sepolia ReentrantVault (owner-provisioned, P2)
-CTF_RPC_URL = ""                                # Base Sepolia RPC (owner-provisioned, P2)
+CTF_VAULT_ADDRESS = "0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240" # Base Sepolia ReentrantVault (live, matches src/config/contracts.js)
+CTF_RPC_URL = "https://sepolia.base.org"        # public Base Sepolia RPC (no key); override with a dedicated endpoint if rate-limited
 
 # Secrets (NEVER in this file — set via `wrangler secret put`):
 #   ANTHROPIC_API_KEY   — Anthropic via AI Gateway (ADR-05)
