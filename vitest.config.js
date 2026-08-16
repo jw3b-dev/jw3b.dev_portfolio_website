@@ -29,6 +29,7 @@ export default defineConfig({
         'src/lib/engagementQueue.js',
         'src/lib/markdown.js',
         'src/lib/web3Guards.js',
+        'src/lib/escrowFlow.js',
       ],
       thresholds: {
         lines: 100,
