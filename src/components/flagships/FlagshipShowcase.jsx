@@ -45,10 +45,20 @@ export default function FlagshipShowcase() {
         Four flagships — operable, not slideware
       </h1>
 
-      <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+      {/* Masonry (CSS columns): the four cards have very different heights (the tall audit
+          console vs the compact Kointel), so a 2-col grid either stretches cards to leave
+          dead-space or leaves holes under the shorter card. Columns pack each card directly
+          under the previous one in its column — no stretch, no gaps. break-inside-avoid keeps
+          a card from splitting across columns; the child margin is the vertical rhythm (gap
+          only sets column-gap here). Single column below lg. */}
+      {/* DOM order balances the two columns and keeps the visual pairing: columns fill the
+          first two cards into col-1 (KTHULHU + Overmind) and the last two into col-2 (the tall
+          audit console + Kointel), so neither column runs far longer than the other. Screen
+          readers read this DOM order; the visual grid is KTHULHU/AI top, Overmind/Kointel below. */}
+      <div className="mt-8 lg:columns-2 lg:gap-5 [&>*]:mb-5 [&>*]:break-inside-avoid">
         <KthulhuEmbed />
-        <OnSiteAiFlagship />
         <OvermindGraph />
+        <OnSiteAiFlagship />
         <Kointel />
       </div>
     </section>
