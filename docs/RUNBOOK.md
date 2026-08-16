@@ -10,10 +10,18 @@ secret-scan). Then, from the owner's authenticated machine:
 
 **SPA (static site)**
 1. `npm ci && npm run build` → `dist/`.
-2. From the repo root: `wrangler deploy --config wrangler.jsonc` → the `jw3b-dev-site` Workers
-   Static-Assets site (served on jw3b.dev + www). `dist/_headers` ships the cache rules (shell
-   `no-store`, hashed assets `immutable`) + CSP — verify the shell responds
-   `Cache-Control: no-store` after deploy (stale-shell rule, ADR-07).
+2. From the repo root: `npx wrangler@4 deploy --config wrangler.jsonc` → the `jw3b-dev-site`
+   Workers Static-Assets site (served on jw3b.dev + www).
+   > **MUST use wrangler >=4 (GAP-01).** `worker.js` sets the CSP + security headers + cache
+   > rules, and `assets.run_worker_first: true` (wrangler.jsonc) is what makes it run on the shell
+   > (`/`) and hashed `/assets/*`. An older wrangler **silently ignores `run_worker_first`**, so the
+   > site ships with **no CSP and no immutable-asset caching**. `public/_headers` is INERT (a
+   > Pages-only feature) — the worker owns headers, not `_headers`.
+3. **Verify after deploy (GAP-01 regression guard):**
+   `curl -sSI https://jw3b.dev/` → MUST show `content-security-policy`, `x-served-by: jw3b-dev-site-worker`,
+   and `Cache-Control: no-store` on the shell (the `x-served-by` proves worker.js ran on the shell).
+   `curl -sSI https://jw3b.dev/assets/<hashed>.js` → `Cache-Control: public, max-age=31536000, immutable`.
+   Missing CSP / `x-served-by` ⇒ the worker isn't running on assets ⇒ wrangler version too old.
 
 > **Config discovery (wrangler v4):** the root `wrangler.jsonc` (SPA) is an ancestor of
 > `workers/portfolio-agent/`, and wrangler walks up — so EVERY worker command MUST pass
@@ -76,8 +84,10 @@ Everything the site treats as truth is **in git**, so recovery is a re-run, not 
 
 ## 4. Post-deploy verification (smoke)
 
-- Shell: `curl -I https://jw3b.dev` → `Cache-Control: no-store`, CSP present, no
-  `anthropic` host in `connect-src`.
+- Shell: `curl -sSI https://jw3b.dev/` → `Cache-Control: no-store`, `content-security-policy`
+  present, `x-served-by: jw3b-dev-site-worker` (proves worker.js ran on the shell — GAP-01), no
+  `anthropic` host in `connect-src`. Hashed asset: `curl -sSI https://jw3b.dev/assets/<hashed>.js`
+  → `Cache-Control: …immutable`.
 - Worker: each route returns its typed contract; CORS `Access-Control-Allow-Origin`
   echoes an allowlisted origin (never `*`); no secret in any client response.
 - Claims: every rendered number traces to a cleared register entry (spot-check the
