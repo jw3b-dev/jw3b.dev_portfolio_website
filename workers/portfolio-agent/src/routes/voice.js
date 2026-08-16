@@ -14,10 +14,10 @@ export function ttsTextFrom(body) {
   return body && typeof body.text === 'string' ? body.text.slice(0, TTS_TEXT_CAP).trim() : ''
 }
 
-/** Deterministic R2 object key for a spoken line: `voice/<sha256(text)>.wav`. Pure (async digest). */
+/** Deterministic R2 object key for a spoken line: `voice/<sha256(text)>.mp3`. Pure (async digest). */
 export async function ttsR2Key(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(text || '')))
-  return 'voice/' + [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('') + '.wav'
+  return 'voice/' + [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('') + '.mp3'
 }
 
 /**
@@ -30,7 +30,7 @@ async function r2FallbackAudio(env, text, corsHeaders) {
   try {
     const obj = await env.R2.get(await ttsR2Key(text))
     if (!obj || !obj.body) return null
-    return new Response(obj.body, { headers: { 'Content-Type': 'audio/wav', 'X-Voice-Tier': 'recorded', ...corsHeaders } })
+    return new Response(obj.body, { headers: { 'Content-Type': 'audio/mpeg', 'X-Voice-Tier': 'recorded', ...corsHeaders } })
   } catch {
     return null
   }
@@ -49,7 +49,9 @@ export async function handleStt(req, env, corsHeaders = {}) {
   }
 }
 
-/** POST /text-to-speech — { text } in → audio/wav out (Aura). Fail-safe → 204 (widget stays silent). */
+/** POST /text-to-speech — { text } in → audio/mpeg out. `@cf/deepgram/aura-1` returns MP3 (MPEG
+ * ADTS), so we MUST label it audio/mpeg — audio/wav made browsers fail with NotSupportedError.
+ * Fail-safe → R2 recorded clip, else 204 (widget stays silent). */
 export async function handleTts(req, env, corsHeaders = {}) {
   let body = null
   try { body = await req.json() } catch { body = null }
@@ -63,7 +65,7 @@ export async function handleTts(req, env, corsHeaders = {}) {
   if (!env || !env.AI) return (await r2FallbackAudio(env, text, corsHeaders)) || new Response(null, { status: 204, headers: corsHeaders })
   try {
     const audio = await env.AI.run(TTS_MODEL, { text, speaker: TTS_SPEAKER })
-    return new Response(audio, { headers: { 'Content-Type': 'audio/wav', ...corsHeaders } })
+    return new Response(audio, { headers: { 'Content-Type': 'audio/mpeg', ...corsHeaders } })
   } catch {
     return (await r2FallbackAudio(env, text, corsHeaders)) || new Response(null, { status: 204, headers: corsHeaders }) // client falls back to no audio
   }

@@ -11,7 +11,7 @@ const req = (text) => ({ json: async () => ({ text }) })
 describe('ttsR2Key', () => {
   it('is a deterministic voice/<sha256>.wav key', async () => {
     const k1 = await ttsR2Key('hello')
-    expect(k1).toMatch(/^voice\/[0-9a-f]{64}\.wav$/)
+    expect(k1).toMatch(/^voice\/[0-9a-f]{64}\.mp3$/)
     expect(await ttsR2Key('hello')).toBe(k1)
     expect(await ttsR2Key('other')).not.toBe(k1)
   })
@@ -22,7 +22,7 @@ describe('handleTts — R2 recorded-audio fallback (FR-016)', () => {
     const R2 = { get: vi.fn(async () => ({ body: 'AUDIOBYTES' })) }
     const res = await handleTts(req('hi there'), { R2 })
     expect(res.status).toBe(200)
-    expect(res.headers.get('content-type')).toBe('audio/wav')
+    expect(res.headers.get('content-type')).toBe('audio/mpeg')
     expect(res.headers.get('x-voice-tier')).toBe('recorded')
     expect(R2.get).toHaveBeenCalledWith(await ttsR2Key('hi there'))
   })

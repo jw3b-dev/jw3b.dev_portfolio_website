@@ -58,10 +58,10 @@ describe('handleTts — validation + fail-safe', () => {
     expect(res.status).toBe(204)
   })
 
-  it('AI success → audio/wav', async () => {
+  it('AI success → audio/mpeg (Aura returns MP3)', async () => {
     const env = { AI: { run: async () => new Uint8Array([1, 2, 3]) } }
     const res = await handleTts({ json: async () => ({ text: 'hi' }) }, env)
     expect(res.status).toBe(200)
-    expect(res.headers.get('content-type')).toBe('audio/wav')
+    expect(res.headers.get('content-type')).toBe('audio/mpeg')
   })
 })
