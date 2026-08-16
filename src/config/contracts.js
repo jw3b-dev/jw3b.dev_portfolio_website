@@ -23,8 +23,21 @@ export const ESCROW = Object.freeze({
 // until provisioned; the rail degrades to book-a-call while it or ESCROW.address is missing.
 export const PROVIDER_WALLET = null // ← replace with John's receiving 0x… address
 
-// Unlock locks (P2-05) live here too once real locks are deployed; null = degrade.
+// Unlock Protocol locks (P2-05). Keyed by tier/offer id → the deployed lock. Empty until
+// John deploys real locks; an offer with no real lock is HIDDEN → book-a-call (FR-034).
+//   [key]: { address: '0x…', chainId: 8453, network: 8453 }
 export const UNLOCK_LOCKS = Object.freeze({})
+
+/** The deployed lock for a key, or null when it isn't a real provisioned lock (→ hide). */
+export function unlockLockFor(key) {
+  const lock = UNLOCK_LOCKS[key]
+  return lock && isRealAddress(lock.address) ? lock : null
+}
+
+/** True only when at least one real Unlock lock is deployed. */
+export function unlockProvisioned() {
+  return Object.values(UNLOCK_LOCKS).some((l) => isRealAddress(l?.address))
+}
 
 /** A real, non-zero EVM address — the gate between "provisioned" and "degrade to floor". */
 export function isRealAddress(addr) {

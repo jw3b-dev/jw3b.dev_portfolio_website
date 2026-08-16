@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isRealAddress, escrowProvisioned, ESCROW, PROVIDER_WALLET } from './contracts.js'
+import { isRealAddress, escrowProvisioned, ESCROW, PROVIDER_WALLET, unlockLockFor, unlockProvisioned } from './contracts.js'
 
 describe('contracts config — provisioning gate (P2-04 / FR-032)', () => {
   it('isRealAddress accepts a real 40-hex address', () => {
@@ -18,5 +18,10 @@ describe('contracts config — provisioning gate (P2-04 / FR-032)', () => {
     expect(ESCROW.address).toBeNull()
     expect(PROVIDER_WALLET).toBeNull()
     expect(escrowProvisioned()).toBe(false)
+  })
+
+  it('Unlock is NOT provisioned until a real lock is set (offer hides → floor)', () => {
+    expect(unlockLockFor('anything')).toBeNull()
+    expect(unlockProvisioned()).toBe(false)
   })
 })

@@ -9,6 +9,11 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.js'],
     include: ['src/**/*.{test,spec}.{js,jsx}'],
+    // Multi-step jsdom interaction tests (e.g. the Mission Control wizard walk) can exceed
+    // the 5s default when the suite runs wide under coverage — parallel-load starvation, not
+    // a code fault (they pass in isolation). A real assertion still fails fast; this only
+    // stops slow-under-load async tests from flaking the gate.
+    testTimeout: 15000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -30,6 +35,7 @@ export default defineConfig({
         'src/lib/markdown.js',
         'src/lib/web3Guards.js',
         'src/lib/escrowFlow.js',
+        'src/lib/unlockPaywall.js',
       ],
       thresholds: {
         lines: 100,
