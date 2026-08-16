@@ -22,6 +22,7 @@ export default defineConfig({
         'src/lib/claimsValidate.js',
         'src/lib/replay.js',
         'src/lib/knowledgeBase.js',
+        'src/lib/conciergeClient.js',
       ],
       thresholds: {
         lines: 100,

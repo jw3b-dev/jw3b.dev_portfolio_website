@@ -6,6 +6,7 @@ import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { HelmetProvider } from 'react-helmet-async'
 import '@rainbow-me/rainbowkit/styles.css'
 import { config } from './config/wagmi'
+import ChatWidget from './components/chat/ChatWidget'
 
 // Lazy-loaded routes — each page is code-split and loads behind the single
 // <Suspense> boundary in RootLayout. Heavy Web3 (and future R3F) libs are
@@ -25,10 +26,11 @@ const queryClient = new QueryClient()
 function RootLayout() {
   return (
     <main>
-      {/* P1-10: <HireSpine />  ·  P1-07: <ChatWidget /> mount here */}
+      {/* P1-10: <HireSpine /> mounts here */}
       <Suspense fallback={<div role="status" aria-live="polite">Loading…</div>}>
         <Outlet />
       </Suspense>
+      <ChatWidget />
     </main>
   )
 }
