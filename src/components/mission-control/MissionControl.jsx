@@ -14,7 +14,7 @@
 import { useState } from 'react'
 import { resolveLoadout, recommendEngagement } from '../../lib/loadout.js'
 import ProgressRail from './ProgressRail.jsx'
-import BookACall from './BookACall.jsx'
+import CheckoutStateMachine from './CheckoutStateMachine.jsx'
 
 const STEPS = [
   { key: 'objective', label: 'Objective' },
@@ -301,8 +301,8 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
 
             <div className="mt-5">
               {booking ? (
-                <BookACall
-                  selection={{ objective, engagement, assessment }}
+                <CheckoutStateMachine
+                  selection={{ objective, engagement, assessment, tier }}
                   loadout={loadout}
                   onBack={() => setBooking(false)}
                 />
