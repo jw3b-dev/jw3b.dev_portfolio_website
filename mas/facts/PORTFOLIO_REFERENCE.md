@@ -1,0 +1,244 @@
+# Portfolio reference — John Wellard / jw3b.dev
+
+> **Handoff from the agilegypsy-website session, 2026-07-24.**
+> Every item below was verified against a real artifact on disk or in OneDrive. Anything not
+> listed here is **not** cleared for publication. Master evidence register:
+> `~/code/projects/agilegypsy-website/docs/venture-inventory.md`.
+>
+> **Use this to rewrite jw3b.dev.** The site's problem is not dishonesty — it is that it
+> advertises emptiness while the strongest evidence sits unpublished.
+
+---
+
+## 0. Do this first — remove what is actively harming the site
+
+| Remove | Why |
+|---|---|
+| The four hero counters as they stand — **`0` lines audited · `0` findings · `0` protocols · `0` TVL** | The zeros are wrong, not just weak — see §1b. **Replace the values**, don't delete the block: real numbers are `#124 rank · 17 findings · 8 High`. |
+| Skill proficiency bars — Solidity **33 %**, security tools **40 %**, infrastructure **44 %**, tokenisation **45 %**, AI **48 %**, under *"tools I'm actively learning"* | Nobody buys 33 % Solidity — and it undersells a #124-ranked auditor with 8 High findings. Replace with shipped artifacts and the audit record. |
+| Seven of nine audit-platform links — Sherlock, Cantina, Immunefi, HackerOne, HackenProof, AuditOne, Hats | All empty. **Keep only** `profiles.cyfrin.io/u/agilegypsy` (CodeHawks — the one with a real record) and `code4rena.com/@AgileGypsy`. |
+| "Data Annotation Specialist — RemoteTasks Platform" | Sits beside "institutional-grade". Drop. |
+| Overlapping role entries — Full-Stack Engineer *(Jan 2026–present, 1 mo)* vs Junior Smart Contract Dev *(Feb 2025–Jan 2026)* vs Auditor *(Feb 2025–present)* vs Founder *(Mar 2024–present)* | The source file annotates the clash itself. Collapse into one timeline. |
+| Unverifiable metrics: *95 % on-time*, *40 % savings*, *25 % fewer delays*, *12 % cost savings*, *40 % revenue expansion*, *$2M+ TVL*, *rank #1176*, *$1.25M client revenue* | No supporting artifact. `public/resume.pdf` carries several of these — rewrite or unpublish it. |
+| KTHULHU case-study claims: **Halmos** (disabled in the repo), **TridentSVM / 12,000 tx/s** (zero code references), **Fly.io** (superseded) | Not supported by the codebase. |
+
+**Never publish:** SA ID number or ID card scans · date of birth · OU Personal Identifier `I6460870`
+· HESA ID · UK home address · Student Finance reference · personal mobile · the `bets` repo
+(`evasion.py`, anti-detection) · DecentX by name (adult vertical).
+
+---
+
+## 1b. The audit record — verified, and the hero counters are WRONG
+
+This is the single most important correction. The site's `0`-valued counters are **factually false**.
+The official **CodeHawks/Cyfrin** stats card (`Training/Cyfrin/John Wellard-stats6.png`,
+profile `agilegypsy` at `codehawks.cyfrin.io`):
+
+| Metric | As of Jan 12, 2026 | (trend from Nov 4, 2025) |
+|---|---|---|
+| **Rank** | **#124** | up from #137 |
+| **EXP** | **1,430.80** | up from 1,288.80 |
+| **Findings** | **17** | up from 13 |
+| High / Medium / Low | **8 / 5 / 4** | 7 / 3 / 3 |
+
+Two dated cards show a rising trend — safe to state as an active, ranked record.
+
+**A full contest report is on file** (`John Wellard-Snowman-Merkle-Airdrop.md`) — CodeHawks
+**First Flight #42**, Jun 2025 — with two written findings (H-01 missing access control on
+`mintSnowman()` → unlimited unauthorized minting; M-01 snapshot mismatch in `claimSnowman()`),
+annotated Solidity, likelihood/impact scoring and remediation. This is publishable as a sample
+audit report.
+
+**Do state:** "CodeHawks rank #124 · 17 findings (8 High) · 1,430 EXP" and link the profile.
+**Do not state:** aggregate TVL secured, dollar bounties, or "50+ audits" — those remain unsupported.
+The counters should read the real numbers above, not zero and not inflation.
+
+## 1. Verified credentials
+
+| Credential | Date | Evidence |
+|---|---|---|
+| **APMG AgilePM® v2 Practitioner** | Oct 2023 | Cert PDF + Credly badge + results letter |
+| **APMG AgilePM® v2 Foundation** | Aug 2023 | Cert PDF + Credly badge + results letter |
+| **PRINCE2® Foundation** (AXELOS/PeopleCert) | Jun 2023 | PeopleCert result sheet — *"Congratulations!! You Passed the exam"*, candidate John Kevin Wellard |
+| **APM Project Fundamentals Qualification (PFQ)** | 15 Apr 2023 | Certificate PDF, `P0528947` |
+| **ClickUp** — Expert, Intermediate, Novice | Oct 2023 | 3 certificate PDFs |
+| **BSc (Hons) Environmental Science**, Open University `Q52` | in progress | U116 (60 cr, Pass) + S112 (60 cr, Pass) = 120 Level-1 credits; funded 2026/27 |
+| CompTIA A+ · Network+ | 2008–09 | certificates (+ logo packs) |
+| **Microsoft Certified Professional** | Dec 2008 | Microsoft Certificate of Excellence, "JOHN K WELLARD" |
+| MCSE (7 module certificates) | — | `mcse 2–8.pdf` + MS Learning transcript |
+| **Ichthys Aquaponics — Advanced Practical Aquaponics** (hands-on, Midrand) | 26–28 Apr 2018 | certificate |
+| **Upstart University — Intro to Aquaponics** | **2 May 2018** | certificate, final quiz **100 %** |
+| **Upstart University — Aquaponic System Design** | **6 May 2018** | certificate, final quiz **100 %** |
+| Upstart University — Foundations of Aquaponics | 2018 | on CV; certificate not yet located |
+| Duxbury networking — basic · advanced · wireless | — | certificates |
+| **Cyfrin Updraft — Solidity Smart Contract Development** | Mar 2025 | `RJA259ONK621` |
+| **Cyfrin Updraft — Blockchain Basics** | Jul 2025 | `BBCC-WVSY03X68A F7` |
+| **Cyfrin Updraft — Foundry Fundamentals** | Jun 2025 | `IUY789PSN004` |
+| **Cyfrin Updraft — Web3 Wallet Security Basics** | Jun 2025 | `AKD058ERA851` |
+| **Cyfrin Updraft — Advanced Web3 Wallet Security** | Jul 2025 | `1KG922MS21NX` |
+| **Chainlink Fundamentals** | Jan 2026 | `CLF-9XSZOBM7L2SPS` (exp 2027) |
+| **Dapp University — Blockchain Bootcamp 2.0** (Certificate of Graduation) | May 2025 | `cert_4653nh2z` |
+
+**Do not claim:**
+- **PRINCE2 Practitioner** — no evidence of any kind. Foundation only.
+- **PMP** — the file is genuinely his, but it is an **ITU Online "Certificate of Completion … for
+  PMP" (3 Jun 2014)** — a training-course completion, not the PMI credential (no PMI mark, no
+  credential number, no expiry). Safe copy if used at all: *"PMP exam-preparation course (ITU
+  Online, 2014)"*. Never "PMP certified".
+- Unverified, no artifact yet: **Neo4j Certified Professional**, **ABC Business Agility
+  Professional L1**. (Chainlink and all five Cyfrin certs ARE confirmed with IDs — listed above.)
+
+> **Aquaponics dates:** LinkedIn says "×3, Jan 2018". Artifacts show **four** courses across
+> **Apr–May 2018**: Ichthys Advanced Practical (Apr, certificate) + Upstart Intro (2 May, 100 %) +
+> Upstart System Design (6 May, 100 %) + Upstart Foundations (on CV, certificate not yet located).
+> Correct the LinkedIn month/count, or locate the Foundations certificate.
+
+---
+
+## 2. The lead asset — 20+ industrial plants, 7 countries
+
+This is the site's strongest material and currently appears as one clause. It should anchor the page.
+
+| Project | Years | Country |
+|---|---|---|
+| Man Wang STP — 3× 4 m RBC replacement | 2020–22 | **Hong Kong** |
+| Dammam DAF 50 m³/h containerised · Dammam MBBR + diffusers · 300 m³/d RBC + lamella clarifiers | 2014–18 | **Saudi Arabia** |
+| Lethlekane Mine RBC upgrade | 2013–14 | **Botswana** |
+| 400 m² package RBC | 2014–15 | **Seychelles** |
+| Namagale WWTP | 2009–12 | **Uganda** |
+| Package plant drawing | — | **Mauritius** |
+| Kolomela Mine RBC 750 m² (Anglo American) — zero incidents | 2019 | South Africa |
+| Pebble Rock WWTP — 450 → 1032 m³/d | 2017–20 | South Africa |
+| Hoedspruit Wildlife Estate — 320 → 500 m³/d | 2015–17 | South Africa |
+| Albert Nzula Hospital — 420 m³/d (opening attended by the President of South Africa) | 2015–16 | South Africa |
+| Segole — 2× 450 m³/d containerised WTP | 2015–16 | South Africa |
+| Umkhanyakude District — 800 m³/d WTP | 2014 | South Africa |
+| WorleyParsons HQ rainwater treatment | 2013–14 | South Africa |
+| Commercial aquaponics farm, 400 m² | 2018–20 | South Africa |
+| Aroura 87 m³/d · Mathabatha 75 m³/h · Mangwazi RBC · Thabazimbi dosing & iron removal · Rebone Clinic RBC | 2011–13 | South Africa |
+| Giyani · Bela Bela · Malmesbury · Lenenya · Pilgrims Rest · Maripskop · Kingfisher · Wilpe | 2009–12 | South Africa |
+
+**Suggested framing:** *"Two decades delivering infrastructure where you don't get a second deploy —
+municipal water plants across seven countries, now on-chain systems. Same discipline: prove it
+before you ship it, and write down what you couldn't prove."*
+
+---
+
+## 3. Press — verified
+
+**Water & Sanitation Africa**, July/August 2015 — *"PANEL DISCUSSION — TOTAL WATER SOLUTIONS:
+Solving life-cycle aggravations."* A genuine editorial expert Q&A, answers attributed to **JW**.
+(File: OneDrive `Desktop/John 36/jw3b.dev/1687557504365.pdf`.)
+
+Citable technical content from the piece:
+- RotoClear RBC package plants, 5–200 persons, parallel units for unlimited capacity
+- RBC **selected as preferred process by the SA Department of Public Works** for small WWTWs
+- Five-year maintenance plans with **smart communicators for remote fault reporting** — telemetry, in 2015
+- O&M cost ≈ **80 % of activated sludge**, driven by lower power draw
+- **Pebble Rock Golf Estate — 11 years** unproblematic operation
+- **Hoedspruit Wildlife Estate — 10 years** consistent results
+
+**Safe copy:** *"Featured in the July/August 2015 Water & Sanitation Africa panel discussion on
+package treatment plants."* Do **not** write "published author" or "WISA publication".
+
+---
+
+## 4. PhosBox — the strongest single engineering artifact (May–June 2026)
+
+Containerised phosphate reduction: electrocoagulation → self-washing prefiltration → ultrafiltration.
+A **complete twelve-section design pack under revision control** (`~/Documents/PhosBox/`):
+
+| § | Deliverable |
+|---|---|
+| 00 | Design pack index (HTML + PDF) |
+| 01 | Process P&ID |
+| 02 | `PB-GA-001` general arrangement — DXF + PDF; container layout spec RevB → RevC → **RevD** |
+| 03 | `PB-ELEC-003_RevC` MCC wiring schedule · `PB-ELEC-002_RevA` single-line diagram · **`SLD-Generator.py`** (code-generated drawings) |
+| 04 | `PB-CTRL-001_RevB` FDS control philosophy · `PB-CTRL-002_RevA` **ECU01 Modbus register map** · functional design spec |
+| 05–07 | 3D model · HMI screen prototype (HTML) · commissioning |
+| 08–11 | **Risk / HAZOP** · O&M manual · procurement · research |
+
+Plus five sales decks (PDF + PPTX) and two explainer videos.
+
+**Why it leads:** process, electrical, controls, safety, commissioning and O&M competence proven
+simultaneously, revision-controlled, two months old — and produced with AI-assisted tooling
+(`SLD-Generator.py`, markdown → PDF pipeline), which *is* the studio's pitch.
+
+---
+
+## 5. Web3 design artifacts — cleared for publication
+
+| Artifact | Substance |
+|---|---|
+| **FungiFi** — RWA tokenisation protocol | *"Making the non-fungible, fungible."* Fractionalises CRE, private equity, art, royalty streams. Compliance-first: **KYC/AML embedded in smart contracts, on-chain transfer restrictions, `ERC-3643`/`ERC-1400`, EVM chains, audits from day one.** Best proof of tokenomics + regulatory-design competence. |
+| **Blockchain load-shedding thesis** | Ten DLT applications to South Africa's grid: P2P energy trading, smart-contract microgrids, demand-response incentives, transparent grid data, tokenised generation credits, crowdfunded infrastructure. Entirely original; strongest SA-specific Web3 argument available. Publish as an article. |
+| **Blockchain Urban Farming** (CyGro / CyberCrops / Bitfarm) | Whitepaper-grade spec: modular vertical farms with FIFO dynamic spacing (+40 % density), IoT climate control, 95 % water reduction — plus supply-chain traceability, smart-contract settlement, **DeFi funding pools, asset tokenisation, governance tokens voting on farm operations.** Full token + DAO design. |
+| **eProjectPro → AgileCEO** | AI virtual project manager, validated 2023, now the `agileceo` repo. The narrative spine: certified agile practitioner got tired of the tooling and built it. |
+
+**Excluded:** DecentX (adult vertical). If its tokenomics work is needed, anonymise as *"a
+decentralised creator-economy platform: native-token payment rail, NFT-tokenised assets,
+smart-contract revenue splits, IPFS/Filecoin storage"* — never name it.
+
+---
+
+## 6. Software projects — keep on the site
+
+`KTHULHU Overmind` (kthulhu.co) · `Kointel — AI Crypto Tax` (kointel.co.za) · **`Art of Zeta` — MEV
+trading engine** (artofzeta.com/app/) · `MB-agentic — Overmind Engine` · `AgileCEO` ·
+`AgileGypsy Labs` (agilegypsy.com) · `AgileGypsy Security Audits` (audit.agilegypsy.com).
+
+Also in the local estate, unpublished: `mas-agent-os`, `nano-bot-trader` (DeFi/tokenisation +
+trading), `mas-dashboard`, `dualweb-dashboard`, `web3_dev_guild_platform`, `web3_project_research`,
+`u-farm`, `seed-project`, `open-code-test`, `Jobsy` (product brief + MVP PRD).
+
+---
+
+## 7. Operating history — companies actually run
+
+| Entity | Period | Evidence |
+|---|---|---|
+| **AgileGypsy Labs (Pty) Ltd** — the current studio | 2024– | **Operating software studio, multiple live brands under one entity:** t/a Kointel (kointel.co.za, AI crypto-tax SaaS), t/a KTHULHU (kthulhu.co), t/a Art of Zeta (artofzeta.com/app/, MEV engine w/ login), agilegypsy.com + audit.agilegypsy.com. IR-registered, full POPIA/PAIA set, PayFast+Stitch, Cloudflare/Neon infra. Reg `K2026270871`, 2026-005090 |
+| **Designed Bio Solutions (Pty) Ltd** | 2020–24 | Enquiry register `E2020-001`→`E2024-025`; PO registry `PO 2020-353-001`→`-036+`; **payslips**, staff CVs, bank statements, supplier invoices, reciprocal NDA, T&Cs of purchase, safety risk assessment, **import & export licences**, VAT registration; **1,237 marketing files incl. Autodesk Inventor CAD** |
+| **Total Water Solutions CC** | 2009–20 | Enquiries `E001`–`E010`, projects `P001`/`P002`, process questionnaires, biogas programme |
+| **MYCOPIA (Pty) Ltd** — mushroom farm | 2019–22 | **Built & operated, not just registered.** Own domain + mailbox `john@mycopia.co.za`; `MYCOPIA MUSHROOM FARM.dwg` AutoCAD farm/equipment design + Equipment Design folder; work book, letterhead, grow photos 2019–21, videos; full CIPC + SARS + VAT + UIF + BEE + Letter of Good Standing |
+| **Orbital Aquatics** | 2018–20 | **Owner designed & built the aquaponics farm himself.** Own parametric commercial-design calculator (RBC + gravel-bed biofiltration sizing, fish stocking, DO, ammonia removal — the water-plant RBC process applied to fish); live e-commerce store (Aquaponics/Hydroponics/Koi/Workshops, ZAR products); payslips; 682 MB greenhouse Arduino prototype; 2.5 GB build gallery; co-founded (J. Wellard + L. Hubbard) |
+| Biosquid · FVX Steel · Eish!Yoh!Fix! · PureFlow · Aeroponic Saffron Farm | 2017–2025 | Enquiry registers, a full 2017 website, a built 2025 repair-parts site, business plans with costed models |
+
+**The through-line:** an operator who has designed, built and run companies across water, steel,
+agriculture and now software — not a bootcamp graduate. **Five registered companies** (TWS, DBS,
+Orbital Aquatics, MYCOPIA, AgileGypsy Labs), employees paid, import/export licensed, VAT
+registered, farms and plants designed in CAD and physically built, HAZOP signed off — and now a
+live multi-brand software studio.
+
+---
+
+## 8. Honest positioning of the Web3 work
+
+The Web3 track record is **real but early**, and the site should say so in a way that sells rather
+than apologises. What is true:
+
+- **CodeHawks rank #124 · 17 findings (8 High / 5 Medium / 4 Low) · 1,430 EXP** — verifiable at
+  `codehawks.cyfrin.io`, with a full written contest report on file (§1b)
+- Code4rena and Cyfrin/CodeHawks profiles active
+- Seven ID-bearing Cyfrin / Chainlink / Dapp University credentials (§1)
+- Shipped products: KTHULHU, Kointel, Art of Zeta, MB-agentic, AgileCEO
+- Genuine protocol-design documents (FungiFi, urban farming) using correct standards
+
+What is **not** true and must not be implied: **aggregate TVL secured, dollar bounties**,
+"50+ audits", "$50M+ secured", "decades of combined experience", or membership of the seven empty
+platforms. The distinction matters — rank/findings/EXP are real and citable; money-secured figures
+are not.
+
+**Recommended frame:** lead with delivery credibility (20+ plants, 7 countries, AgilePM
+Practitioner, PhosBox), then present Web3 as the current chapter — a **ranked auditor (#124, 8 High
+findings)** with shipped products and a published contest report. Competence demonstrated by
+artifacts and a real scoreboard, replacing the counters that currently read zero.
+
+---
+
+## 9. Open question for the owner
+
+`~/Documents/Open Uni/Letter of entitlement (2).pdf` gives a **UK home address (Tadworth, Surrey)**
+and Student Finance England funding, while `agilegypsy.com` metadata says *"Built in Gauteng."*
+Confirm the correct jurisdiction/location line before publishing — it affects both sites' copy,
+and the SA company registrations remain valid either way.
