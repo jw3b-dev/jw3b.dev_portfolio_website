@@ -44,4 +44,33 @@ describe('auditSolidity heuristics', () => {
   it('exposes severity metadata for every severity it emits', () => {
     for (const sev of ['high', 'medium', 'low']) expect(SEVERITY_META[sev]).toBeTruthy()
   })
+
+  // ── negative / false-positive cases (per detector) ─────────────────────────────────────
+  // False positives erode trust as fast as false negatives — each detector needs a safe
+  // contract it must stay silent on, not just a vulnerable one it fires on.
+
+  it('reentrancy: does NOT flag a CEI-correct withdraw (state cleared before the call)', () => {
+    // Same withdraw as the sample, but the balance is zeroed BEFORE the external call — the
+    // heuristic looks only AFTER the call, so a correct ordering must produce no finding.
+    const safe = `pragma solidity 0.8.20;
+contract Vault {
+  mapping(address => uint256) public balances;
+  function withdraw() external {
+    uint256 amount = balances[msg.sender];
+    balances[msg.sender] = 0;
+    (bool ok, ) = msg.sender.call{value: amount}("");
+    require(ok, "transfer failed");
+  }
+}`
+    expect(auditSolidity(safe).findings.some((f) => f.id === 'reentrancy')).toBe(false)
+  })
+
+  it('tx-origin: does NOT flag msg.sender-based authorization', () => {
+    const src = 'pragma solidity 0.8.20;\ncontract A { function f() public { require(msg.sender == owner); } }'
+    expect(auditSolidity(src).findings.some((f) => f.id === 'tx-origin')).toBe(false)
+  })
+
+  it('is deterministic — same source yields identical findings (no state/randomness)', () => {
+    expect(auditSolidity(SAMPLE_CONTRACT)).toEqual(auditSolidity(SAMPLE_CONTRACT))
+  })
 })
