@@ -1,8 +1,12 @@
 # jw3b.dev v2 — CI (P0-12, security/devops gate)  ·  SDD 03 §8 / 05 §6
-# Two parallel gate jobs:
+# Gate jobs:
 #   verify    — frontend/worker: lint → coverage → claims-gate → build → secret-leak scan.
 #   contracts — Foundry: forge fmt --check → forge test (unit + fuzz + invariant).
-# There is deliberately NO deploy job — deploys are OWNER-GATED (John owns prod).
+# Preview deploy (push to v2 only, gated on verify):
+#   deploy-preview-backend  → wrangler deploy --name portfolio-agent-v2  (isolated test worker)
+#   deploy-preview-frontend → wrangler deploy --name jw3b-dev-site-v2     (isolated test SPA)
+# PRODUCTION (portfolio-agent / jw3b-dev-site on jw3b.dev) is NEVER touched by CI — the owner
+# deploys prod manually (docs/RUNBOOK.md). Reuses the existing GH CLOUDFLARE_API_TOKEN/ACCOUNT_ID.
 # ADR-09: the claims-gate BLOCKS any uncleared/forbidden claim in CI.
 name: ci
 
@@ -76,6 +80,70 @@ jobs:
         working-directory: contracts
         run: forge test -vv
 
-  # NOTE: no `deploy` job by design. Production (SPA + Worker) is deployed by the owner
-  # (`wrangler deploy`), never by CI. Contract deploys are owner-provisioned too.
+  # ── PREVIEW deploy (push to v2 only) — isolated -v2 instances, production untouched ──────────
+  # Reuses the existing wrangler configs (only the worker NAME is overridden via --name) and the
+  # existing GH secrets. One-time owner step before the first preview works: set the preview
+  # worker's runtime secrets —
+  #   wrangler secret put ANTHROPIC_API_KEY --name portfolio-agent-v2
+  #   wrangler secret put NEON_DATABASE_URL --name portfolio-agent-v2
+  # (worker secrets are per-worker; they persist across preview redeploys). PRODUCTION deploys
+  # stay owner-manual (docs/RUNBOOK.md).
+  deploy-preview-backend:
+    name: Preview — Worker (portfolio-agent-v2)
+    runs-on: ubuntu-latest
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/v2'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The worker bundles @anthropic-ai/sdk + @neondatabase/serverless, so install its deps
+      # before wrangler bundles the script.
+      - name: Install worker deps
+        run: npm ci
+        working-directory: workers/portfolio-agent
+      - name: Deploy preview worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/portfolio-agent
+          # --config is REQUIRED: wrangler v4 walks up and would otherwise pick the root
+          # wrangler.jsonc (the SPA) instead of this worker's wrangler.toml.
+          command: deploy --name portfolio-agent-v2 --config wrangler.toml
+
+  deploy-preview-frontend:
+    name: Preview — SPA (jw3b-dev-site-v2)
+    runs-on: ubuntu-latest
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/v2'
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      # Point the preview SPA at the preview worker (not production). Feature flags + the public
+      # WalletConnect id come from the committed .env.production (mode=production).
+      - name: Build (→ preview worker)
+        run: npm run build
+        env:
+          VITE_PORTFOLIO_AGENT_URL: https://portfolio-agent-v2.agilegypsy.workers.dev
+      - name: Deploy preview SPA
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --name jw3b-dev-site-v2 --config wrangler.jsonc
+
+  # PRODUCTION (portfolio-agent / jw3b-dev-site) is deployed by the owner manually
+  # (`wrangler deploy`, no --name). Contract deploys are owner-provisioned too.
   # See docs/RUNBOOK.md for the release + DR procedure.

@@ -1,0 +1,17 @@
+{
+  // SPA (Workers Static Assets) deploy config — reused from the prior deployment.
+  // Production deploy: `wrangler deploy` → jw3b-dev-site (served on jw3b.dev + www).
+  // Preview deploy (CI on push to v2): `wrangler deploy --name jw3b-dev-site-v2` overrides
+  // ONLY the name → jw3b-dev-site-v2.agilegypsy.workers.dev, production untouched. Same
+  // assets/SPA settings either way.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jw3b-dev-site",
+  "main": "worker.js",
+  "compatibility_date": "2024-12-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "observability": { "enabled": true }
+}

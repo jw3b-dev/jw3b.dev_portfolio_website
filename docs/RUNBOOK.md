@@ -10,9 +10,15 @@ secret-scan). Then, from the owner's authenticated machine:
 
 **SPA (static site)**
 1. `npm ci && npm run build` → `dist/`.
-2. Publish `dist/` to the host (Cloudflare Pages/Workers assets). `dist/_headers`
-   ships the cache rules (shell `no-store`, hashed assets `immutable`) + CSP — verify
-   the shell responds `Cache-Control: no-store` after deploy (stale-shell rule, ADR-07).
+2. From the repo root: `wrangler deploy --config wrangler.jsonc` → the `jw3b-dev-site` Workers
+   Static-Assets site (served on jw3b.dev + www). `dist/_headers` ships the cache rules (shell
+   `no-store`, hashed assets `immutable`) + CSP — verify the shell responds
+   `Cache-Control: no-store` after deploy (stale-shell rule, ADR-07).
+
+> **Config discovery (wrangler v4):** the root `wrangler.jsonc` (SPA) is an ancestor of
+> `workers/portfolio-agent/`, and wrangler walks up — so EVERY worker command MUST pass
+> `--config wrangler.toml`, or it silently deploys the SPA config instead. The CI preview jobs
+> already do this.
 
 **Worker (`workers/portfolio-agent/`)**
 1. `cd workers/portfolio-agent`.
@@ -26,8 +32,22 @@ secret-scan). Then, from the owner's authenticated machine:
    - `wrangler secret put NEON_DATABASE_URL` — pgvector KB for the /audit RAG (has a password → secret).
    - `wrangler secret put DEV_ORIGIN` (optional; local dev origin only — absent in prod).
 4. Migration is already applied to `jw3b_analytics`; to re-run/track via wrangler it is idempotent:
-   `wrangler d1 migrations apply jw3b_analytics` (add `--local` to rehearse first).
-5. `wrangler deploy`.
+   `wrangler d1 migrations apply jw3b_analytics --config wrangler.toml` (add `--local` to rehearse first).
+5. `wrangler deploy --config wrangler.toml` (the `--config` is REQUIRED — see the config-discovery note above).
+
+### Preview deploy (isolated test URLs — `v2` branch)
+Pushing the `v2` branch runs the CI **preview** jobs (gated on `verify`), which deploy isolated
+instances — **never** production:
+- Worker → `portfolio-agent-v2` → `https://portfolio-agent-v2.agilegypsy.workers.dev`
+- SPA → `jw3b-dev-site-v2` → `https://jw3b-dev-site-v2.agilegypsy.workers.dev` (the test URL)
+
+One-time owner step (per-worker secrets don't carry from production):
+```
+wrangler secret put ANTHROPIC_API_KEY  --name portfolio-agent-v2 --config workers/portfolio-agent/wrangler.toml
+wrangler secret put NEON_DATABASE_URL  --name portfolio-agent-v2 --config workers/portfolio-agent/wrangler.toml
+```
+The preview shares the production D1/KV/R2 bindings (fine for a test). Flagship embeds show their
+fallback on the `*.workers.dev` origin (the origin gate only fires the live iframe on `jw3b.dev`).
 
 ## 2. Data seeding (re-seedable from the repo — this is the DR guarantee)
 
