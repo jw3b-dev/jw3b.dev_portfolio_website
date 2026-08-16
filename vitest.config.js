@@ -38,6 +38,7 @@ export default defineConfig({
         'src/lib/unlockPaywall.js',
         'src/lib/checkoutRouting.js',
         'src/lib/ctfFlow.js',
+        'src/lib/overmindPipeline.js',
       ],
       thresholds: {
         lines: 100,
