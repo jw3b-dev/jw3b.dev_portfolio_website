@@ -31,6 +31,7 @@ describe('HireSpine — the persistent hire spine (FR-002 / SC-1)', () => {
     renderAt('/')
     // Rendered twice (desktop nav + mobile disclosure) — assert the targets exist.
     for (const [label, href] of [
+      ['Work', '/work'],
       ['Audit', '/audit'],
       ['CTF', '/ctf'],
       ['Messages', '/messages'],

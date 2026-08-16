@@ -15,6 +15,7 @@ import SiteFooter from './components/layout/SiteFooter'
 // <Suspense> boundary in RootLayout. Heavy Web3 (and future R3F) libs are
 // further split by vite.config.js manualChunks (refined in P0-11).
 const Home = lazy(() => import('./pages/Home'))
+const Work = lazy(() => import('./pages/Work'))
 const Audit = lazy(() => import('./pages/Audit'))
 const Ctf = lazy(() => import('./pages/Ctf'))
 const HireMe = lazy(() => import('./pages/HireMe'))
@@ -73,6 +74,7 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { path: '/', element: <Home /> },
+      { path: '/work', element: <Work /> },
       { path: '/audit', element: <Audit /> },
       { path: '/ctf', element: <Ctf /> },
       { path: '/hire-me', element: <HireMe /> },

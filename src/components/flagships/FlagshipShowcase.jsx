@@ -41,9 +41,9 @@ export default function FlagshipShowcase() {
   return (
     <section aria-labelledby="flagships-title" className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
       <p className="font-mono text-[11px] uppercase tracking-label text-cyan">The proof set</p>
-      <h2 id="flagships-title" className="mt-2 font-display text-2xl font-semibold text-content-primary">
+      <h1 id="flagships-title" className="mt-2 font-display text-2xl font-semibold text-content-primary">
         Four flagships — operable, not slideware
-      </h2>
+      </h1>
 
       <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <KthulhuEmbed />

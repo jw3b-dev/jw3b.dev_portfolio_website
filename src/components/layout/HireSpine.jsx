@@ -11,6 +11,7 @@ import { NavLink, Link } from 'react-router-dom'
 // The operable surfaces the spine exposes. Order = the intended journey; /hire-me is the CTA,
 // not a nav link. Privacy lives in the page footer, not the spine.
 const SURFACES = [
+  { to: '/work', label: 'Work' },
   { to: '/audit', label: 'Audit' },
   { to: '/ctf', label: 'CTF' },
   { to: '/messages', label: 'Messages' },
