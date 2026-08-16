@@ -12,10 +12,22 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      // Coverage include-list + thresholds are intentionally NOT set yet. The CI
-      // coverage gate (P0-12) wires thresholds against a scoped include-list once
-      // feature files with tests exist — enforcing one now would gate on files
-      // that do not exist.
+      // CI coverage gate (P0-12). Scoped to the pure-logic modules that are
+      // exhaustively unit-tested — 100% lines + functions on each. This grows as
+      // feature files land WITH their tests; a file is added to `include` only once
+      // its tests hold the line. Gating the whole tree now would gate on files that
+      // have no tests yet (CLAUDE.md: high thresholds, deliberately short include-list).
+      include: [
+        'src/lib/tagProtocol.js',
+        'src/lib/claimsValidate.js',
+        'src/lib/replay.js',
+      ],
+      thresholds: {
+        lines: 100,
+        functions: 100,
+        branches: 85,
+        statements: 90,
+      },
     },
   },
   resolve: {

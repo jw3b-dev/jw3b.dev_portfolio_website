@@ -17,12 +17,15 @@ database_name = "jw3b-portfolio"
 database_id = "REPLACE_WITH_wrangler_d1_create_id" # owner-provisioned
 migrations_dir = "migrations"
 
-# KV — Tier-1 recorded-run transcripts (ADR-01)
+# KV — Tier-1 recorded-run transcripts (ADR-01). Re-seedable from the repo — see
+# docs/RUNBOOK.md §2 (`wrangler kv key put --binding=KV "run:<key>" …`). Tier-2 bundled
+# runs are the always-available floor, so KV loss is non-fatal (DR: RUNBOOK §3).
 [[kv_namespaces]]
 binding = "KV"
 id = "REPLACE_WITH_wrangler_kv_namespace_id" # owner-provisioned
 
-# R2 — recorded-run media (audio/video) (ADR-01)
+# R2 — recorded-run media (audio/video) (ADR-01). Re-seed: RUNBOOK §2
+# (`wrangler r2 object put jw3b-recorded-runs/<mediaKey> --file …`).
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "jw3b-recorded-runs"

@@ -1,0 +1,53 @@
+# jw3b.dev v2 — CI (P0-12, security/devops gate)  ·  SDD 03 §8 / 05 §6
+# Gates, IN ORDER: lint → coverage → claims-gate → build → secret-leak scan.
+# There is deliberately NO deploy job — deploys are OWNER-GATED (John owns prod).
+# ADR-09: the claims-gate BLOCKS any uncleared/forbidden claim in CI.
+name: ci
+
+on:
+  push:
+    branches: [main, v2]
+  pull_request:
+    branches: [main, v2]
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # .npmrc sets legacy-peer-deps=true (React 19 peer graph) — npm ci inherits it.
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test + coverage gate
+        run: npm run test:coverage
+
+      - name: Claims gate (blocks uncleared/forbidden claims — ADR-09)
+        run: npm run claims-gate
+
+      - name: Build
+        run: npm run build
+
+      # Runs AFTER build so it scans the actual shipped bundle (dist/) as well as src/.
+      - name: Client-bundle secret-leak scan (FR-050)
+        run: npm run secret-scan
+
+  # NOTE: no `deploy` job by design. Production (SPA + Worker) is deployed by the owner
+  # (`wrangler deploy`), never by CI. See docs/RUNBOOK.md for the release + DR procedure.
