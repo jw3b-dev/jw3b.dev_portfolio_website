@@ -1,0 +1,13 @@
+{
+  "key": "kthulhu-intro",
+  "surface": "kthulhu",
+  "label": "Recorded run",
+  "capturedAt": "2026-08-16",
+  "note": "Tier-2 KTHULHU walkthrough shown when the live product can't be embedded (framing refused). A recorded walkthrough of the autonomous auditor — not the live app; open kthulhu.co for the real thing.",
+  "prompt": "KTHULHU walkthrough",
+  "frames": [
+    { "response": "Recorded walkthrough — the live product can't be embedded here, so this is a recorded pass through KTHULHU, not the live app.\n\n" },
+    { "response": "KTHULHU takes a contract, runs an autonomous multi-agent audit pass, and returns findings with reproductions. The on-site /audit console is a fast heuristic pre-screen; KTHULHU is the deeper autonomous system.\n" },
+    { "response": "Open kthulhu.co to use the live product." }
+  ]
+}

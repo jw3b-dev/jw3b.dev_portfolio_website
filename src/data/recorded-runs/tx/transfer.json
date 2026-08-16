@@ -1,0 +1,13 @@
+{
+  "key": "tx-intro",
+  "surface": "tx",
+  "label": "Recorded run",
+  "capturedAt": "2026-08-16",
+  "note": "Tier-2 tx-explain fallback. The decoded summary is the deterministic output of decodeTx (src/lib/txDecode.js) for an ERC-20 transfer; the plain-language narrative only restates it. Synthetic tx hash / addresses — no real transaction.",
+  "prompt": "Explain transaction 0x… (ERC-20 transfer)",
+  "frames": [
+    { "response": "Recorded run — the live model is unreachable, so this replays a decoded example transaction. The decode is deterministic and reproducible.\n\n" },
+    { "response": "Decoded (client-side): Calls transfer(address,uint256) on 0xToken000000000000000000000000000000000001.\n" },
+    { "response": "In plain language: this transaction moves an ERC-20 token from the sender to a recipient by calling the token's transfer function. It sends no ETH itself. Check the recipient address and the amount before signing." }
+  ]
+}

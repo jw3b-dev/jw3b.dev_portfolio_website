@@ -1,0 +1,13 @@
+{
+  "key": "ctf-intro",
+  "surface": "ctf",
+  "label": "Recorded run",
+  "capturedAt": "2026-08-16",
+  "note": "Tier-2 CTF fallback (FR-026) shown when on-chain verification is unavailable. A recorded reentrancy drain of the Base Sepolia vault — a testnet demonstration, NOT your live on-chain solve. Synthetic attacker address; no real funds.",
+  "prompt": "Capture the Vault — reentrancy drain (Base Sepolia)",
+  "frames": [
+    { "response": "Recorded solve — live on-chain verification is unavailable, so this replays a previously-captured reentrancy drain on the Base Sepolia testnet. No real funds.\n\n" },
+    { "response": "1) Deploy Attacker(vault)  2) attack{value: 0.001 ether}: deposit, then withdraw()  3) receive() re-enters withdraw() until the vault balance reaches 0.\n" },
+    { "response": "Result: vault drained to 0; the attacker contract holds the pooled bounty + its own stake. On the live challenge the Worker reads the drain on-chain and records your rank." }
+  ]
+}

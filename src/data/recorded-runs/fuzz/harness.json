@@ -1,0 +1,13 @@
+{
+  "key": "fuzz-intro",
+  "surface": "fuzz",
+  "label": "Recorded run",
+  "capturedAt": "2026-08-16",
+  "note": "Tier-2 fuzz fallback shown when the live model is unreachable. The harness is the deterministic output of buildFuzzHarness (src/lib/fuzzHarness.js) for a Vault contract — a Foundry skeleton, not a proof. Regenerate offline to verify; the model tips only add edge cases.",
+  "prompt": "Generate a fuzz harness for Vault.sol",
+  "frames": [
+    { "response": "Recorded run — the live model is unreachable, so this replays a deterministic fuzz harness. It is a Foundry skeleton, not a proof of correctness.\n\n" },
+    { "response": "```solidity\n// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\nimport {Test} from \"forge-std/Test.sol\";\nimport {Vault} from \"../src/Vault.sol\";\n\ncontract VaultFuzzTest is Test {\n    Vault target;\n    function setUp() public { target = new Vault(); }\n\n    function testFuzz_withdraw(uint256 amount) public {\n        amount = bound(amount, 0, type(uint128).max);\n        target.withdraw(amount);\n        // TODO: assert an invariant that must hold after withdraw(...)\n    }\n}\n```\n\n" },
+    { "response": "Suggested edge cases: withdraw of exactly the deposited balance, re-entrant callback during the external call, and zero-amount calls. Add invariant assertions before relying on this." }
+  ]
+}

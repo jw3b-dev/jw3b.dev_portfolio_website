@@ -1,5 +1,10 @@
 import conciergeIntro from './concierge/intro.json'
 import auditIntro from './audit/vault-reentrancy.json'
+import fuzzIntro from './fuzz/harness.json'
+import txIntro from './tx/transfer.json'
+import ctfIntro from './ctf/vault-drain.json'
+import kthulhuIntro from './kthulhu/walkthrough.json'
+import ctfLeaderboard from './ctf/leaderboard.json'
 
 /*
  * Tier-2 recorded runs BUNDLED INTO THE SPA (ADR-01, SDD 02 §7).
@@ -18,6 +23,15 @@ import auditIntro from './audit/vault-reentrancy.json'
 export const RECORDED_RUNS = {
   [conciergeIntro.key]: conciergeIntro,
   [auditIntro.key]: auditIntro,
+  // P2-18 (synthetic-data): a dated, labelled Tier-2 run for every P2 live surface, so the
+  // fuzz/tx/CTF/KTHULHU degrade paths always have a recorded fallback (FR-026, BR-03).
+  [fuzzIntro.key]: fuzzIntro,
+  [txIntro.key]: txIntro,
+  [ctfIntro.key]: ctfIntro,
+  [kthulhuIntro.key]: kthulhuIntro,
 }
 
 export const RECORDED_RUN_KEYS = Object.keys(RECORDED_RUNS)
+
+// Leaderboard snapshot fixture — the /ctf/leaderboard KV fallback shape (synthetic solvers).
+export const CTF_LEADERBOARD_FIXTURE = ctfLeaderboard

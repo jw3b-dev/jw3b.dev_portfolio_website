@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { RECORDED_RUNS, RECORDED_RUN_KEYS } from '../index.js'
+import { RECORDED_RUNS, RECORDED_RUN_KEYS, CTF_LEADERBOARD_FIXTURE } from '../index.js'
 import { FAILURES } from '../failures/index.js'
 import { auditSolidity, SAMPLE_CONTRACT } from '../../../lib/auditHeuristics.js'
 import { scanTextForForbidden } from '../../../lib/claimsValidate.js'
@@ -23,6 +23,38 @@ describe('P1-16 recorded-run artifacts — shape + honesty', () => {
   it('no run carries a forbidden claim phrase (BR-02)', () => {
     for (const key of RECORDED_RUN_KEYS) {
       expect(scanTextForForbidden(runText(RECORDED_RUNS[key])), key).toEqual([])
+    }
+  })
+})
+
+describe('P2-18 recorded-run artifacts — every P2 live surface has a dated, labelled run (FR-026/BR-03)', () => {
+  it('bundles fuzz / tx / CTF / KTHULHU recorded runs, dated + labelled + non-empty', () => {
+    for (const key of ['fuzz-intro', 'tx-intro', 'ctf-intro', 'kthulhu-intro']) {
+      const run = RECORDED_RUNS[key]
+      expect(run, key).toBeTruthy()
+      expect(run.label).toBe('Recorded run')
+      expect(run.capturedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(run.frames.length).toBeGreaterThan(0)
+      expect(run.surface).toBeTruthy()
+    }
+  })
+
+  it('the fuzz/tx keys align with the Worker replay keys (Tier-1↔Tier-2)', () => {
+    expect(RECORDED_RUN_KEYS).toEqual(expect.arrayContaining(['fuzz-intro', 'tx-intro', 'ctf-intro', 'kthulhu-intro']))
+  })
+
+  it('the CTF surfaces are honestly labelled testnet / recorded (no real on-chain claim)', () => {
+    expect(runText(RECORDED_RUNS['ctf-intro']).toLowerCase()).toMatch(/testnet|no real funds|recorded solve/)
+    expect(runText(RECORDED_RUNS['kthulhu-intro']).toLowerCase()).toContain('recorded walkthrough')
+  })
+
+  it('the leaderboard fixture is ranked, dated, and synthetic (no PII)', () => {
+    expect(CTF_LEADERBOARD_FIXTURE.capturedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    const ranks = CTF_LEADERBOARD_FIXTURE.entries.map((e) => e.rank)
+    expect(ranks).toEqual([1, 2, 3])
+    for (const e of CTF_LEADERBOARD_FIXTURE.entries) {
+      expect(e.address).toMatch(/^0x[0-9a-fA-F]{40}$/)
+      expect(e.tx_hash).toMatch(/^0x[0-9a-fA-F]{64}$/)
     }
   })
 })

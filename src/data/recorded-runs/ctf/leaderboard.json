@@ -1,0 +1,11 @@
+{
+  "surface": "ctf-leaderboard",
+  "label": "Recorded run",
+  "capturedAt": "2026-08-16",
+  "note": "Tier-2 leaderboard snapshot fixture for /ctf/leaderboard when D1 is unavailable. Synthetic addresses / tx hashes — no real solvers.",
+  "entries": [
+    { "rank": 1, "address": "0x5010000000000000000000000000000000000001", "tx_hash": "0xaaaa000000000000000000000000000000000000000000000000000000000001", "block_number": 12000001, "ts": 1755300000 },
+    { "rank": 2, "address": "0x5010000000000000000000000000000000000002", "tx_hash": "0xaaaa000000000000000000000000000000000000000000000000000000000002", "block_number": 12000042, "ts": 1755300600 },
+    { "rank": 3, "address": "0x5010000000000000000000000000000000000003", "tx_hash": "0xaaaa000000000000000000000000000000000000000000000000000000000003", "block_number": 12000099, "ts": 1755301200 }
+  ]
+}
