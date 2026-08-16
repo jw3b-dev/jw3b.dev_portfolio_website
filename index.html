@@ -9,7 +9,9 @@
     Minimal base shell (P0-01). Deliberately excludes:
       - per-route SEO/meta + OpenGraph  → P1-15
       - Person JSON-LD structured data  → P2-19
-      - font loading + critical-CSS shell + hero prerender → P0-03 / P0-11
+      - font loading → P0-03 (main.jsx @fontsource imports)
+      - critical-CSS shell + static hero prerender → injected at build by the
+        heroShellPrerender() plugin in vite.config.js (P0-11) — not hand-maintained here
       - Unlock Protocol checkout <script> → P2-05
   -->
   <title>jw3b.dev</title>
