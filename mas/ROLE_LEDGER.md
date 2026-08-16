@@ -38,3 +38,4 @@ Legend — SKILL-LOADED: `y` = role skill loaded this session before the work ·
 | P1-08 | full-stack-integrator | frontend-engineer (no such skill) | y | cafd28e |
 | P1-18a | domain-engine | domain-engine | y | 2bb633e (retainer.json catalog seed; loadout logic pending in P1-18) |
 | P1-10 | frontend-engineer | frontend-engineer | y | 884e576 |
+| P1-11 | frontend-engineer | frontend-engineer | y | 348738b |
