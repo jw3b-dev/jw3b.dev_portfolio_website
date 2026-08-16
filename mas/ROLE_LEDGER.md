@@ -13,6 +13,14 @@ Legend — SKILL-LOADED: `y` = role skill loaded this session before the work ·
 `n` = NOT loaded → must be redone with the skill loaded.
 "Role (actual)" names the closest-fit skill when the PLAN role has no skill of that name.
 
+**Substitutions retired 2026-08-16:** the six previously-missing PLAN roles now exist as real
+user-scope skills (`~/.claude/skills/`) + jw3b project-scope overrides (`.claude/skills/`), authored
+via `example-skills:skill-creator` — **smart-contract-engineer · web3-blockchain · full-stack-integrator ·
+portfolio-evidence · audit-heuristics-engineer · devops-engineer**. Every task originally done under a
+closest-fit substitute was then **re-verified in-role** (see the "Redo sweep" section) — those rows now
+read `real-role ✓ re-verified (was <sub>)` with both the original and redo commits. From P2-02 onward
+each PLAN role loads its OWN skill; no substitution remains anywhere in the ledger.
+
 | TASK  | PLAN role | Role (actual) | SKILL-LOADED | COMMIT |
 |-------|-----------|---------------|--------------|--------|
 | P0-01 | lead-architect | lead-architect | prior | (prior session) |
@@ -22,20 +30,20 @@ Legend — SKILL-LOADED: `y` = role skill loaded this session before the work ·
 | P0-05 | backend-specialist | backend-specialist | prior | c3ba300 |
 | P0-06 | backend-specialist | backend-specialist | prior | c3ba300 |
 | P0-07 | domain-engine | domain-engine | prior | e971a6a |
-| P0-08 | portfolio-evidence | compliance-officer (no such skill) | y | 59e25aa |
-| P0-09 | full-stack-integrator | frontend-engineer (no such skill) | y | ad23ad9, 2364d2a |
+| P0-08 | portfolio-evidence | portfolio-evidence ✓ re-verified (was compliance-officer) | y | 59e25aa → 623186a |
+| P0-09 | full-stack-integrator | full-stack-integrator ✓ re-verified (was frontend-engineer) | y | ad23ad9, 2364d2a → a1d3f20 |
 | P0-10 | domain-engine | domain-engine | y | 646796c, 2364d2a |
 | P0-11 | lead-architect | lead-architect | y | 7e610ce, 2364d2a |
-| P0-12 | devops-engineer | security (no such skill) | y | 69a44d1 |
+| P0-12 | devops-engineer | devops-engineer ✓ re-verified (was security) | y | 69a44d1 → 028fed4 |
 | P1-09 | frontend-engineer | frontend-engineer | y | 2364d2a |
 | P1-01 | backend-specialist | backend-specialist | y | 57cc24c |
 | P1-02 | backend-specialist | backend-specialist | y | 66d59ac |
 | P1-03 | domain-engine | domain-engine | y | 14651bb |
-| P1-05 | audit-heuristics-engineer | domain-engine (no such skill) | y | ad81ff3 |
+| P1-05 | audit-heuristics-engineer | audit-heuristics-engineer ✓ re-verified (was domain-engine) | y | ad81ff3 → 3e571f0 |
 | P1-04 | backend-specialist | backend-specialist | y | cc5d236 |
 | P1-06 | backend-specialist | backend-specialist | y | 2bb633e |
-| P1-07 | full-stack-integrator | frontend-engineer (no such skill) | y | 289560f |
-| P1-08 | full-stack-integrator | frontend-engineer (no such skill) | y | cafd28e |
+| P1-07 | full-stack-integrator | full-stack-integrator ✓ re-verified (was frontend-engineer) | y | 289560f → a1d3f20 |
+| P1-08 | full-stack-integrator | full-stack-integrator ✓ re-verified (was frontend-engineer) | y | cafd28e → a1d3f20 |
 | P1-18a | domain-engine | domain-engine | y | 2bb633e (retainer.json catalog seed; loadout logic pending in P1-18) |
 | P1-10 | frontend-engineer | frontend-engineer | y | 884e576 |
 | P1-11 | frontend-engineer | frontend-engineer | y | 348738b |
@@ -48,3 +56,77 @@ Legend — SKILL-LOADED: `y` = role skill loaded this session before the work ·
 | P1-18 | domain-engine | domain-engine | y | 1beb03f |
 | P1-19 | app-ui-engineer | app-ui-engineer | y | 90a0d9c |
 | P1-20 | compliance-officer + frontend-engineer | compliance-officer + frontend-engineer | y | be747a1 |
+| P1-21 | lead-architect | lead-architect | y | 5bb215a |
+| P1-22 | portfolio-evidence | portfolio-evidence ✓ re-verified (was compliance-officer) | y | fc56f53 → 623186a |
+| P1-GATE | qa-tester + security + codebase-auditor + compliance-officer + performance-monitor | (all 5, in-role) + frontend-engineer for PRIVACY-01 fix | y | d7344da |
+| P2-01 | smart-contract-engineer | smart-contract-engineer ✓ re-verified (was domain-engine) | y | 1a4d41b → 5481ac7, 75d6f43 |
+| P2-02 | smart-contract-engineer | smart-contract-engineer (real skill — first no-substitution P2 task) | y | a4c4ef1 |
+| P2-03 | web3-blockchain | web3-blockchain (real skill) | y | 409a5bb |
+| P2-04 | app-ui-engineer + full-stack-integrator | app-ui-engineer + full-stack-integrator (both real) | y | a4a6286 |
+| P2-05 | full-stack-integrator | full-stack-integrator (real) | y | 2bb796c |
+| P2-06 | domain-engine | domain-engine | y | 74a8b68 |
+| P2-07 | app-ui-engineer | app-ui-engineer | y | 2f6d2c2 |
+| P2-08 | backend-specialist | backend-specialist | y | a7a914a |
+| P2-09 | app-ui-engineer | app-ui-engineer | y | eedb6c3 |
+| P2-10 | frontend-engineer | frontend-engineer | y | 6a2f2f1 → 8a4e449 (KTHULHU embed→linked launch card: kthulhu.co refuses framing, verified live) |
+| P2-11 | creative-technologist | creative-technologist (NON-3D per design lock — stated) | y | 6e6bf8b |
+| P2-12 | frontend-engineer | frontend-engineer | y | 807ac7c |
+| P2-13 | frontend-engineer | frontend-engineer | y | b93eea2 → 41a2cb3 (wired FlagshipShowcase onto a dedicated /work route + nav link; was mounted on no route) |
+| P2-14 | backend-specialist + audit-heuristics-engineer | backend-specialist + audit-heuristics-engineer | y | e114b44 |
+| P2-15 | audit-heuristics-engineer | audit-heuristics-engineer | y | e442120 |
+| P2-16 | full-stack-integrator | full-stack-integrator | y | 6fbb236 |
+| P2-17 | full-stack-integrator + domain-engine | full-stack-integrator + domain-engine | y | 05d2841 |
+| P2-18 | synthetic-data | synthetic-data | y | 343f4c6 |
+| P2-19 | frontend-engineer | frontend-engineer | y | 9507ddd |
+| P2-GATE | qa-tester + security + codebase-auditor + compliance-officer + performance-monitor + web3-blockchain | (all 6, in-role) | y | PASS — report mas/audits/P2-GATE_0_SUMMARY.md |
+| PROV-01 | devops-engineer | devops-engineer (deploy wiring: reuse old + provision new) | y | e9bffd3, a86b761, cc29e4b, 196e4f0, f682c99 (+runbook) |
+| PROV-02 | backend-specialist | backend-specialist (worker auth: dual-credential sk-ant-oat/api so reused secret works) | y | aaf14db |
+| PROV-03 | devops-engineer | devops-engineer (v2 preview-deploy CI → isolated -v2 test URLs; reuse configs+secrets; --config discovery fix) | y | fc584cd |
+
+## Redo sweep — 2026-08-16 (real roles now exist; every substituted task re-verified in-role)
+
+After the six missing role skills were authored, John asked the real roles to redo everything
+that had been done under a closest-fit substitute. Each was re-verified against its proper
+role's standard and **every one found and closed a real gap** (not a no-op):
+
+| TASK | Real role (now loaded) | Redo commit | Gap the substitute missed → fix |
+|------|------------------------|-------------|----------------------------------|
+| P2-01 | smart-contract-engineer | 5481ac7 | No Slither pass + no stateful invariant → ran Slither (fixed `_owner` shadow), added balance==Σfunded invariant (128k calls) |
+| P1-05 | audit-heuristics-engineer | 3e571f0 | reentrancy/tx-origin had no NEGATIVE (false-positive) case → added CEI-safe + msg.sender negatives + determinism |
+| P0-09, P1-07, P1-08 | full-stack-integrator | a1d3f20 | ConnectButton had ZERO tests; ChatWidget failure-ending untested at the seam → added both (BR-09 honest label, FR-020 floor) |
+| P0-08, P1-22 | portfolio-evidence | 623186a | client blocklist enforced 4 of 7 register-declared forbidden items → added Neo4j GDS / "combined experience" / "dollar bounties" + a guard that enforces every register.forbidden item |
+| P0-12 | devops-engineer | 028fed4 | 20 forge tests ran only locally → added a Foundry `contracts` CI job (fmt + test) |
+
+**Knock-on audit (post-sweep):** traced every redo's production change to its consumers. Only 3 touched
+non-test code — MilestoneEscrow.sol (param rename), claimsValidate.js (+3 patterns), ci.yml (additive).
+One real drift found + fixed: the escrow **ABI** was stale after the `_owner`→`initialOwner` rename →
+re-exported (`75d6f43`, name-only diff). The blocklist +3 blocked **0** of 28 claims (worker KB + all
+P1 surfaces unaffected). No downstream task needed redoing (P2-04, the only ABI consumer, isn't built
+yet). Ci.yml has no consumers.
+
+Final consolidated state — **all green**: 222 vitest + 20 forge tests; coverage thresholds met;
+claims-gate 28 cleared; Slither clean (bar the benign OZ-pragma note); build + secret-scan clean;
+nothing deployed/pushed. The main table above now shows each redone task in-role with both commits;
+no `(no such skill)` substitution remains.
+
+## Post-P2 audit & gap remediation — 2026-08-16 (user-requested full v1↔v2 audit)
+
+John asked for a full v1↔v2 codebase + cloud-infra audit + gap report before continuing, then
+"full gap tested fixes to P2 handover" with standing authority to push/deploy the **preview** (test
+URL) autonomously; production stays owner-gated. See `mas/P2_HANDOVER.md`.
+
+| TASK | Role | SKILL-LOADED | COMMIT | Outcome |
+|------|------|--------------|--------|---------|
+| AUDIT-01 | codebase-auditor | y | b6ff2fb | Full v1↔v2 audit (code+infra) → `mas/audits/V1_V2_FULL_AUDIT.md`. 0 P0 · 1 P1 · 3 P2 · 3 P3. Verdict: v2 ≥ v1 on every dimension. |
+| GAP-01 | devops-engineer | y | b6ff2fb | CSP/headers missed `/` on the live SPA (`wrangler-action` shipped a wrangler that ignored `run_worker_first`). Pinned `wranglerVersion 4.123.0` (CI) + `npx wrangler@4` (RUNBOOK prod) + corrected the stale `_headers` note. **Verified live:** `/` → CSP + x-served-by + no-store. |
+| GAP-02 | backend-specialist | y | f37978e | Restored v1's bounded Anthropic retry (429/529 + Retry-After) before the Workers-AI fallback — shared `anthropicFetch()` across concierge/audit/fuzz/tx + 12 tests. |
+| GAP-03 | devops-engineer | y | b6ff2fb | Hashed `/assets/*` immutable caching (same root cause as GAP-01). **Verified live:** `…max-age=31536000, immutable`. |
+| GAP-01-guard | codebase-auditor + devops-engineer | y | (this handover commit) | `src/lib/__tests__/siteWorkerHeaders.test.js` — CI regression guard on worker.js header logic (3 tests). |
+
+**Deferred (owner's-call, NOT defects):** GAP-05 (Education content dropped — deliberate proof-first IA),
+GAP-06 (`[RENDER_CARD]` inline pricing card + CV chat link — design decisions; parser support exists),
+GAP-07 (cosmetic corpus-count comment; same live Neon table). **Hygiene:** `.claude/skills/` (6 project-scope
+role skills) is untracked — track in a follow-up. **v1-prod exposure:** jw3b.dev keeps shipping no CSP until
+v2 is promoted with wrangler ≥4 (or a v1-repo hotfix — out of the v2 build's scope).
+
+Gate at handover — **all green**: lint · 66 files / 415 vitest · coverage 99.07/94.92/100/100 · GAP-01/03 live-verified on the preview.

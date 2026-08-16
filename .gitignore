@@ -5,6 +5,9 @@ node_modules/
 dist/
 coverage/
 
+# wrangler local dev state (miniflare cache, local KV/D1/R2) — never commit
+.wrangler/
+
 # env — only public VITE_* values belong in .env; secrets are Worker-only
 .env
 .env.local
