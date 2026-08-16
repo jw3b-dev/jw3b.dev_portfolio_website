@@ -1,0 +1,77 @@
+/*
+ * jw3b.dev v2 — Fuzz route `/fuzz` (P2-15 · FR-009)  ·  audit-heuristics-engineer
+ * Streams a Foundry fuzz HARNESS for pasted Solidity. The deterministic skeleton
+ * (fuzzHarness.js — the SAME generator the client pre-renders, so no drift) is emitted BEFORE
+ * any upstream await, so a real harness arrives instantly and offline-safe (BR-03). Then a
+ * model pass STREAMS suggested edge cases/invariants: Workers AI Llama → KV recorded run → a
+ * graceful note. The model only enhances the scaffold; it never replaces it. Same tag contract.
+ */
+import { sseFrame, SSE_DONE, SSE_HEADERS } from '../tagProtocol.js'
+import { buildFuzzHarness } from '../../../../src/lib/fuzzHarness.js'
+import { workersAiDelta } from './concierge.js'
+import { pumpInto, recordedFrames } from './audit.js'
+
+export const FUZZ_LLAMA_MODEL = '@cf/meta/llama-3.1-70b-instruct'
+export const FUZZ_REPLAY_KEY = 'fuzz-intro'
+
+const FUZZ_SYSTEM =
+  'You are a smart-contract fuzz-testing assistant. Given a Solidity contract and a generated ' +
+  'Foundry fuzz skeleton, suggest concrete additional edge cases and invariants worth asserting. ' +
+  'Do NOT rewrite the skeleton and do NOT invent vulnerabilities — add practical fuzzing tips only.'
+
+function tipsMessages(source, harness) {
+  return [
+    {
+      role: 'user',
+      content: `Contract:\n\n${source}\n\nGenerated fuzz skeleton:\n${harness}\n\nSuggest 3–5 concrete edge cases and invariants worth fuzzing.`,
+    },
+  ]
+}
+
+async function tryLlamaTips(env, source, harness) {
+  if (!env || !env.AI) return null
+  try {
+    const stream = await env.AI.run(env.FUZZ_LLAMA_MODEL || FUZZ_LLAMA_MODEL, {
+      messages: [{ role: 'system', content: FUZZ_SYSTEM }, ...tipsMessages(source, harness)],
+      stream: true,
+    })
+    return stream instanceof ReadableStream ? stream : null
+  } catch {
+    return null
+  }
+}
+
+/** `/fuzz` handler. `body.source` validated (present, ≤ cap) by the router. Never throws to client. */
+export function handleFuzz(req, env, ctx, body, extraHeaders = {}) {
+  const source = typeof body.source === 'string' ? body.source : ''
+  const encoder = new TextEncoder()
+  const harness = buildFuzzHarness(source) // deterministic, offline-safe — emitted first
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      controller.enqueue(encoder.encode(sseFrame(harness)))
+
+      let enhanced = false
+      const llama = await tryLlamaTips(env, source, harness)
+      if (llama) {
+        controller.enqueue(encoder.encode(sseFrame('\n— Suggested edge cases —\n')))
+        await pumpInto(controller, llama, workersAiDelta, encoder)
+        enhanced = true
+      }
+      if (!enhanced) {
+        const frames = await recordedFrames(env, FUZZ_REPLAY_KEY)
+        if (frames) {
+          for (const f of frames) controller.enqueue(encoder.encode(sseFrame(f)))
+        } else {
+          controller.enqueue(
+            encoder.encode(sseFrame('\nAI tips are briefly unavailable — the harness above is complete and ready to run.')),
+          )
+        }
+      }
+      controller.enqueue(encoder.encode(SSE_DONE))
+      controller.close()
+    },
+  })
+
+  return new Response(stream, { headers: { ...SSE_HEADERS, 'X-Console': 'fuzz', ...extraHeaders } })
+}

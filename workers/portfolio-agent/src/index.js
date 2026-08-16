@@ -10,6 +10,7 @@ import { handleConcierge } from './routes/concierge.js'
 import { handleAudit } from './routes/audit.js'
 import { handleEngagement, handleBookACall } from './routes/engagement.js'
 import { handleCtfVerify, handleCtfLeaderboard } from './routes/ctf.js'
+import { handleFuzz } from './routes/fuzz.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -85,9 +86,9 @@ export default {
       }
       if (pathname === '/fuzz' && method === 'POST') {
         const b = await readJson(req)
-        if (!b || typeof b.source !== 'string') return bad('source required', req, env)
+        if (!b || typeof b.source !== 'string' || !b.source.trim()) return bad('source required', req, env)
         if (b.source.length > SOURCE_CAP) return bad(`source exceeds ${SOURCE_CAP} chars`, req, env, 413)
-        return sseStub('fuzz', req, env)
+        return handleFuzz(req, env, ctx, b, cors(req, env))
       }
       if (pathname === '/tx-explain' && method === 'POST') {
         const b = await readJson(req)

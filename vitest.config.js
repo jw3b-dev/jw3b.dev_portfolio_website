@@ -39,6 +39,7 @@ export default defineConfig({
         'src/lib/checkoutRouting.js',
         'src/lib/ctfFlow.js',
         'src/lib/overmindPipeline.js',
+        'src/lib/fuzzHarness.js',
       ],
       thresholds: {
         lines: 100,

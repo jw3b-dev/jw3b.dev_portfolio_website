@@ -108,7 +108,7 @@ async function persistAudit(env, inputHash, durationMs, source) {
   }
 }
 
-async function pumpInto(controller, upstream, deltaFn, encoder) {
+export async function pumpInto(controller, upstream, deltaFn, encoder) {
   const decoder = new TextDecoder()
   const reader = upstream.getReader()
   let buffer = ''
