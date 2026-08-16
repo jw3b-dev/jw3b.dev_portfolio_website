@@ -8,12 +8,26 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { usePortfolioAgent } from '../../hooks/usePortfolioAgent.js'
+import { useVoice } from '../../hooks/useVoice.js'
 import { toolCallTarget } from './toolCalls.js'
 import Markdown from './Markdown.jsx'
+
+const MicIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 10a7 7 0 0 0 14 0M12 17v4" strokeLinecap="round" />
+  </svg>
+)
+const SpeakerIcon = ({ on }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 9v6h4l5 4V5L8 9H4z" />
+    {on ? <path d="M16 8a5 5 0 0 1 0 8" /> : <path d="M17 9l4 6M21 9l-4 6" />}
+  </svg>
+)
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
   const { messages, streaming, send, toolCall, clearToolCall } = usePortfolioAgent()
+  const { recording, voiceOn, canRecord, startRecording, stopRecording, speak, toggleVoice } = useVoice()
   const [draft, setDraft] = useState('')
   const listRef = useRef(null)
   const navigate = useNavigate()
@@ -21,6 +35,13 @@ export default function ChatWidget() {
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight
   }, [messages, open])
+
+  // Voice output (FR-016): read the [AUDIO] spoken-summary of a completed assistant reply aloud
+  // when voice is on. speak() dedups + no-ops when off, so this is safe to run on every change.
+  useEffect(() => {
+    const last = messages[messages.length - 1]
+    if (last && last.role === 'assistant' && !last.pending && last.audio) speak(last.audio)
+  }, [messages, speak])
 
   // FR-019: a concierge hire-routing tool-call opens Mission Control (/hire-me). Validated
   // against the closed registry; unknown → ignored. Closes the widget so the route is visible.
@@ -64,12 +85,27 @@ export default function ChatWidget() {
           aria-label="AI concierge"
           className="fixed bottom-24 right-5 z-50 flex h-[32rem] max-h-[70vh] w-[22rem] max-w-[92vw] flex-col overflow-hidden rounded-2xl border border-hairline bg-panel/95 backdrop-blur"
         >
-          <header className="border-b border-hairline px-4 py-3">
-            <h2 className="text-sm font-semibold text-content-primary">Concierge</h2>
-            {/* FR-021 — persistent AI-disclosure indicator */}
-            <p className="mt-0.5 text-xs text-content-muted">
-              AI-generated · grounded to John&rsquo;s verified record
-            </p>
+          <header className="flex items-start justify-between gap-2 border-b border-hairline px-4 py-3">
+            <div>
+              <h2 className="text-sm font-semibold text-content-primary">Concierge</h2>
+              {/* FR-021 — persistent AI-disclosure indicator */}
+              <p className="mt-0.5 text-xs text-content-muted">
+                AI-generated · grounded to John&rsquo;s verified record
+              </p>
+            </div>
+            {/* FR-016 — voice output toggle (spoken replies via TTS) */}
+            <button
+              type="button"
+              onClick={toggleVoice}
+              aria-label={voiceOn ? 'Turn spoken replies off' : 'Turn spoken replies on'}
+              aria-pressed={voiceOn}
+              className={
+                'shrink-0 rounded-md border p-1.5 motion-safe:transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan ' +
+                (voiceOn ? 'border-cyan/50 bg-cyan/10 text-cyan' : 'border-hairline text-content-muted hover:text-content-secondary')
+              }
+            >
+              <SpeakerIcon on={voiceOn} />
+            </button>
           </header>
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
@@ -111,11 +147,29 @@ export default function ChatWidget() {
               Message the concierge
             </label>
             <div className="flex items-center gap-2">
+              {/* FR-016 — mic: record → Whisper STT → send the transcript */}
+              {canRecord && (
+                <button
+                  type="button"
+                  onClick={() => (recording ? stopRecording() : startRecording((t) => send(t)))}
+                  disabled={streaming}
+                  aria-label={recording ? 'Stop recording' : 'Record a voice message'}
+                  aria-pressed={recording}
+                  className={
+                    'shrink-0 rounded-lg border p-2 motion-safe:transition-colors disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan ' +
+                    (recording
+                      ? 'border-caution/60 bg-caution/15 text-caution motion-safe:animate-pulse'
+                      : 'border-hairline text-content-secondary hover:text-content-primary')
+                  }
+                >
+                  <MicIcon />
+                </button>
+              )}
               <input
                 id="concierge-input"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                placeholder={streaming ? 'Streaming…' : 'Ask a question…'}
+                placeholder={streaming ? 'Streaming…' : recording ? 'Listening…' : 'Ask a question…'}
                 disabled={streaming}
                 className="flex-1 rounded-lg border border-hairline bg-void px-3 py-2 text-sm text-content-primary placeholder:text-content-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
               />

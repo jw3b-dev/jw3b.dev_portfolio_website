@@ -79,11 +79,11 @@ export function usePortfolioAgent() {
         }
         if (!acc.trim()) patchLast(degradedMessage())
         else {
-          patchLast({ pending: false })
-          // Surface a hire-routing tool-call (FR-019) once the reply completes — the widget
-          // dispatches it (opens Mission Control). Malformed → parseTags returns null, no-op.
-          const tc = parseTags(acc).toolCall
-          if (tc) setToolCall(tc)
+          // `audio` = the [AUDIO:"…"] spoken summary (stripped from display) so the widget can
+          // read it aloud (TTS); toolCall surfaces the hire-routing tool-call (FR-019).
+          const parsed = parseTags(acc)
+          patchLast({ pending: false, audio: parsed.audio || null })
+          if (parsed.toolCall) setToolCall(parsed.toolCall)
         }
       } catch {
         patchLast(degradedMessage())

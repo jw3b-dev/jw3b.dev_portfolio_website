@@ -11,6 +11,7 @@ import { handleEngagement, handleBookACall } from './routes/engagement.js'
 import { handleCtfVerify, handleCtfLeaderboard } from './routes/ctf.js'
 import { handleFuzz } from './routes/fuzz.js'
 import { handleTxExplain } from './routes/txExplain.js'
+import { handleStt, handleTts } from './routes/voice.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -90,12 +91,10 @@ export default {
       }
       // ── Voice ───────────────────────────────────────────────────────────────────────────
       if (pathname === '/speech-to-text' && method === 'POST') {
-        return json({ text: '' }, req, env) // stub; Whisper via Workers AI in P2
+        return handleStt(req, env, cors(req, env)) // Whisper STT (ported from v1)
       }
       if (pathname === '/text-to-speech' && method === 'POST') {
-        const b = await readJson(req)
-        if (!b || typeof b.text !== 'string') return bad('text required', req, env)
-        return json({ audio: null }, req, env) // stub; Aura TTS in P2
+        return handleTts(req, env, cors(req, env)) // Aura TTS (ported from v1)
       }
       // ── CTF ───────────────────────────────────────────────────────────────────────────
       if (pathname === '/ctf/verify' && method === 'POST') {

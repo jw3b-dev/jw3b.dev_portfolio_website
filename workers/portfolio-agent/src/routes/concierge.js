@@ -245,10 +245,17 @@ const TOOL_REGISTRY_PROMPT =
   'Emit at most one per reply, only when it clearly helps. NEVER state a price yourself — Mission ' +
   'Control shows the indicative pricing.'
 
+// Voice output (ported from v1): a spoken-summary tag so the widget can read a SHORT, clean
+// sentence aloud (TTS) while the visible reply stays rich Markdown. The client strips the tag.
+const AUDIO_PROMPT =
+  '\n\nVOICE: begin every reply with a spoken-summary tag on its own, at the very start — ' +
+  '[AUDIO: "one natural sentence (~15 words) capturing the answer for text-to-speech"] — then the ' +
+  'visible Markdown reply (which may go deeper than the spoken line). Put [AUDIO] ONLY at the start.'
+
 export async function handleConcierge(req, env, ctx, body, extraHeaders = {}) {
   const messages = toAnthropicMessages(body.messages)
   const conversationId = safeConversationId(body.conversationId, crypto.randomUUID())
-  const system = (conciergeSystemPrompt || CONCIERGE_SYSTEM_FALLBACK) + TOOL_REGISTRY_PROMPT // KB (P1-03) + tools (P2-17)
+  const system = (conciergeSystemPrompt || CONCIERGE_SYSTEM_FALLBACK) + TOOL_REGISTRY_PROMPT + AUDIO_PROMPT // KB (P1-03) + tools (P2-17) + voice
 
   const waitUntil = (p) => ctx && typeof ctx.waitUntil === 'function' && ctx.waitUntil(p)
 
