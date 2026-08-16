@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { usePortfolioAgent } from '../../hooks/usePortfolioAgent.js'
 import { toolCallTarget } from './toolCalls.js'
+import Markdown from './Markdown.jsx'
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
@@ -79,16 +80,20 @@ export default function ChatWidget() {
             )}
             {messages.map((m, i) => (
               <div key={i} className={m.role === 'user' ? 'text-right' : 'text-left'}>
-                <span
+                <div
                   className={
-                    'inline-block max-w-[85%] whitespace-pre-wrap rounded-xl px-3 py-2 text-sm ' +
+                    'inline-block max-w-[85%] rounded-xl px-3 py-2 text-left text-sm ' +
                     (m.role === 'user'
-                      ? 'bg-cyan/15 text-content-primary'
+                      ? 'whitespace-pre-wrap bg-cyan/15 text-content-primary'
                       : 'bg-raised text-content-secondary')
                   }
                 >
-                  {m.content || (m.pending ? '…' : '')}
-                </span>
+                  {m.role === 'assistant' ? (
+                    m.content ? <Markdown source={m.content} /> : m.pending ? '…' : ''
+                  ) : (
+                    m.content || (m.pending ? '…' : '')
+                  )}
+                </div>
                 {m.degraded && (
                   <div className="mt-1 text-xs text-caution">
                     Recorded run — live agent unavailable.{' '}
