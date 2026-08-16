@@ -135,7 +135,8 @@ Gate at handover — **all green**: lint · 66 files / 415 vitest · coverage 99
 
 | TASK | PLAN role | Role (actual) | SKILL-LOADED | COMMIT |
 |-------|-----------|---------------|--------------|--------|
-| P3-01 | full-stack-integrator | full-stack-integrator | y | (this commit) |
+| P3-01 | full-stack-integrator | full-stack-integrator | y | a1aa32c |
+| P3-05 | full-stack-integrator + backend-specialist | full-stack-integrator + backend-specialist | y | (this commit) |
 
 **P3-01 — XMTP E2E messaging (FR-039).** Migrated to `@xmtp/browser-sdk@7.1.0` (MLS): pure FSM
 `src/lib/xmtpFlow.js` (+27 tests, added to the coverage gate) + effectful `src/hooks/useXMTP.js` (wagmi
@@ -147,3 +148,14 @@ either missing → RouteGate floor). Vite: `@xmtp/*` excluded from prebundle + o
 (off the boot path / first paint). **Flag stays OFF (fails closed)** until John provisions his XMTP
 recipient and the live wallet→inbox→message path is verified — owner-gated, exactly like escrow/Unlock/CTF.
 Gate green: lint · 67 files / 442 tests · coverage 99.15/95.41/100/100 · build 0-warn · claims · secret-scan.
+
+**P3-05 — Voice STT/TTS (FR-016).** The three verifications (mic→STT→text, `[AUDIO]`→TTS→playback,
+mic disables gracefully) were already met by the AI-tier restore (`voice.js` + `useVoice` + ChatWidget).
+Formal completion: extracted the named `src/components/chat/VoiceControls.jsx` (`SpeakerToggle` +
+`MicButton`, presentational, mic hidden when the browser can't record) and refactored ChatWidget onto it
+(behaviour/aria/classes preserved); added the **R2 recorded-audio fallback** to `handleTts` — on live-Aura
+failure it serves a pre-recorded clip keyed by `sha256(text)` from R2, else the silent 204 (never a 5xx).
++2 tests (VoiceControls render/aria + R2 fallback all branches). **Deviation:** the STT/TTS worker route
+lives in `voice.js` (built during the AI-tier restore), not the PLAN's `speech.js` — same functionality,
+better name (it owns both STT and TTS); left as-is to avoid churn. Gate: lint · 69 files / 452 tests ·
+coverage 99.15/95.41/100/100 · build 0-warn · claims · secret-scan.

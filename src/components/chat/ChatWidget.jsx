@@ -11,18 +11,7 @@ import { usePortfolioAgent } from '../../hooks/usePortfolioAgent.js'
 import { useVoice } from '../../hooks/useVoice.js'
 import { toolCallTarget } from './toolCalls.js'
 import Markdown from './Markdown.jsx'
-
-const MicIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-    <rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 10a7 7 0 0 0 14 0M12 17v4" strokeLinecap="round" />
-  </svg>
-)
-const SpeakerIcon = ({ on }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M4 9v6h4l5 4V5L8 9H4z" />
-    {on ? <path d="M16 8a5 5 0 0 1 0 8" /> : <path d="M17 9l4 6M21 9l-4 6" />}
-  </svg>
-)
+import { SpeakerToggle, MicButton } from './VoiceControls.jsx'
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
@@ -94,18 +83,7 @@ export default function ChatWidget() {
               </p>
             </div>
             {/* FR-016 — voice output toggle (spoken replies via TTS) */}
-            <button
-              type="button"
-              onClick={toggleVoice}
-              aria-label={voiceOn ? 'Turn spoken replies off' : 'Turn spoken replies on'}
-              aria-pressed={voiceOn}
-              className={
-                'shrink-0 rounded-md border p-1.5 motion-safe:transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan ' +
-                (voiceOn ? 'border-cyan/50 bg-cyan/10 text-cyan' : 'border-hairline text-content-muted hover:text-content-secondary')
-              }
-            >
-              <SpeakerIcon on={voiceOn} />
-            </button>
+            <SpeakerToggle voiceOn={voiceOn} onToggle={toggleVoice} />
           </header>
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
@@ -148,23 +126,13 @@ export default function ChatWidget() {
             </label>
             <div className="flex items-center gap-2">
               {/* FR-016 — mic: record → Whisper STT → send the transcript */}
-              {canRecord && (
-                <button
-                  type="button"
-                  onClick={() => (recording ? stopRecording() : startRecording((t) => send(t)))}
-                  disabled={streaming}
-                  aria-label={recording ? 'Stop recording' : 'Record a voice message'}
-                  aria-pressed={recording}
-                  className={
-                    'shrink-0 rounded-lg border p-2 motion-safe:transition-colors disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan ' +
-                    (recording
-                      ? 'border-caution/60 bg-caution/15 text-caution motion-safe:animate-pulse'
-                      : 'border-hairline text-content-secondary hover:text-content-primary')
-                  }
-                >
-                  <MicIcon />
-                </button>
-              )}
+              <MicButton
+                canRecord={canRecord}
+                recording={recording}
+                disabled={streaming}
+                onStart={() => startRecording((t) => send(t))}
+                onStop={stopRecording}
+              />
               <input
                 id="concierge-input"
                 value={draft}

@@ -14,6 +14,28 @@ export function ttsTextFrom(body) {
   return body && typeof body.text === 'string' ? body.text.slice(0, TTS_TEXT_CAP).trim() : ''
 }
 
+/** Deterministic R2 object key for a spoken line: `voice/<sha256(text)>.wav`. Pure (async digest). */
+export async function ttsR2Key(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(text || '')))
+  return 'voice/' + [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('') + '.wav'
+}
+
+/**
+ * R2 recorded-audio fallback (FR-016): when live TTS is unavailable, serve a PRE-RECORDED clip for
+ * this exact line if the recorded-run seeding stored one (keyed by the text hash). Returns a
+ * Response or null (→ caller sends 204 and the widget stays silent). Never throws.
+ */
+async function r2FallbackAudio(env, text, corsHeaders) {
+  if (!env || !env.R2 || !text) return null
+  try {
+    const obj = await env.R2.get(await ttsR2Key(text))
+    if (!obj || !obj.body) return null
+    return new Response(obj.body, { headers: { 'Content-Type': 'audio/wav', 'X-Voice-Tier': 'recorded', ...corsHeaders } })
+  } catch {
+    return null
+  }
+}
+
 /** POST /speech-to-text — raw audio bytes in → { text } out (Whisper). Fail-safe → { text: '' }. */
 export async function handleStt(req, env, corsHeaders = {}) {
   const headers = { 'Content-Type': 'application/json', ...corsHeaders }
@@ -38,11 +60,11 @@ export async function handleTts(req, env, corsHeaders = {}) {
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
     })
   }
-  if (!env || !env.AI) return new Response(null, { status: 204, headers: corsHeaders })
+  if (!env || !env.AI) return (await r2FallbackAudio(env, text, corsHeaders)) || new Response(null, { status: 204, headers: corsHeaders })
   try {
     const audio = await env.AI.run(TTS_MODEL, { text, speaker: TTS_SPEAKER })
     return new Response(audio, { headers: { 'Content-Type': 'audio/wav', ...corsHeaders } })
   } catch {
-    return new Response(null, { status: 204, headers: corsHeaders }) // client falls back to no audio
+    return (await r2FallbackAudio(env, text, corsHeaders)) || new Response(null, { status: 204, headers: corsHeaders }) // client falls back to no audio
   }
 }
