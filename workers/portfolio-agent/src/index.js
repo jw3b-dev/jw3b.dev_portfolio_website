@@ -7,6 +7,7 @@
 import { sseFrame, SSE_DONE, SSE_HEADERS } from './tagProtocol.js'
 import { checkRateLimit, rateLimitedResponse, routeLimit } from './rateLimit.js'
 import { handleConcierge } from './routes/concierge.js'
+import { handleAudit } from './routes/audit.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -79,9 +80,9 @@ export default {
       // ── AI security console ─────────────────────────────────────────────────────────────
       if (pathname === '/audit' && method === 'POST') {
         const b = await readJson(req)
-        if (!b || typeof b.source !== 'string') return bad('source required', req, env)
+        if (!b || typeof b.source !== 'string' || !b.source.trim()) return bad('source required', req, env)
         if (b.source.length > SOURCE_CAP) return bad(`source exceeds ${SOURCE_CAP} chars`, req, env, 413)
-        return sseStub('audit', req, env)
+        return handleAudit(req, env, ctx, b, cors(req, env))
       }
       if (pathname === '/fuzz' && method === 'POST') {
         const b = await readJson(req)
