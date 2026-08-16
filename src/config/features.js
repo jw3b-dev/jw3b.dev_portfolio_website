@@ -24,6 +24,9 @@ export const FEATURE_DEFAULTS = Object.freeze({
   xmtp: false, // P3 · @xmtp/browser-sdk E2E messaging migration
   kointelEmbed: false, // live iframe of kointel.co.za — OFF until the Kointel origin opts jw3b.dev
   //                      in via `frame-ancestors https://jw3b.dev`; else it degrades to the card
+  kthulhuEmbed: false, // live iframe of kthulhu.co — the origin already allows `frame-ancestors
+  //                      https://jw3b.dev`; turn ON via env on the jw3b.dev deploy (not localhost,
+  //                      which the allow-list excludes) to render live; else the recorded card
 })
 
 // Resolve one flag: an explicit `VITE_FEATURE_<NAME>=true` env override wins, otherwise
