@@ -130,3 +130,20 @@ role skills) is untracked — track in a follow-up. **v1-prod exposure:** jw3b.d
 v2 is promoted with wrangler ≥4 (or a v1-repo hotfix — out of the v2 build's scope).
 
 Gate at handover — **all green**: lint · 66 files / 415 vitest · coverage 99.07/94.92/100/100 · GAP-01/03 live-verified on the preview.
+
+## P3 — GA hardening + XMTP + provisioning (in progress)
+
+| TASK | PLAN role | Role (actual) | SKILL-LOADED | COMMIT |
+|-------|-----------|---------------|--------------|--------|
+| P3-01 | full-stack-integrator | full-stack-integrator | y | (this commit) |
+
+**P3-01 — XMTP E2E messaging (FR-039).** Migrated to `@xmtp/browser-sdk@7.1.0` (MLS): pure FSM
+`src/lib/xmtpFlow.js` (+27 tests, added to the coverage gate) + effectful `src/hooks/useXMTP.js` (wagmi
+EOA signer + **lazy** WASM import, degrade-first) + `src/components/messages/XmtpChannel.jsx` (6 states —
+connect/start/initializing/conversation/unreachable/error — each keeping the book-a-call floor one click
+away) + `src/pages/Messages.jsx` (flag `xmtp` **AND** a provisioned `VITE_XMTP_RECIPIENT` → live channel;
+either missing → RouteGate floor). Vite: `@xmtp/*` excluded from prebundle + own code-split chunk +
+`target: esnext` (WASM top-level await); the 12.8 MB WASM downloads ONLY when a visitor starts the channel
+(off the boot path / first paint). **Flag stays OFF (fails closed)** until John provisions his XMTP
+recipient and the live wallet→inbox→message path is verified — owner-gated, exactly like escrow/Unlock/CTF.
+Gate green: lint · 67 files / 442 tests · coverage 99.15/95.41/100/100 · build 0-warn · claims · secret-scan.

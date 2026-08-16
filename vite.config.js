@@ -50,6 +50,9 @@ export default defineConfig({
   ],
   optimizeDeps: {
     entries: ['index.html'], // avoid scanning stray HTML folders that crash the dep scanner
+    // @xmtp/browser-sdk ships WASM (@xmtp/wasm-bindings); don't pre-bundle it — let it load as its
+    // own async chunk when the /messages channel mounts (P3-01: lazy-imported + flag-gated).
+    exclude: ['@xmtp/browser-sdk'],
   },
   define: {
     global: 'globalThis',
@@ -67,6 +70,7 @@ export default defineConfig({
     // shell paints first; wallet UI hydrates after). Raising the advisory limit past it
     // keeps the build warning-clean for the deploy gate (0 warnings) without hiding a
     // real regression — the split boundary in manualChunks is what actually bounds it.
+    target: 'esnext', // @xmtp/browser-sdk's WASM glue uses top-level await (P3-01)
     chunkSizeWarningLimit: 3100,
     rollupOptions: {
       output: {
@@ -75,6 +79,7 @@ export default defineConfig({
         // independently (ADR-07). The static hero shell paints regardless of these.
         manualChunks(id) {
           if (!id.includes('node_modules')) return
+          if (id.includes('/@xmtp/')) return 'xmtp' // WASM E2E messaging SDK (P3-01) — lazy + code-split
           // Split the biggest, self-contained wallet vendors into their own cacheable
           // chunks so no single chunk is monstrous (they update independently of core web3).
           if (id.includes('/@metamask/')) return 'metamask'

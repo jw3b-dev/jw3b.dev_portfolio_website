@@ -32,3 +32,8 @@ export const AGENT_CTF_LEADERBOARD_URL = `${WORKER_URL}/ctf/leaderboard`
 // Conversion capture (book-a-call floor + engagement requests).
 export const AGENT_ENGAGEMENT_URL = `${WORKER_URL}/engagement`
 export const AGENT_BOOK_A_CALL_URL = `${WORKER_URL}/book-a-call`
+
+// XMTP (P3-01 · FR-039): John's inbox recipient for the E2E encrypted `/messages` channel — an
+// EOA address (0x…). PUBLIC. Empty until John provisions it, so even with the `xmtp` flag ON the
+// channel degrades to the book-a-call floor rather than dead-ending. Override: VITE_XMTP_RECIPIENT.
+export const XMTP_RECIPIENT = import.meta.env.VITE_XMTP_RECIPIENT || ''

@@ -41,6 +41,7 @@ export default defineConfig({
         'src/lib/overmindPipeline.js',
         'src/lib/fuzzHarness.js',
         'src/lib/txDecode.js',
+        'src/lib/xmtpFlow.js',
       ],
       thresholds: {
         lines: 100,
