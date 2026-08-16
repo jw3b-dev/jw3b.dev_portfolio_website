@@ -13,8 +13,8 @@ binding = "AI"
 # D1 — analytics, leaderboard, engagements, rate limits, escrow index (§4)
 [[d1_databases]]
 binding = "DB"
-database_name = "jw3b-portfolio"
-database_id = "REPLACE_WITH_wrangler_d1_create_id" # owner-provisioned
+database_name = "jw3b_analytics" # reused from the prior deployment
+database_id = "7ed65107-5531-4f6b-a0b8-ac9c30ec8fb4" # reused; v2 migration is idempotent (CREATE TABLE IF NOT EXISTS) — apply with `wrangler d1 migrations apply jw3b_analytics`
 migrations_dir = "migrations"
 
 # KV — Tier-1 recorded-run transcripts (ADR-01). Re-seedable from the repo — see
@@ -31,7 +31,7 @@ binding = "R2"
 bucket_name = "jw3b-recorded-runs"
 
 [vars]
-CF_ACCOUNT_ID = ""                            # owner-provisioned; builds the Anthropic-via-AI-Gateway
+CF_ACCOUNT_ID = "04bf3d7c95516d3e9a2af68fc8f6619b" # reused from the prior deploy; builds the Anthropic-via-AI-Gateway
                                               # URL for the Haiku concierge (ADR-05). Not a secret, but
                                               # the ANTHROPIC_API_KEY it authenticates with IS (below).
 AI_GATEWAY = "jw3b-portfolio-agent"           # Cloudflare AI Gateway slug (ADR-05 cost choke).
