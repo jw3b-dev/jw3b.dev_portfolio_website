@@ -31,3 +31,5 @@ Legend — SKILL-LOADED: `y` = role skill loaded this session before the work ·
 | P1-01 | backend-specialist | backend-specialist | y | 57cc24c |
 | P1-02 | backend-specialist | backend-specialist | y | 66d59ac |
 | P1-03 | domain-engine | domain-engine | y | 14651bb |
+| P1-05 | audit-heuristics-engineer | domain-engine (no such skill) | y | ad81ff3 |
+| P1-04 | backend-specialist | backend-specialist | y | cc5d236 |
