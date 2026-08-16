@@ -29,3 +29,4 @@ Legend — SKILL-LOADED: `y` = role skill loaded this session before the work ·
 | P0-12 | devops-engineer | security (no such skill) | y | 69a44d1 |
 | P1-09 | frontend-engineer | frontend-engineer | y | 2364d2a |
 | P1-01 | backend-specialist | backend-specialist | y | 57cc24c |
+| P1-02 | backend-specialist | backend-specialist | y | 66d59ac |
