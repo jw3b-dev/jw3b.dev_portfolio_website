@@ -16,15 +16,17 @@ secret-scan). Then, from the owner's authenticated machine:
 
 **Worker (`workers/portfolio-agent/`)**
 1. `cd workers/portfolio-agent`.
-2. First-time provisioning only: create real resources and paste their ids into
-   `wrangler.toml` (`REPLACE_WITH_…`):
-   - `wrangler d1 create jw3b-portfolio` → `database_id`
-   - `wrangler kv namespace create KV` → `id`
-   - `wrangler r2 bucket create jw3b-recorded-runs`
-3. Secrets (never in `wrangler.toml`, never in git):
-   - `wrangler secret put ANTHROPIC_API_KEY`
-   - `wrangler secret put DEV_ORIGIN` (optional; local dev origin only — absent in prod)
-4. `wrangler d1 migrations apply jw3b-portfolio` (add `--local` to rehearse first).
+2. Resources — ALREADY PROVISIONED (ids live in `wrangler.toml`, reused/created 2026-08-16):
+   - D1 `jw3b_analytics` `7ed65107-5531-4f6b-a0b8-ac9c30ec8fb4` — reused from the prior deploy; v2 schema (8 tables + indexes) already applied.
+   - KV `jw3b-recorded-runs` `d13bd6d5e09241cba4962521d02cd6ae` — Tier-1 recorded-run store.
+   - R2 bucket `jw3b-recorded-runs` — recorded-run media/blobs.
+   - CTF vault + RPC + `CF_ACCOUNT_ID` + WalletConnect id — all set (public, in-repo).
+3. Secrets (never in `wrangler.toml`, never in git) — OWNER must set before first deploy:
+   - `wrangler secret put ANTHROPIC_API_KEY` — Anthropic via the AI Gateway (concierge/audit narrative).
+   - `wrangler secret put NEON_DATABASE_URL` — pgvector KB for the /audit RAG (has a password → secret).
+   - `wrangler secret put DEV_ORIGIN` (optional; local dev origin only — absent in prod).
+4. Migration is already applied to `jw3b_analytics`; to re-run/track via wrangler it is idempotent:
+   `wrangler d1 migrations apply jw3b_analytics` (add `--local` to rehearse first).
 5. `wrangler deploy`.
 
 ## 2. Data seeding (re-seedable from the repo — this is the DR guarantee)
@@ -46,7 +48,7 @@ Everything the site treats as truth is **in git**, so recovery is a re-run, not 
 
 | Loss | Recovery |
 |---|---|
-| D1 data corruption / bad write | **D1 Time-Travel** — `wrangler d1 time-travel restore jw3b-portfolio --timestamp <ISO>` (30-day window). D1 holds analytics/leaderboard/engagements — none of it authorizes claim rendering, so a restore never risks a false claim. |
+| D1 data corruption / bad write | **D1 Time-Travel** — `wrangler d1 time-travel restore jw3b_analytics --timestamp <ISO>` (30-day window). D1 holds analytics/leaderboard/engagements — none of it authorizes claim rendering, so a restore never risks a false claim. |
 | KV/R2 recorded runs lost | Re-seed from repo (§2). Site stays up on Tier-2 bundled runs meanwhile. |
 | Evidence register questioned | It is in git + CI-validated; `git log` is the audit trail. Roll back the file, CI re-checks. |
 | Bad deploy / stale shell | Redeploy previous `dist/`; confirm shell `no-store`. Hashed assets are immutable so old chunks never collide. |
