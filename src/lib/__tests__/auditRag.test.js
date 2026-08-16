@@ -3,6 +3,7 @@ import {
   retrievalSafe,
   sanitizeRetrieved,
   buildRagContext,
+  mapFindingRow,
   retrieveAuditContext,
 } from '../../../workers/portfolio-agent/src/auditRag.js'
 import { VULN_CORPUS, corpusRecords } from '../../data/vuln-corpus/index.js'
@@ -37,34 +38,56 @@ describe('retrieval-safety guard (P2-14 · OD-06)', () => {
   })
 })
 
-describe('retrieveAuditContext — degrade + retrieval', () => {
-  it('degrades to empty context with no Vectorize/AI binding (unprovisioned)', async () => {
+describe('mapFindingRow — Neon row → {title,text} chunk', () => {
+  it('shapes severity + SWC + source provenance', () => {
+    const c = mapFindingRow({ title: 'Reentrancy', description: '  ext   call ', severity: 'High', swc_id: 'SWC-107', source: 'defihacklabs' })
+    expect(c.title).toBe('[High] Reentrancy (SWC-107)')
+    expect(c.text).toBe('ext call (source: DeFiHackLabs)')
+  })
+
+  it('is safe on a null/empty row (no description → empty text, filtered out downstream)', () => {
+    expect(mapFindingRow(null)).toEqual({ title: '', text: '' })
+    expect(mapFindingRow({ title: 'X' }).text).toBe('')
+  })
+})
+
+describe('retrieveAuditContext — degrade + Neon retrieval', () => {
+  it('degrades to empty context with no Neon/AI binding (unprovisioned)', async () => {
     expect(await retrieveAuditContext({}, 'contract Vault {}')).toEqual({ context: '', used: false, matches: 0 })
+    // AI present but no DB URL → still degrades (both bindings required).
+    expect(await retrieveAuditContext({ AI: { run: () => {} } }, 'x')).toEqual({ context: '', used: false, matches: 0 })
   })
 
   it('degrades on an upstream error (fails safe, never throws)', async () => {
-    const env = { AI: { run: () => Promise.reject(new Error('down')) }, VECTORIZE: { query: () => {} } }
+    const env = { NEON_DATABASE_URL: 'postgres://x', AI: { run: () => Promise.reject(new Error('down')) } }
     expect((await retrieveAuditContext(env, 'x')).used).toBe(false)
   })
 
-  it('retrieves + sanitizes when provisioned', async () => {
-    const env = {
-      AI: { run: vi.fn(() => Promise.resolve({ data: [[0.1, 0.2]] })) },
-      VECTORIZE: {
-        query: vi.fn(() =>
-          Promise.resolve({
-            matches: [
-              { metadata: { title: 'Reentrancy', text: 'external call before state update' } },
-              { metadata: { title: 'Brag', text: '50+ audits completed' } }, // dropped by the guard
-            ],
-          }),
-        ),
-      },
-    }
-    const out = await retrieveAuditContext(env, 'contract Vault { function withdraw() {} }')
+  it('degrades to empty when the embedder returns no vector', async () => {
+    const env = { NEON_DATABASE_URL: 'postgres://x', AI: { run: () => Promise.resolve({ data: [] }) } }
+    const neonClient = vi.fn(() => Promise.resolve([]))
+    expect(await retrieveAuditContext(env, 'x', { neonClient })).toEqual({ context: '', used: false, matches: 0 })
+    expect(neonClient).not.toHaveBeenCalled() // never reaches the DB without a query vector
+  })
+
+  it('embeds with bge-m3 and retrieves + sanitizes from the Neon KB (mocked sql client)', async () => {
+    const run = vi.fn(() => Promise.resolve({ data: [[0.1, 0.2, 0.3]] }))
+    const env = { NEON_DATABASE_URL: 'postgres://x', AI: { run } }
+    // Fake tagged-template `sql` client returning two rows (one unsafe → dropped by the guard).
+    const neonClient = vi.fn(() =>
+      Promise.resolve([
+        { title: 'Reentrancy', description: 'external call before state update', severity: 'High', swc_id: 'SWC-107', source: 'solodit_all_findings' },
+        { title: 'Brag', description: '50+ audits completed', severity: 'Low', swc_id: null, source: 'sherlock' },
+      ]),
+    )
+    const out = await retrieveAuditContext(env, 'contract Vault { function withdraw() {} }', { neonClient })
+    expect(run).toHaveBeenCalledWith('@cf/baai/bge-m3', expect.objectContaining({ text: expect.any(Array) }))
+    expect(neonClient).toHaveBeenCalled()
     expect(out.used).toBe(true)
     expect(out.context).toContain('Reentrancy')
-    expect(out.context).not.toMatch(/50\+ audits/i)
+    expect(out.context).toContain('SWC-107')
+    expect(out.context).toContain('Solodit')
+    expect(out.context).not.toMatch(/50\+ audits/i) // forbidden claim → dropped by the guard
   })
 })
 
