@@ -9,6 +9,7 @@ import { checkRateLimit, rateLimitedResponse, routeLimit } from './rateLimit.js'
 import { handleConcierge } from './routes/concierge.js'
 import { handleAudit } from './routes/audit.js'
 import { handleEngagement, handleBookACall } from './routes/engagement.js'
+import { handleCtfVerify, handleCtfLeaderboard } from './routes/ctf.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -105,12 +106,12 @@ export default {
       // ── CTF ───────────────────────────────────────────────────────────────────────────
       if (pathname === '/ctf/verify' && method === 'POST') {
         const b = await readJson(req)
-        if (!b || !ADDRESS.test(b.address || '') || !TXHASH.test(b.txHash || ''))
-          return bad('address (40 hex) + txHash (64 hex) required', req, env)
-        return json({ solved: false, rank: null, reason: 'skeleton — on-chain verify lands in P2' }, req, env)
+        const out = await handleCtfVerify(req, env, ctx, b)
+        return json(out.body, req, env, out.status)
       }
       if (pathname === '/ctf/leaderboard' && method === 'GET') {
-        return json({ entries: [] }, req, env)
+        const out = await handleCtfLeaderboard(req, env, ctx)
+        return json(out.body, req, env, out.status)
       }
       // ── Conversion ──────────────────────────────────────────────────────────────────────
       if (pathname === '/engagement' && method === 'POST') {
