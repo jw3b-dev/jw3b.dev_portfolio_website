@@ -1,0 +1,15 @@
+# dependencies
+node_modules/
+
+# build / test output
+dist/
+coverage/
+
+# env — only public VITE_* values belong in .env; secrets are Worker-only
+.env
+.env.local
+.env.*.local
+
+# editor / OS
+.DS_Store
+*.log

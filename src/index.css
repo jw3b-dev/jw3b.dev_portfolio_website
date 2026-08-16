@@ -1,0 +1,8 @@
+/*
+ * Tailwind pipeline entry (plumbing only).
+ * The design-token layer (src/styles/tokens.css) + semantic token classes are
+ * added in P0-03 (brand-architect). No colors, fonts, or component styles here.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
