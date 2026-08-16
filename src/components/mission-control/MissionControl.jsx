@@ -12,8 +12,9 @@
  * are printed ONLY from retainer.json (never free-typed); unprovisioned tiers say so honestly.
  */
 import { useState } from 'react'
-import RETAINER from '../../data/retainer.json'
+import { resolveLoadout, recommendEngagement } from '../../lib/loadout.js'
 import ProgressRail from './ProgressRail.jsx'
+import BookACall from './BookACall.jsx'
 
 const STEPS = [
   { key: 'objective', label: 'Objective' },
@@ -86,13 +87,7 @@ const ENGAGEMENTS = [
   { id: 'retainer', title: 'Retainer', desc: 'Ongoing capacity, billed monthly.' },
 ]
 
-// Plain lookup — the (objective × engagement) pair is unique in the catalog. P1-18 replaces this
-// with `resolveLoadout()` in src/lib/loadout.js (which also weighs the assessment answers).
-function lookupTier(objective, engagement) {
-  return RETAINER.tiers.find((t) => t.objective === objective && t.engagement === engagement) || null
-}
-
-function OptionCard({ selected, onClick, dot, text, title, desc }) {
+function OptionCard({ selected, recommended, onClick, dot, text, title, desc }) {
   return (
     <button
       type="button"
@@ -112,7 +107,16 @@ function OptionCard({ selected, onClick, dot, text, title, desc }) {
           </span>
         </span>
       )}
-      {!dot && <span className="font-display text-base font-semibold text-content-primary">{title}</span>}
+      {!dot && (
+        <span className="flex items-center gap-2">
+          <span className="font-display text-base font-semibold text-content-primary">{title}</span>
+          {recommended && (
+            <span className="rounded-sm border border-verified/40 bg-verified/5 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-label text-verified">
+              Recommended
+            </span>
+          )}
+        </span>
+      )}
       <span className="text-sm leading-snug text-content-secondary">{desc}</span>
     </button>
   )
@@ -124,10 +128,12 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
   const [objective, setObjective] = useState(null)
   const [assessment, setAssessment] = useState({}) // { stage, surface, urgency }
   const [engagement, setEngagement] = useState(null)
+  const [booking, setBooking] = useState(false)
 
   const go = (i) => {
     setStep(i)
     setMaxReached((m) => Math.max(m, i))
+    setBooking(false)
   }
 
   const canContinue =
@@ -135,7 +141,11 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
     (step === 1 && ASSESSMENT.every((q) => assessment[q.id])) ||
     (step === 2 && engagement)
 
-  const tier = objective && engagement ? lookupTier(objective, engagement) : null
+  // P1-18 engine owns the recommendation + price provenance. `recommended` (assessment-driven,
+  // FR-029) flags the engagement Step 3; `loadout` composes the final Step 4.
+  const recommended = objective ? recommendEngagement(assessment).recommended : null
+  const loadout = objective && engagement ? resolveLoadout({ objective, engagement, assessment }) : null
+  const tier = loadout?.tier ?? null
 
   return (
     <section aria-labelledby="mc-title" className={className}>
@@ -231,12 +241,17 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
                 <OptionCard
                   key={e.id}
                   selected={engagement === e.id}
+                  recommended={recommended === e.id}
                   onClick={() => setEngagement(e.id)}
                   title={e.title}
                   desc={e.desc}
                 />
               ))}
             </div>
+            <p className="mt-3 font-mono text-[11px] text-content-muted">
+              The “Recommended” shape is derived from your assessment answers — change them and it
+              moves. You choose.
+            </p>
           </fieldset>
         )}
 
@@ -257,29 +272,26 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-content-secondary">{tier.summary}</p>
+
+                {/* Indicative scope — derived from the assessment by the P1-18 engine (FR-029). */}
+                {loadout.scope.length > 0 && (
+                  <ul className="mt-4 flex flex-col gap-1 border-t border-hairline pt-3">
+                    {loadout.scope.map((line) => (
+                      <li key={line} className="flex items-start gap-2 text-sm text-content-secondary">
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-cyan" aria-hidden="true" />
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
                 <div className="mt-4 border-t border-hairline pt-3">
                   <span className="font-mono text-[11px] uppercase tracking-label text-content-muted">
                     Indicative price
                   </span>
-                  <p className="mt-1 font-mono text-sm text-content-primary">
-                    {tier.price_provisioned && tier.indicative_price
-                      ? `${tier.indicative_price} ${RETAINER.currency}`
-                      : 'Sized honestly on the call — no template number.'}
-                  </p>
+                  {/* FR-030/BR-12: price comes only from the engine, which copies retainer.json. */}
+                  <p className="mt-1 font-mono text-sm text-content-primary">{loadout.price.text}</p>
                 </div>
-                {/* Captured assessment — proof step 2 is not decorative. P1-18 turns it into scope. */}
-                <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-1 border-t border-hairline pt-3">
-                  {ASSESSMENT.map((q) => (
-                    <div key={q.id} className="flex items-center gap-2">
-                      <dt className="font-mono text-[10px] uppercase tracking-label text-content-muted">
-                        {q.id}
-                      </dt>
-                      <dd className="text-xs text-content-secondary">
-                        {q.options.find((o) => o.v === assessment[q.id])?.l || '—'}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
               </div>
             ) : (
               <p className="mt-4 text-sm text-content-secondary">
@@ -287,13 +299,26 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
               </p>
             )}
 
-            <button
-              type="button"
-              onClick={() => onBook({ objective, engagement, assessment, tierId: tier?.id ?? null })}
-              className="mt-5 inline-flex items-center gap-2 rounded-md border border-cyan/50 bg-cyan/10 px-4 py-2 font-mono text-[12px] font-semibold uppercase tracking-label text-cyan shadow-edge-cyan motion-safe:transition-colors hover:bg-cyan/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
-            >
-              Book a call →
-            </button>
+            <div className="mt-5">
+              {booking ? (
+                <BookACall
+                  selection={{ objective, engagement, assessment }}
+                  loadout={loadout}
+                  onBack={() => setBooking(false)}
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBooking(true)
+                    onBook({ objective, engagement, assessment, tierId: tier?.id ?? null })
+                  }}
+                  className="inline-flex items-center gap-2 rounded-md border border-cyan/50 bg-cyan/10 px-4 py-2 font-mono text-[12px] font-semibold uppercase tracking-label text-cyan shadow-edge-cyan motion-safe:transition-colors hover:bg-cyan/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+                >
+                  Book a call →
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

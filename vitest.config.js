@@ -26,6 +26,7 @@ export default defineConfig({
         'src/lib/auditClient.js',
         'src/lib/motion.js',
         'src/lib/loadout.js',
+        'src/lib/engagementQueue.js',
       ],
       thresholds: {
         lines: 100,
