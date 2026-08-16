@@ -22,7 +22,7 @@ const CSP = [
   "font-src 'self' data:",
   "img-src 'self' data: https:",
   "worker-src 'self' blob:",
-  "connect-src 'self' https://portfolio-agent.agilegypsy.workers.dev https://portfolio-agent-v2.agilegypsy.workers.dev https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://explorer-api.walletconnect.com https://mainnet.base.org https://sepolia.base.org https://*.base.org https://cloudflare-eth.com https://paywall.unlock-protocol.com https://rpc.unlock-protocol.com",
+  "connect-src 'self' https://portfolio-agent.agilegypsy.workers.dev https://portfolio-agent-v2.agilegypsy.workers.dev https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://explorer-api.walletconnect.com https://*.web3modal.org https://*.reown.com https://mainnet.base.org https://sepolia.base.org https://*.base.org https://cloudflare-eth.com https://paywall.unlock-protocol.com https://rpc.unlock-protocol.com",
   'frame-src \'self\' https://paywall.unlock-protocol.com https://app.unlock-protocol.com https://kthulhu.co https://kointel.co.za',
 ].join('; ')
 
