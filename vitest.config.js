@@ -28,6 +28,7 @@ export default defineConfig({
         'src/lib/loadout.js',
         'src/lib/engagementQueue.js',
         'src/lib/markdown.js',
+        'src/lib/web3Guards.js',
       ],
       thresholds: {
         lines: 100,

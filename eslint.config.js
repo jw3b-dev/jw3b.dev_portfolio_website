@@ -5,7 +5,8 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist', 'coverage'] },
+  // Foundry build artifacts + vendored contract deps (gitignored) — not app JS to lint.
+  { ignores: ['dist', 'coverage', 'contracts/lib', 'contracts/out', 'contracts/cache', 'contracts/broadcast'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
