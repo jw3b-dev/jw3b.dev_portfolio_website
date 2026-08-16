@@ -37,12 +37,23 @@ the diff of what regressed. Verdict per row: ✅ parity/better · ⚠️ downgra
 | Escrow / Unlock / wallet / hire | live | built, flagged, degrade-first | ✅ parity (awaits provisioning) |
 | Claims gate + evidence register | — | **new** (CI-enforced) | ✅ v2 better |
 
-## The regressions to port (priority order)
-1. **Concierge voice I/O** — real `/speech-to-text` (Whisper) + `/text-to-speech` (Aura) worker
-   impl, + mic capture and `[AUDIO]`→playback in the widget. [porting now]
-2. **`/fuzz` model** → restore Claude (Opus/gateway) with Llama fallback (v2 dropped it to Llama).
-3. **`/tx-explain` model** → same — restore Claude with Llama fallback.
-4. Concierge markdown — ✅ already done.
+## The regressions to port — STATUS
+1. **Concierge markdown** — 🟢 done (`84edb28`): safe React-element renderer (bold/tables/code/links).
+2. **Concierge voice I/O** — 🟢 done (`36c197f`): real Whisper STT + Aura TTS worker routes + mic
+   capture + `[AUDIO]`→playback in the widget + voice toggle. Fail-safe.
+3. **`/fuzz` model** — 🟢 done (`6b1e490`): Claude Opus first + Workers-AI fallback (was Llama-only).
+4. **`/tx-explain` model** — 🟢 done (`6b1e490`): Claude Opus first + Workers-AI fallback.
+5. **Workers-AI fallbacks upgraded** (`6b1e490`): code routes → Qwen2.5-Coder-32B; chat → Llama-3.3-70B.
+
+**All AI-tier regressions are closed.** Sweep confirms v2 has every v1 worker route (plus
+`/engagement`, `/book-a-call`) and all three AI-console tools (Audit/Fuzz/Tx).
+
+## Minor v1-only items (NOT AI-tier — owner's call, likely design choices)
+- **`[RENDER_CARD]` inline pricing card** — v1 rendered a pricing card in the chat; v2 instead emits a
+  `[TOOL_CALL]` that routes to Mission Control (`/hire-me`), where pricing lives (BR-12). Arguably
+  better (single source of pricing). Parser support exists in v2 (`parseTags.renderCard`) if you want
+  the inline card back.
+- **"Download CV" chat link** — v1 surfaced a CV download in chat; v2's proof-first hire path omits it.
 
 **Not regressions (v2 deliberately better):** the design/IA, the claims-gate + evidence register,
-the retrieval-safety guard on RAG, degrade-first everywhere.
+the retrieval-safety guard on RAG, degrade-first everywhere, conversation logging (PII-min).
