@@ -1,0 +1,38 @@
+# jw3b.dev v2 — portfolio-agent Worker  ·  backend-specialist (MAS P0-05/06)
+# DEPLOY IS OWNER-GATED (John). Real D1/KV/R2 ids + ANTHROPIC_API_KEY secret are provisioned
+# by the owner; the placeholders below let `wrangler d1 migrations apply --local` + `wrangler dev` run.
+name = "portfolio-agent"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers AI — chat/audit inference, Whisper STT (ADR-05)
+[ai]
+binding = "AI"
+
+# D1 — analytics, leaderboard, engagements, rate limits, escrow index (§4)
+[[d1_databases]]
+binding = "DB"
+database_name = "jw3b-portfolio"
+database_id = "REPLACE_WITH_wrangler_d1_create_id" # owner-provisioned
+migrations_dir = "migrations"
+
+# KV — Tier-1 recorded-run transcripts (ADR-01)
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_wrangler_kv_namespace_id" # owner-provisioned
+
+# R2 — recorded-run media (audio/video) (ADR-01)
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "jw3b-recorded-runs"
+
+[vars]
+AI_GATEWAY = "jw3b-portfolio-agent"           # Cloudflare AI Gateway slug (ADR-05 cost choke)
+ALLOWED_ORIGINS = "https://jw3b.dev,https://www.jw3b.dev" # CORS allowlist (NFR-04); dev origin gated by DEV_ORIGIN secret
+CTF_VAULT_ADDRESS = ""                          # Base Sepolia ReentrantVault (owner-provisioned, P2)
+CTF_RPC_URL = ""                                # Base Sepolia RPC (owner-provisioned, P2)
+
+# Secrets (NEVER in this file — set via `wrangler secret put`):
+#   ANTHROPIC_API_KEY   — Anthropic via AI Gateway (ADR-05)
+#   DEV_ORIGIN          — optional localhost origin allowed in dev only (absent in prod)
