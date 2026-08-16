@@ -14,7 +14,10 @@ import { retrieveAuditContext } from '../auditRag.js'
 import { anthropicDelta, workersAiDelta, anthropicGatewayUrl, anthropicAuth } from './concierge.js'
 
 export const AUDIT_MODEL = 'claude-opus-4-8' // ADR-05: reserve the stronger model for security (env-overridable)
-export const AUDIT_LLAMA_MODEL = '@cf/meta/llama-3.1-70b-instruct'
+// Workers-AI fallback: Qwen2.5-Coder-32B — a CODE-specialized model (32k ctx), far better than
+// Llama-3.1-70B for Solidity/tx work. Shared across the code routes (audit/fuzz/tx); env-overridable.
+export const WORKERS_AI_MODEL = '@cf/qwen/qwen2.5-coder-32b-instruct'
+export const AUDIT_FALLBACK_MODEL = WORKERS_AI_MODEL
 export const AUDIT_REPLAY_KEY = 'audit-intro'
 
 const AUDIT_SYSTEM =
@@ -58,7 +61,7 @@ async function tryAnthropicNarrative(env, source, findingsText, ragContext = '')
 async function tryLlamaNarrative(env, source, findingsText, ragContext = '') {
   if (!env || !env.AI) return null
   try {
-    const stream = await env.AI.run(env.AUDIT_LLAMA_MODEL || AUDIT_LLAMA_MODEL, {
+    const stream = await env.AI.run(env.AUDIT_FALLBACK_MODEL || AUDIT_FALLBACK_MODEL, {
       messages: [{ role: 'system', content: AUDIT_SYSTEM }, ...narrativeMessages(source, findingsText, ragContext)],
       stream: true,
     })

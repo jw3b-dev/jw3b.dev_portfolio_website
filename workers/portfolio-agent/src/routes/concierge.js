@@ -14,7 +14,9 @@ import { serveRecordedRun } from '../replay.js'
 import { conciergeSystemPrompt } from '../knowledge.js'
 
 export const CONCIERGE_MODEL = 'claude-haiku-4-5-20251001' // ADR-05 concierge tier (env-overridable)
-export const LLAMA_FALLBACK_MODEL = '@cf/meta/llama-3.1-70b-instruct'
+// Workers-AI fallback for the chat (conversational): Llama 3.3 70B fp8-fast — a general-model
+// upgrade over Llama 3.1 70B (a code/reasoning model would leak <think> or read stiff here).
+export const LLAMA_FALLBACK_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
 export const REPLAY_KEY = 'concierge-intro' // Tier-1 KV key for the concierge surface
 const MAX_TURNS = 20 // cap forwarded context — cost + prompt-injection surface
 const MAX_CHARS = 4000 // per-message clamp
