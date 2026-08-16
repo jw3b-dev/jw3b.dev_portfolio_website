@@ -71,10 +71,11 @@ contract MilestoneEscrow is Ownable, ReentrancyGuard {
     error NotAuthorized();
 
     /**
-     * @param _usdc  Base USDC token address (6-dec ERC-20).
-     * @param _owner Arbiter / contract owner (owner-provisioned at deploy).
+     * @param _usdc        Base USDC token address (6-dec ERC-20).
+     * @param initialOwner Arbiter / contract owner (owner-provisioned at deploy). Named to
+     *                     match OZ `Ownable` and avoid shadowing its private `_owner` (Slither).
      */
-    constructor(IERC20 _usdc, address _owner) Ownable(_owner) {
+    constructor(IERC20 _usdc, address initialOwner) Ownable(initialOwner) {
         if (address(_usdc) == address(0)) revert ZeroAddress();
         usdc = _usdc;
     }
