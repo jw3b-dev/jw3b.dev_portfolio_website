@@ -21,6 +21,8 @@ const Ctf = lazy(() => import('./pages/Ctf'))
 const HireMe = lazy(() => import('./pages/HireMe'))
 const Messages = lazy(() => import('./pages/Messages'))
 const Privacy = lazy(() => import('./pages/Privacy'))
+const SystemsAreGraphs = lazy(() => import('./pages/thesis/SystemsAreGraphs'))
+const ZeroTrustValidator = lazy(() => import('./pages/thesis/ZeroTrustValidator'))
 
 const queryClient = new QueryClient()
 
@@ -80,6 +82,8 @@ const router = createBrowserRouter([
       { path: '/hire-me', element: <HireMe /> },
       { path: '/messages', element: <Messages /> },
       { path: '/privacy', element: <Privacy /> },
+      { path: '/thesis/systems-are-graphs', element: <SystemsAreGraphs /> },
+      { path: '/thesis/zero-trust-validator', element: <ZeroTrustValidator /> },
       { path: '*', element: <NotFound /> },
     ],
   },

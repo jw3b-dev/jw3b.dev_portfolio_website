@@ -19,7 +19,19 @@ export default function SiteFooter() {
         <p className="font-mono text-[11px] uppercase tracking-label">
           JW<span className="text-cyan">3</span>B<span className="text-cyan">.</span>dev — John Wellard
         </p>
-        <nav aria-label="Footer" className="flex items-center gap-5">
+        <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <Link
+            to="/thesis/systems-are-graphs"
+            className="font-mono text-[11px] uppercase tracking-label text-content-secondary motion-safe:transition-colors hover:text-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+          >
+            Systems as graphs
+          </Link>
+          <Link
+            to="/thesis/zero-trust-validator"
+            className="font-mono text-[11px] uppercase tracking-label text-content-secondary motion-safe:transition-colors hover:text-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+          >
+            Zero-trust
+          </Link>
           <Link
             to="/privacy"
             className="font-mono text-[11px] uppercase tracking-label text-content-secondary motion-safe:transition-colors hover:text-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"

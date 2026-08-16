@@ -136,7 +136,8 @@ Gate at handover — **all green**: lint · 66 files / 415 vitest · coverage 99
 | TASK | PLAN role | Role (actual) | SKILL-LOADED | COMMIT |
 |-------|-----------|---------------|--------------|--------|
 | P3-01 | full-stack-integrator | full-stack-integrator | y | a1aa32c |
-| P3-05 | full-stack-integrator + backend-specialist | full-stack-integrator + backend-specialist | y | (this commit) |
+| P3-05 | full-stack-integrator + backend-specialist | full-stack-integrator + backend-specialist | y | ac70695 |
+| P3-06 | frontend-engineer | frontend-engineer | y | (this commit) |
 
 **P3-01 — XMTP E2E messaging (FR-039).** Migrated to `@xmtp/browser-sdk@7.1.0` (MLS): pure FSM
 `src/lib/xmtpFlow.js` (+27 tests, added to the coverage gate) + effectful `src/hooks/useXMTP.js` (wagmi
@@ -159,3 +160,11 @@ failure it serves a pre-recorded clip keyed by `sha256(text)` from R2, else the 
 lives in `voice.js` (built during the AI-tier restore), not the PLAN's `speech.js` — same functionality,
 better name (it owns both STT and TTS); left as-is to avoid churn. Gate: lint · 69 files / 452 tests ·
 coverage 99.15/95.41/100/100 · build 0-warn · claims · secret-scan.
+
+**P3-06 — Content-gap explainer pages (FR-055, COULD).** Two `/thesis/*` pages —
+`src/pages/thesis/SystemsAreGraphs.jsx` ("systems are graphs" — graph-native engineering / GraphRAG)
+and `ZeroTrustValidator.jsx` ("reproduce, don't assert" — the proof-not-promises security thesis) —
+lazy-routed in App.jsx, article-typed SEO (branded + content-gap search), cross-linked to each other
+and into the audit console (no orphans/dead-ends), and surfaced from the site footer for crawl
+discovery. Claims-safe (no numeric claims — claims-gate clean). +1 render/link smoke test. Gate:
+lint · 70 files / 454 tests · coverage 99.15/95.41/100/100 · build 0-warn · claims · secret-scan.
