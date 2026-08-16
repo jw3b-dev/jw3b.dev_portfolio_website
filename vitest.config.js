@@ -27,6 +27,7 @@ export default defineConfig({
         'src/lib/motion.js',
         'src/lib/loadout.js',
         'src/lib/engagementQueue.js',
+        'src/lib/markdown.js',
       ],
       thresholds: {
         lines: 100,
