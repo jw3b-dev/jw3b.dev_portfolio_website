@@ -31,6 +31,9 @@ binding = "R2"
 bucket_name = "jw3b-recorded-runs"
 
 [vars]
+CF_ACCOUNT_ID = ""                            # owner-provisioned; builds the Anthropic-via-AI-Gateway
+                                              # URL for the Haiku concierge (ADR-05). Not a secret, but
+                                              # the ANTHROPIC_API_KEY it authenticates with IS (below).
 AI_GATEWAY = "jw3b-portfolio-agent"           # Cloudflare AI Gateway slug (ADR-05 cost choke).
                                               # Per-model rate/spend CEILING is set gateway-side in the
                                               # AI Gateway dashboard (owner) — the outer limit above the

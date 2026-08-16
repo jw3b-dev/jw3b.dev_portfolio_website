@@ -6,6 +6,7 @@
  */
 import { sseFrame, SSE_DONE, SSE_HEADERS } from './tagProtocol.js'
 import { checkRateLimit, rateLimitedResponse, routeLimit } from './rateLimit.js'
+import { handleConcierge } from './routes/concierge.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -51,7 +52,7 @@ async function readJson(req) {
 }
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const url = new URL(req.url)
     const { pathname } = url
     const method = req.method
@@ -73,7 +74,7 @@ export default {
       if (pathname === '/' && method === 'POST') {
         const b = await readJson(req)
         if (!b || !Array.isArray(b.messages)) return bad('messages[] required', req, env)
-        return sseStub('concierge', req, env)
+        return handleConcierge(req, env, ctx, b, cors(req, env))
       }
       // ── AI security console ─────────────────────────────────────────────────────────────
       if (pathname === '/audit' && method === 'POST') {
