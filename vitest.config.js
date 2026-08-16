@@ -40,6 +40,7 @@ export default defineConfig({
         'src/lib/ctfFlow.js',
         'src/lib/overmindPipeline.js',
         'src/lib/fuzzHarness.js',
+        'src/lib/txDecode.js',
       ],
       thresholds: {
         lines: 100,

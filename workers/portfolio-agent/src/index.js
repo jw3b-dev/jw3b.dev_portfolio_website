@@ -4,13 +4,13 @@
  * bindings + the SSE tag-protocol contract are real; live AI/D1/on-chain logic lands in P1/P2.
  * CORS is locked to the origin allowlist (NFR-04) — never "*". Secrets come from env only.
  */
-import { sseFrame, SSE_DONE, SSE_HEADERS } from './tagProtocol.js'
 import { checkRateLimit, rateLimitedResponse, routeLimit } from './rateLimit.js'
 import { handleConcierge } from './routes/concierge.js'
 import { handleAudit } from './routes/audit.js'
 import { handleEngagement, handleBookACall } from './routes/engagement.js'
 import { handleCtfVerify, handleCtfLeaderboard } from './routes/ctf.js'
 import { handleFuzz } from './routes/fuzz.js'
+import { handleTxExplain } from './routes/txExplain.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -40,13 +40,6 @@ const json = (data, req, env, status = 200) =>
     headers: { 'Content-Type': 'application/json', ...cors(req, env) },
   })
 const bad = (msg, req, env, status = 400) => json({ error: msg }, req, env, status) // safe message only
-
-// Stub SSE: proves the wire contract end-to-end; real inference replaces the body in P1.
-function sseStub(label, req, env) {
-  const body =
-    sseFrame(`[skeleton] ${label} route is wired — live inference lands in P1.`) + SSE_DONE
-  return new Response(body, { headers: { ...SSE_HEADERS, ...cors(req, env) } })
-}
 
 async function readJson(req) {
   try { return await req.json() } catch { return null }
@@ -93,7 +86,7 @@ export default {
       if (pathname === '/tx-explain' && method === 'POST') {
         const b = await readJson(req)
         if (!b || !TXHASH.test(b.txHash || '')) return bad('valid 0x txHash (64 hex) required', req, env)
-        return sseStub('tx-explain', req, env)
+        return handleTxExplain(req, env, ctx, b, cors(req, env))
       }
       // ── Voice ───────────────────────────────────────────────────────────────────────────
       if (pathname === '/speech-to-text' && method === 'POST') {
