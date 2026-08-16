@@ -1,0 +1,17 @@
+{
+  "id": "audit-heuristic-blindspot",
+  "surface": "audit",
+  "label": "Unedited run",
+  "capturedAt": "2026-08-16",
+  "title": "The pre-screen missed a critical bug — and the tool says so",
+  "attempt": "Run the /audit heuristic pass on a Treasury contract whose sweep() function has no access-control check.",
+  "input": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.20;\n\ncontract Treasury {\n    address public owner;\n    constructor() { owner = msg.sender; }\n\n    // BUG: no onlyOwner / access check — anyone can sweep the whole balance.\n    function sweep(address payable to) external {\n        to.transfer(address(this).balance);\n    }\n}",
+  "log": [
+    "auditSolidity(Treasury.sol) → { findings: [], empty: false, clean: true }",
+    "0 findings — a CLEAN heuristic result on a contract anyone can drain in one call."
+  ],
+  "result": "0 findings — clean pass",
+  "failure": "The regex pre-screen has no model of authorization. sweep() lets any caller move the whole balance, and the pass reported nothing. A clean heuristic result is not a safe contract — it only means none of three known patterns matched.",
+  "fix": "Two fixes, and the honest one matters most. The contract: add an onlyOwner modifier to sweep(). The tool: this is exactly why it is labelled a heuristic pre-screen, not an audit — the on-page disclaimer states a clean pass is no guarantee, and a real review is manual plus symbolic execution. Showing the tool's own blind spot is the point, not an embarrassment.",
+  "reproduce": "Paste the input into /audit, or call auditSolidity(input) directly — the result is findings: [] on every run."
+}

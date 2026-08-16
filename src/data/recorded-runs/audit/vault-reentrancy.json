@@ -1,0 +1,16 @@
+{
+  "key": "audit-intro",
+  "surface": "audit",
+  "label": "Recorded run",
+  "capturedAt": "2026-08-16",
+  "note": "Tier-2 audit fallback shown when the live model is unreachable. The findings below are the EXACT, reproducible output of auditSolidity(SAMPLE_CONTRACT) (src/lib/auditHeuristics.js) — HIGH reentrancy at line 14 + LOW floating pragma at line 2 — not hand-authored. Re-run the detector on the pre-loaded Vault.sol to verify. The narrative only restates what the deterministic pass found; no reproduced-exploit claim (that label is reserved for on-chain recorded runs).",
+  "prompt": "Audit the pre-loaded Vault.sol",
+  "frames": [
+    { "response": "Recorded run — the live model is unreachable, so this replays the deterministic heuristic pass on Vault.sol. The findings are real and reproduce on every run.\n\n" },
+    { "response": "HIGH — Reentrancy — external call before state update (line 14)\n" },
+    { "response": "Ether is sent via a low-level call before the sender's balance is zeroed. A malicious recipient can re-enter withdraw() and drain the contract. Move the state update above the call (checks-effects-interactions) or add a reentrancy guard.\n\n" },
+    { "response": "LOW — Floating pragma (line 2)\n" },
+    { "response": "Pragma \"^0.8.20\" floats — pin an exact compiler version for production builds.\n\n" },
+    { "response": "This is a heuristic pre-screen, not a full audit — it flags common patterns, and a clean pass is not a guarantee. Book a call for a full review." }
+  ]
+}

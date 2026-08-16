@@ -1,0 +1,15 @@
+{
+  "key": "concierge-intro",
+  "surface": "concierge",
+  "label": "Recorded run",
+  "capturedAt": "2026-08-16",
+  "note": "Tier-2 concierge fallback shown when live inference is unreachable. Every figure cited traces to a CLEARED evidence-register entry (DE-07): CodeHawks #124 · 17 findings (codehawks-124-rank / codehawks-124-findings); the 13-phase pipeline (overmind-pipeline); KTHULHU live with paying users (kthulhu-paying-users). No forbidden claims. Verify by re-reading the concierge answer against src/data/evidence-register.json.",
+  "prompt": "What can I do here, and what has John actually shipped?",
+  "frames": [
+    { "response": "You're reading a recorded run — live inference is unreachable right now, so this is a labelled replay rather than a fresh answer. " },
+    { "response": "This site is operable, not a résumé. The security console at /audit runs a real Solidity pre-screen in your browser: edit a contract and the findings re-run instantly, offline. " },
+    { "response": "On the record side, John's CodeHawks competitive-audit result is public — #124 with 17 findings — and it deep-links to the Cyfrin profile so you can check it yourself. " },
+    { "response": "The agentic-AI work is the headline: KTHULHU is a live autonomous auditor with paying users, and the Overmind pipeline runs a 13-phase build. Delivery is the foundation under it. " },
+    { "response": "When you're ready, the hire path is one click from every page — book a call with no wallet required. The live agent returns automatically once the service is reachable again." }
+  ]
+}

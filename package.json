@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "claims-gate": "node scripts/claims-gate.mjs",
+    "seed:kv": "node scripts/seed-kv-runs.mjs",
     "gen:knowledge": "node scripts/gen-knowledge.mjs",
     "secret-scan": "node scripts/secret-scan.mjs"
   },
