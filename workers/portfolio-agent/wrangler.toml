@@ -22,7 +22,7 @@ migrations_dir = "migrations"
 # runs are the always-available floor, so KV loss is non-fatal (DR: RUNBOOK §3).
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_wrangler_kv_namespace_id" # owner-provisioned
+id = "d13bd6d5e09241cba4962521d02cd6ae" # jw3b-recorded-runs (Tier-1 recorded-run/replay store)
 
 # R2 — recorded-run media (audio/video) (ADR-01). Re-seed: RUNBOOK §2
 # (`wrangler r2 object put jw3b-recorded-runs/<mediaKey> --file …`).
