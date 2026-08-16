@@ -1,5 +1,7 @@
 # jw3b.dev v2 — CI (P0-12, security/devops gate)  ·  SDD 03 §8 / 05 §6
-# Gates, IN ORDER: lint → coverage → claims-gate → build → secret-leak scan.
+# Two parallel gate jobs:
+#   verify    — frontend/worker: lint → coverage → claims-gate → build → secret-leak scan.
+#   contracts — Foundry: forge fmt --check → forge test (unit + fuzz + invariant).
 # There is deliberately NO deploy job — deploys are OWNER-GATED (John owns prod).
 # ADR-09: the claims-gate BLOCKS any uncleared/forbidden claim in CI.
 name: ci
@@ -49,5 +51,31 @@ jobs:
       - name: Client-bundle secret-leak scan (FR-050)
         run: npm run secret-scan
 
+  # On-chain gate — the Foundry contracts (MilestoneEscrow now; CTF ReentrantVault/Attacker
+  # as P2 lands) must stay green too, or a contract regression ships unnoticed. `contracts/lib`
+  # is gitignored (reproducible deps), so CI fetches them pinned before testing.
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Fetch contract deps (contracts/lib is gitignored)
+        working-directory: contracts
+        run: |
+          git clone --depth 1 --branch v5.6.1 https://github.com/OpenZeppelin/openzeppelin-contracts lib/openzeppelin-contracts
+          git clone --depth 1 https://github.com/foundry-rs/forge-std lib/forge-std
+
+      - name: Format check
+        working-directory: contracts
+        run: forge fmt --check
+
+      - name: Test (unit + fuzz + invariant)
+        working-directory: contracts
+        run: forge test -vv
+
   # NOTE: no `deploy` job by design. Production (SPA + Worker) is deployed by the owner
-  # (`wrangler deploy`), never by CI. See docs/RUNBOOK.md for the release + DR procedure.
+  # (`wrangler deploy`), never by CI. Contract deploys are owner-provisioned too.
+  # See docs/RUNBOOK.md for the release + DR procedure.
