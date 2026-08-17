@@ -214,6 +214,25 @@ needs no HF hosts); ORT runtime self-hosted via `?url` (default = jsdelivr, CSP-
 `useWasmCache=false` (blob: import); WASM floor pinned to **fp32** (pinned ORT rejects every QDQ
 quantized whisper-base variant: "qdq_actions… Missing required scale"); `requestAdapter()` pre-flight
 picks the engine (gpu-object-without-adapter machines route to WASM — a post-failure retry can't work,
-the library caches the rejected session). **Open (owner/tuning):** real-WebGPU pass on John's machine
-(this env has no adapter — WebGPU untested end-to-end); barge-in live-tune (FSM-tested only); accuracy
-on proper nouns ("Kthulhu") — consider whisper-small on WebGPU; flag ON for prod is John's call.
+the library caches the rejected session).
+
+**Owner-feedback hardening round (a488f0a · 7fc4183 · a2fcb11 — all browser-verified):** John's real-
+machine testing surfaced and we fixed: (1) *"not listening"* → fixed VAD gate replaced with per-session
+**room calibration** (~0.7s idle median ×3, clamped 0.003–0.05; `calibrateVad` pure+tested) + a live
+mic-level meter in the strip; (2) *"forever to load"* → WASM floor switched to **whisper-tiny fp32**
+(~152MB vs 290, ~3× faster CPU; WebGPU keeps base) + live download-% + one-time honesty note;
+(3) *~20-min "transcribing" hangs* → his Brave returns a **software WebGPU adapter (llvmpipe)**; pre-
+flight now rejects software adapters (`isFallbackAdapter`/llvmpipe/SwiftShader/lavapipe), warm-up
+inference runs under a 20s watchdog during LOADING, and a per-turn 20s watchdog falls back one-way to
+**server Whisper** (`encodeWavPcm16` WAV → `/speech-to-text`, same utterance retried, disclosed in the
+strip — audio leaving the browser must be visible); degrade chain webgpu-base → wasm-tiny → server,
+each step verified live (incl. WASM hard-disabled → disclosed server-floor loop). New TRANSCRIBING FSM
+state ("Heard you — transcribing…"). (4) *"star star" TTS + strip garbage* → `sanitizeSpeech`/
+`stripMarkdown` (pure+tested) at both TTS choke points; `trimPartialTag` (client-only, in tagProtocol,
+drift grammar untouched) kills mid-stream `[AUDIO: "` flashes; **voice turns now mirror into the chat
+thread** as real bubbles (🎙 transcript + full markdown reply), so spoken-summary-vs-written-detail
+reads as intended. **Barge-in browser-verified:** loud speech during THINKING flipped to LISTENING in
+≤300ms, aborted the reply, and the interruption ran as its own complete turn (two 🎙 bubbles).
+**Open (owner):** real-hardware WebGPU pass (no hw adapter anywhere I can test); tiny's proper-noun
+accuracy (CodeHawks→"co-dox" — options: whisper-small on real GPUs, or default the floor to server
+STT for accuracy over privacy); `voiceLive` ON for prod is John's call.
