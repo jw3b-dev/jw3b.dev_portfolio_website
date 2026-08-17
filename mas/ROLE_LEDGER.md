@@ -197,11 +197,23 @@ while WebAudio `decodeAudioData` decoded the SAME bytes fine (verified in-browse
 fix: the client plays TTS via WebAudio (`decodeAudioData` + `AudioBufferSourceNode`, AudioContext resumed
 on the toggle gesture), not `new Audio()`. The audible fix = worker `audio/mpeg` + client WebAudio.
 
-**Live-voice (P3 · in progress) — free on-device real-time voice.** Deep-researched the *unpaid* path:
-the Web Speech API is Brave-blocked, but **on-device transformers.js Whisper (WebGPU→WASM)** is free,
-private (audio never leaves the browser), real-time, and works in Brave. Landed so far: `voiceLive` flag
-(off) · pure `src/lib/voiceSession.js` FSM + STT degrade chain + endpointing (+full tests, coverage-gated)
-· `src/lib/loadTranscriber.js` (lazy on-device Whisper) · first-cut `src/hooks/useLiveVoice.js` (caps
-detect + model load + FSM) · Vite integration (stub `onnxruntime-node`/`sharp`, code-split the 549 KB
-runtime, 0-warn build) · flag-gated entry button in ChatWidget. **Remaining:** mic AnalyserNode VAD loop
-→ transcribe turn → concierge SSE → Aura TTS → loop + barge-in; onnxruntime-web WASM CSP/host; browser verify.
+**Live-voice (P3 · BUILT + BROWSER-VERIFIED on the preview) — free on-device real-time voice.**
+Deep-researched the *unpaid* path: the Web Speech API is Brave-blocked, but **on-device transformers.js
+Whisper (WebGPU→WASM)** is free, private (audio never leaves the browser), real-time, and works in Brave.
+Landed (`b556055` foundation · `bbd5a86` runtime · `8a7a43a` full loop · `2791b43` verified fixes):
+`voiceLive` flag (default OFF; preview build lights it via CI env) · pure `voiceSession.js` FSM +
+`micTurn.js` audio math (RMS/hysteresis-VAD/16k resample/turn classify — both full-coverage) ·
+`useLiveVoice.js` full loop: mic frames → 900 ms endpoint → on-device Whisper → concierge SSE (shared
+tag protocol) → Aura TTS via WebAudio → loop, with barge-in (louder echo-guard bar), 4-min session cap,
+generation-counter stop-safety, every failure → honest ERROR strip naming the working fallback ·
+call strip UI in ChatWidget. **Verified live in-browser** (fake mic = real Aura speech, all else genuine):
+loading→listening→transcript→thinking (Claude streams)→speaking→listening loop-back; cap + manual stop.
+**Hard-won plumbing (in code comments too):** HF 404s model fetches from `*.workers.dev` page origins →
+site worker serves a same-origin `/hf-models/*` mirror (strict allow-list, immutable edge cache; CSP
+needs no HF hosts); ORT runtime self-hosted via `?url` (default = jsdelivr, CSP-blocked) with
+`useWasmCache=false` (blob: import); WASM floor pinned to **fp32** (pinned ORT rejects every QDQ
+quantized whisper-base variant: "qdq_actions… Missing required scale"); `requestAdapter()` pre-flight
+picks the engine (gpu-object-without-adapter machines route to WASM — a post-failure retry can't work,
+the library caches the rejected session). **Open (owner/tuning):** real-WebGPU pass on John's machine
+(this env has no adapter — WebGPU untested end-to-end); barge-in live-tune (FSM-tested only); accuracy
+on proper nouns ("Kthulhu") — consider whisper-small on WebGPU; flag ON for prod is John's call.
