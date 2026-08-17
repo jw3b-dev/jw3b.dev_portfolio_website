@@ -15,6 +15,7 @@ import KthulhuEmbed from './KthulhuEmbed.jsx'
 import OvermindGraph from './OvermindGraph.jsx'
 import Kointel from './Kointel.jsx'
 import AuditConsole from '../audit/AuditConsole.jsx'
+import RepoLinks from '../proof/RepoLinks.jsx'
 
 // The on-site AI flagship: one system that demonstrates itself. The audit console is the
 // operable centerpiece; the concierge + CTF complete the trio.
@@ -61,6 +62,10 @@ export default function FlagshipShowcase() {
         <OnSiteAiFlagship />
         <Kointel />
       </div>
+
+      {/* P3-07 (FR-056): the four flagships stay the headliners; the public-repo strip below
+          lets a skeptical reader leave the site and inspect real code. */}
+      <RepoLinks />
     </section>
   )
 }
