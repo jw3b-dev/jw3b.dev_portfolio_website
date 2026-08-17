@@ -196,3 +196,12 @@ opt-in toggle-speaks-on-enable stands as a UX win. But the MIME fix alone wasn't
 while WebAudio `decodeAudioData` decoded the SAME bytes fine (verified in-browser: `OK dur=1.49s`). Final
 fix: the client plays TTS via WebAudio (`decodeAudioData` + `AudioBufferSourceNode`, AudioContext resumed
 on the toggle gesture), not `new Audio()`. The audible fix = worker `audio/mpeg` + client WebAudio.
+
+**Live-voice (P3 · in progress) — free on-device real-time voice.** Deep-researched the *unpaid* path:
+the Web Speech API is Brave-blocked, but **on-device transformers.js Whisper (WebGPU→WASM)** is free,
+private (audio never leaves the browser), real-time, and works in Brave. Landed so far: `voiceLive` flag
+(off) · pure `src/lib/voiceSession.js` FSM + STT degrade chain + endpointing (+full tests, coverage-gated)
+· `src/lib/loadTranscriber.js` (lazy on-device Whisper) · first-cut `src/hooks/useLiveVoice.js` (caps
+detect + model load + FSM) · Vite integration (stub `onnxruntime-node`/`sharp`, code-split the 549 KB
+runtime, 0-warn build) · flag-gated entry button in ChatWidget. **Remaining:** mic AnalyserNode VAD loop
+→ transcribe turn → concierge SSE → Aura TTS → loop + barge-in; onnxruntime-web WASM CSP/host; browser verify.

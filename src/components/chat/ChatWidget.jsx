@@ -12,11 +12,14 @@ import { useVoice } from '../../hooks/useVoice.js'
 import { toolCallTarget } from './toolCalls.js'
 import Markdown from './Markdown.jsx'
 import { SpeakerToggle, MicButton } from './VoiceControls.jsx'
+import { useLiveVoice } from '../../hooks/useLiveVoice.js'
+import { isEnabled } from '../../config/features.js'
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
   const { messages, streaming, send, toolCall, clearToolCall } = usePortfolioAgent()
   const { recording, voiceOn, canRecord, startRecording, stopRecording, speak, toggleVoice, unlockAudio } = useVoice()
+  const live = useLiveVoice() // P3 live-voice (flag-gated; on-device Whisper + Claude + Aura)
   const [draft, setDraft] = useState('')
   const listRef = useRef(null)
   const navigate = useNavigate()
@@ -82,20 +85,38 @@ export default function ChatWidget() {
                 AI-generated · grounded to John&rsquo;s verified record
               </p>
             </div>
-            {/* FR-016 — voice output toggle (spoken replies via TTS). Enabling it speaks the last
-                reply immediately (within the click gesture) so voice is discoverable + audibly confirmed. */}
-            <SpeakerToggle
-              voiceOn={voiceOn}
-              onToggle={() => {
-                const turningOn = !voiceOn
-                if (turningOn) unlockAudio() // resume the AudioContext within the click gesture
-                toggleVoice()
-                if (turningOn) {
-                  const last = [...messages].reverse().find((m) => m.role === 'assistant' && !m.pending && m.audio)
-                  if (last) speak(last.audio, { force: true })
-                }
-              }}
-            />
+            <div className="flex shrink-0 items-center gap-1.5">
+              {/* P3 live-voice entry (flag-gated; hands-free on-device voice). Full call UI is WIP. */}
+              {isEnabled('voiceLive') && (
+                <button
+                  type="button"
+                  onClick={live.state === 'idle' ? live.start : live.stop}
+                  aria-pressed={live.state !== 'idle'}
+                  aria-label={live.state === 'idle' ? 'Start live voice' : 'Stop live voice'}
+                  title="Hands-free voice (beta)"
+                  className={
+                    'rounded-md border px-1.5 py-1 font-mono text-[10px] uppercase tracking-label motion-safe:transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan ' +
+                    (live.state !== 'idle' ? 'border-cyan/50 bg-cyan/10 text-cyan' : 'border-hairline text-content-muted hover:text-content-secondary')
+                  }
+                >
+                  {live.state === 'idle' ? 'Live' : live.state === 'loading' ? '…' : '◉'}
+                </button>
+              )}
+              {/* FR-016 — voice output toggle (spoken replies via TTS). Enabling it speaks the last
+                  reply immediately (within the click gesture) so voice is discoverable + audibly confirmed. */}
+              <SpeakerToggle
+                voiceOn={voiceOn}
+                onToggle={() => {
+                  const turningOn = !voiceOn
+                  if (turningOn) unlockAudio() // resume the AudioContext within the click gesture
+                  toggleVoice()
+                  if (turningOn) {
+                    const last = [...messages].reverse().find((m) => m.role === 'assistant' && !m.pending && m.audio)
+                    if (last) speak(last.audio, { force: true })
+                  }
+                }}
+              />
+            </div>
           </header>
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">

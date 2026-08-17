@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { fileURLToPath } from 'node:url'
 // import { nodePolyfills } from 'vite-plugin-node-polyfills' // re-enable if manual polyfills prove insufficient
 
 // ── Hero-shell prerender (P0-11, ADR-07) ───────────────────────────────────────────
@@ -52,7 +53,8 @@ export default defineConfig({
     entries: ['index.html'], // avoid scanning stray HTML folders that crash the dep scanner
     // @xmtp/browser-sdk ships WASM (@xmtp/wasm-bindings); don't pre-bundle it — let it load as its
     // own async chunk when the /messages channel mounts (P3-01: lazy-imported + flag-gated).
-    exclude: ['@xmtp/browser-sdk'],
+    // @huggingface/transformers (on-device Whisper) is heavy + WASM/WebGPU — same treatment (voiceLive).
+    exclude: ['@xmtp/browser-sdk', '@huggingface/transformers'],
   },
   define: {
     global: 'globalThis',
@@ -62,6 +64,10 @@ export default defineConfig({
     alias: {
       // fix readable-stream's require('string_decoder/') trailing-slash crash
       'string_decoder/': 'string_decoder',
+      // @huggingface/transformers lists onnxruntime-node + sharp (Node-only) as deps; stub them out
+      // of the browser bundle — the browser path uses onnxruntime-web (WASM/WebGPU), not these.
+      'onnxruntime-node': fileURLToPath(new URL('./src/lib/empty.js', import.meta.url)),
+      sharp: fileURLToPath(new URL('./src/lib/empty.js', import.meta.url)),
     },
   },
   build: {
@@ -80,6 +86,8 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes('node_modules')) return
           if (id.includes('/@xmtp/')) return 'xmtp' // WASM E2E messaging SDK (P3-01) — lazy + code-split
+          if (id.includes('/@huggingface/') || id.includes('/onnxruntime-web/'))
+            return 'transformers' // on-device Whisper runtime (voiceLive) — lazy + code-split
           // Split the biggest, self-contained wallet vendors into their own cacheable
           // chunks so no single chunk is monstrous (they update independently of core web3).
           if (id.includes('/@metamask/')) return 'metamask'
