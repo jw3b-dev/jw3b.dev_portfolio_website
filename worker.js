@@ -15,9 +15,8 @@
 // WASM (voiceLive on-device Whisper + the XMTP SDK): the .wasm binaries are BUNDLED by Vite
 // into /assets/* (self-hosted — no CDN), but instantiating any WebAssembly requires
 // 'wasm-unsafe-eval' in script-src (the WASM-only directive; NOT 'unsafe-eval' — JS eval stays
-// blocked). The Whisper model weights stream from Hugging Face (huggingface.co redirects
-// weight downloads to its CDN hosts under *.hf.co), hence the hf hosts in connect-src —
-// fetched lazily only when a visitor starts a live-voice call, then cached on-device.
+// blocked). The Whisper model files are fetched SAME-ORIGIN via this worker's /hf-models/*
+// proxy (see below) — so connect-src needs no Hugging Face hosts at all.
 const CSP = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -29,7 +28,7 @@ const CSP = [
   "font-src 'self' data:",
   "img-src 'self' data: https:",
   "worker-src 'self' blob:",
-  "connect-src 'self' https://portfolio-agent.agilegypsy.workers.dev https://portfolio-agent-v2.agilegypsy.workers.dev https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://explorer-api.walletconnect.com https://*.web3modal.org https://*.reown.com https://mainnet.base.org https://sepolia.base.org https://*.base.org https://cloudflare-eth.com https://paywall.unlock-protocol.com https://rpc.unlock-protocol.com",
+  "connect-src 'self' https://portfolio-agent.agilegypsy.workers.dev https://portfolio-agent-v2.agilegypsy.workers.dev https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://explorer-api.walletconnect.com https://*.web3modal.org https://*.reown.com https://mainnet.base.org https://sepolia.base.org https://*.base.org https://cloudflare-eth.com https://paywall.unlock-protocol.com https://rpc.unlock-protocol.com",
   'frame-src \'self\' https://paywall.unlock-protocol.com https://app.unlock-protocol.com https://kthulhu.co https://kointel.co.za',
 ].join('; ')
 
@@ -40,9 +39,46 @@ const SECURITY_HEADERS = {
   'content-security-policy': CSP,
 }
 
+// ── On-device Whisper model proxy (voiceLive) ────────────────────────────────────────────
+// The browser fetches ASR model files SAME-ORIGIN (/hf-models/<repo path>) and this worker
+// streams them from Hugging Face with immutable edge caching. Same-origin sidesteps HF's
+// origin policy entirely: HF 404s browser requests whose page Origin is *.workers.dev (bot
+// protection) — which silently killed live voice on the preview — and pinning a visitor
+// feature to a third party's origin policy is fragile even where it happens to work. The
+// server-side fetch carries no Origin, so it always resolves. STRICT allow-list — this is a
+// model mirror for the repos we ship, never an open proxy.
+export const HF_MODEL_PREFIX = '/hf-models/'
+export const HF_ALLOWED_REPOS = ['onnx-community/whisper-base/']
+
+async function proxyModelFile(request, url, ctx) {
+  if (request.method !== 'GET') return new Response('method not allowed', { status: 405 })
+  const rest = url.pathname.slice(HF_MODEL_PREFIX.length)
+  if (!HF_ALLOWED_REPOS.some((p) => rest.startsWith(p))) return new Response('not found', { status: 404 })
+
+  // Model files are revision-addressed and immutable → cache hard at the edge (per-PoP) so
+  // Hugging Face is hit ~once per file per PoP, and visitors get Cloudflare-local latency.
+  const cache = caches.default
+  const cacheKey = new Request(url.toString())
+  const hit = await cache.match(cacheKey)
+  if (hit) return hit
+
+  const upstream = await fetch(`https://huggingface.co/${rest}${url.search}`, { redirect: 'follow' })
+  if (!upstream.ok) return new Response('model upstream unavailable', { status: 502 })
+  const out = new Response(upstream.body, {
+    status: 200,
+    headers: {
+      'content-type': upstream.headers.get('content-type') || 'application/octet-stream',
+      'cache-control': 'public, max-age=31536000, immutable',
+    },
+  })
+  ctx.waitUntil(cache.put(cacheKey, out.clone()))
+  return out
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url)
+    if (url.pathname.startsWith(HF_MODEL_PREFIX)) return proxyModelFile(request, url, ctx)
     const res = await env.ASSETS.fetch(request)
     const out = new Response(res.body, res)
 

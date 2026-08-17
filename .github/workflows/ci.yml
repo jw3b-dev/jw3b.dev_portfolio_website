@@ -140,6 +140,9 @@ jobs:
         run: npm run build
         env:
           VITE_PORTFOLIO_AGENT_URL: https://portfolio-agent-v2.agilegypsy.workers.dev
+          # P3 live voice: ON for the preview only (the shipped flag default stays OFF;
+          # prod is the owner's manual deploy and keeps the default until John flips it).
+          VITE_FEATURE_VOICE_LIVE: 'true'
       - name: Deploy preview SPA
         uses: cloudflare/wrangler-action@v3
         with:

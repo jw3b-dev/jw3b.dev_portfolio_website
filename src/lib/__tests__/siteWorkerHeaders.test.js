@@ -44,11 +44,73 @@ describe('site worker headers (GAP-01 guard)', () => {
     expect(csp).not.toContain('anthropic') // the browser never talks to Anthropic (FR-050)
   })
 
-  it('permits WASM instantiation + HF model fetches (voiceLive/XMTP), but never JS eval', async () => {
+  it('permits WASM instantiation (voiceLive/XMTP) but never JS eval, and needs no HF hosts', async () => {
     const csp = (await headersOf('https://jw3b.dev/', 'text/html')).get('content-security-policy')
     expect(csp).toContain("'wasm-unsafe-eval'") // on-device Whisper + XMTP wasm (self-hosted binaries)
-    expect(csp).toContain('https://huggingface.co') // Whisper model weights (lazy, cached on-device)
-    expect(csp).toContain('https://*.hf.co') // HF weight-download CDN redirect hosts
     expect(csp).not.toMatch(/(?<!wasm-)unsafe-eval/) // JS eval stays blocked
+    // Whisper model files come SAME-ORIGIN via the /hf-models/* mirror — no third-party model host.
+    expect(csp).not.toContain('huggingface')
+    expect(csp).not.toContain('hf.co')
+  })
+
+  describe('/hf-models/* same-origin model mirror (voiceLive)', () => {
+    const ctx = { waitUntil: () => {} }
+    it('rejects non-GET', async () => {
+      const res = await siteWorker.fetch(
+        new Request('https://jw3b.dev/hf-models/onnx-community/whisper-base/resolve/main/config.json', { method: 'POST' }),
+        envReturning('text/html'),
+        ctx,
+      )
+      expect(res.status).toBe(405)
+    })
+    it('404s any repo outside the allow-list (never an open proxy)', async () => {
+      const res = await siteWorker.fetch(
+        new Request('https://jw3b.dev/hf-models/evil/exfil/resolve/main/x.bin'),
+        envReturning('text/html'),
+        ctx,
+      )
+      expect(res.status).toBe(404)
+    })
+    it('mirrors an allow-listed file from HF with immutable caching (edge-cache miss path)', async () => {
+      const calls = []
+      const realFetch = globalThis.fetch
+      const realCaches = globalThis.caches
+      globalThis.caches = { default: { match: async () => undefined, put: async () => {} } }
+      globalThis.fetch = async (input) => {
+        calls.push(String(input))
+        return new Response('{"model_type":"whisper"}', { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      try {
+        const res = await siteWorker.fetch(
+          new Request('https://jw3b.dev/hf-models/onnx-community/whisper-base/resolve/main/config.json'),
+          envReturning('text/html'),
+          ctx,
+        )
+        expect(res.status).toBe(200)
+        expect(calls[0]).toBe('https://huggingface.co/onnx-community/whisper-base/resolve/main/config.json')
+        expect(res.headers.get('cache-control')).toBe('public, max-age=31536000, immutable')
+        expect(await res.text()).toContain('whisper')
+      } finally {
+        globalThis.fetch = realFetch
+        globalThis.caches = realCaches
+      }
+    })
+    it('502s when the upstream fails (never a mislabelled success)', async () => {
+      const realFetch = globalThis.fetch
+      const realCaches = globalThis.caches
+      globalThis.caches = { default: { match: async () => undefined, put: async () => {} } }
+      globalThis.fetch = async () => new Response('nope', { status: 403 })
+      try {
+        const res = await siteWorker.fetch(
+          new Request('https://jw3b.dev/hf-models/onnx-community/whisper-base/resolve/main/config.json'),
+          envReturning('text/html'),
+          ctx,
+        )
+        expect(res.status).toBe(502)
+      } finally {
+        globalThis.fetch = realFetch
+        globalThis.caches = realCaches
+      }
+    })
   })
 })

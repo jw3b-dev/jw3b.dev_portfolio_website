@@ -292,7 +292,21 @@ export function useLiveVoice() {
     teardown() // fresh generation
     const gen = genRef.current
     const caps = detectVoiceCaps()
-    const engine = pickSttEngine(caps)
+
+    // navigator.gpu existing does NOT guarantee a usable adapter (Linux/VM/driver gaps — and a
+    // failed WebGPU pipeline load can't simply be retried on WASM: the library caches the
+    // rejected session per model id, verified in-browser). So pre-flight the REAL adapter and
+    // only pick the WebGPU engine when the hardware actually answers.
+    let webgpuUsable = false
+    if (caps.webgpu) {
+      try {
+        webgpuUsable = !!(await navigator.gpu.requestAdapter())
+      } catch {
+        webgpuUsable = false
+      }
+    }
+    if (gen !== genRef.current) return
+    const engine = pickSttEngine({ ...caps, webgpu: webgpuUsable })
     dispatch({ type: 'START', engine })
 
     // This cut ships the on-device engines only — without WASM there is no free real-time
@@ -303,7 +317,9 @@ export function useLiveVoice() {
 
     try {
       // 1) On-device Whisper (lazy ~tens-of-MB, cached by the browser after first load).
-      transcriberRef.current = await loadTranscriber({ device: caps.webgpu ? 'webgpu' : 'wasm' })
+      transcriberRef.current = await loadTranscriber({
+        device: engine === STT_ENGINE.WHISPER_WEBGPU ? 'webgpu' : 'wasm',
+      })
       if (gen !== genRef.current) return
 
       // 2) Mic + AudioContext (resumed inside this user gesture — autoplay policy).
