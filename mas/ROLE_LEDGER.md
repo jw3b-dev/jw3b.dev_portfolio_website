@@ -236,3 +236,11 @@ reads as intended. **Barge-in browser-verified:** loud speech during THINKING fl
 **Open (owner):** real-hardware WebGPU pass (no hw adapter anywhere I can test); tiny's proper-noun
 accuracy (CodeHawks→"co-dox" — options: whisper-small on real GPUs, or default the floor to server
 STT for accuracy over privacy); `voiceLive` ON for prod is John's call.
+
+**P3-07 (frontend-engineer) — GitHub ↔ site reinforcement (FR-056) · DONE (`e7c6099`).**
+`RepoLinks.jsx` on the flagship surface: `github.com/jw3b-dev` (rel=me) + the four public non-fork
+claim-supporting repos (solidity-audits · the site's own source · development_agent ·
+cyfrin-updraft-track), every href curl-verified 200 pre-link; MB-agentic is 404 (not public) and
+deliberately absent; commercial flagships' closed-source status stated honestly; forbidden-repo
+absence (bets/DecentX) asserted in test. Live-verified on `/work`. Remaining P3 is owner/research-
+gated (P3-02 provisioning · P3-03/04 legal research · P3-09 external input) except P3-08 (GA sweep).
