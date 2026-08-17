@@ -153,6 +153,43 @@ export default function ChatWidget() {
             ))}
           </div>
 
+          {/* P3 live-voice call strip: the hands-free session's state + current turn, rendered
+              inside the panel so the visitor always sees what the mic is doing. Error is honest
+              and names the working fallback (text chat / push-to-talk stay available below). */}
+          {isEnabled('voiceLive') && live.state !== 'idle' && (
+            <div className="border-t border-hairline bg-raised/60 px-4 py-2 text-xs" aria-live="polite">
+              <div className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className={
+                    'inline-block h-2 w-2 rounded-full ' +
+                    (live.state === 'listening'
+                      ? 'bg-cyan motion-safe:animate-pulse'
+                      : live.state === 'error'
+                        ? 'bg-caution'
+                        : 'bg-content-muted')
+                  }
+                />
+                <span className="font-mono uppercase tracking-label text-content-muted">
+                  {live.state === 'loading' && 'Loading voice model…'}
+                  {live.state === 'listening' && 'Listening — just talk'}
+                  {live.state === 'thinking' && 'Thinking…'}
+                  {live.state === 'speaking' && 'Speaking — talk to interrupt'}
+                  {live.state === 'error' && 'Live voice ended'}
+                </span>
+              </div>
+              {live.state === 'error' && live.error && <p className="mt-1 text-caution">{live.error}</p>}
+              {live.transcript && live.state !== 'error' && (
+                <p className="mt-1 truncate text-content-secondary">“{live.transcript}”</p>
+              )}
+              {live.displayReply && (live.state === 'thinking' || live.state === 'speaking') && (
+                <p className="mt-1 max-h-16 overflow-y-auto whitespace-pre-wrap text-content-secondary">
+                  {live.displayReply}
+                </p>
+              )}
+            </div>
+          )}
+
           <form onSubmit={submit} className="border-t border-hairline p-3">
             <label htmlFor="concierge-input" className="sr-only">
               Message the concierge

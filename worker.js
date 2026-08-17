@@ -11,18 +11,25 @@
 // preview SPA (built to call the -v2 worker) isn't CSP-blocked. Anthropic is ABSENT — the
 // browser never talks to Anthropic, only the Worker does (FR-050). frame-src allows Unlock +
 // the two flagship embeds.
+//
+// WASM (voiceLive on-device Whisper + the XMTP SDK): the .wasm binaries are BUNDLED by Vite
+// into /assets/* (self-hosted — no CDN), but instantiating any WebAssembly requires
+// 'wasm-unsafe-eval' in script-src (the WASM-only directive; NOT 'unsafe-eval' — JS eval stays
+// blocked). The Whisper model weights stream from Hugging Face (huggingface.co redirects
+// weight downloads to its CDN hosts under *.hf.co), hence the hf hosts in connect-src —
+// fetched lazily only when a visitor starts a live-voice call, then cached on-device.
 const CSP = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  "script-src 'self' https://paywall.unlock-protocol.com",
+  "script-src 'self' 'wasm-unsafe-eval' https://paywall.unlock-protocol.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   "img-src 'self' data: https:",
   "worker-src 'self' blob:",
-  "connect-src 'self' https://portfolio-agent.agilegypsy.workers.dev https://portfolio-agent-v2.agilegypsy.workers.dev https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://explorer-api.walletconnect.com https://*.web3modal.org https://*.reown.com https://mainnet.base.org https://sepolia.base.org https://*.base.org https://cloudflare-eth.com https://paywall.unlock-protocol.com https://rpc.unlock-protocol.com",
+  "connect-src 'self' https://portfolio-agent.agilegypsy.workers.dev https://portfolio-agent-v2.agilegypsy.workers.dev https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://explorer-api.walletconnect.com https://*.web3modal.org https://*.reown.com https://mainnet.base.org https://sepolia.base.org https://*.base.org https://cloudflare-eth.com https://paywall.unlock-protocol.com https://rpc.unlock-protocol.com",
   'frame-src \'self\' https://paywall.unlock-protocol.com https://app.unlock-protocol.com https://kthulhu.co https://kointel.co.za',
 ].join('; ')
 

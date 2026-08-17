@@ -43,6 +43,7 @@ export default defineConfig({
         'src/lib/txDecode.js',
         'src/lib/xmtpFlow.js',
         'src/lib/voiceSession.js',
+        'src/lib/micTurn.js',
       ],
       thresholds: {
         lines: 100,

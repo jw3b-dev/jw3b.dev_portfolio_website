@@ -43,4 +43,12 @@ describe('site worker headers (GAP-01 guard)', () => {
     expect(csp).toContain('paywall.unlock-protocol.com')
     expect(csp).not.toContain('anthropic') // the browser never talks to Anthropic (FR-050)
   })
+
+  it('permits WASM instantiation + HF model fetches (voiceLive/XMTP), but never JS eval', async () => {
+    const csp = (await headersOf('https://jw3b.dev/', 'text/html')).get('content-security-policy')
+    expect(csp).toContain("'wasm-unsafe-eval'") // on-device Whisper + XMTP wasm (self-hosted binaries)
+    expect(csp).toContain('https://huggingface.co') // Whisper model weights (lazy, cached on-device)
+    expect(csp).toContain('https://*.hf.co') // HF weight-download CDN redirect hosts
+    expect(csp).not.toMatch(/(?<!wasm-)unsafe-eval/) // JS eval stays blocked
+  })
 })
