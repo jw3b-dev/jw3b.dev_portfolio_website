@@ -191,5 +191,8 @@ discoverable + autoplay-permitted). Gate green.
 with `NotSupportedError: no supported source`, NOT autoplay. `@cf/deepgram/aura-1` returns **MP3** (magic
 `ff f3` = MPEG ADTS layer III), but `/text-to-speech` labeled it `audio/wav`, so the browser couldn't
 decode it → silence. Fix: the worker now sends `Content-Type: audio/mpeg` (and the R2 key → `.mp3`). The
-opt-in toggle-speaks-on-enable from the prior commit stands as a UX win; the MIME fix is what makes it
-audible. Verified in-browser.
+opt-in toggle-speaks-on-enable stands as a UX win. But the MIME fix alone wasn't enough — the HTML
+`<audio>` element still rejected the raw MP3 STREAM (frame-sync, no container/ID3) with NotSupportedError,
+while WebAudio `decodeAudioData` decoded the SAME bytes fine (verified in-browser: `OK dur=1.49s`). Final
+fix: the client plays TTS via WebAudio (`decodeAudioData` + `AudioBufferSourceNode`, AudioContext resumed
+on the toggle gesture), not `new Audio()`. The audible fix = worker `audio/mpeg` + client WebAudio.

@@ -16,7 +16,7 @@ import { SpeakerToggle, MicButton } from './VoiceControls.jsx'
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
   const { messages, streaming, send, toolCall, clearToolCall } = usePortfolioAgent()
-  const { recording, voiceOn, canRecord, startRecording, stopRecording, speak, toggleVoice } = useVoice()
+  const { recording, voiceOn, canRecord, startRecording, stopRecording, speak, toggleVoice, unlockAudio } = useVoice()
   const [draft, setDraft] = useState('')
   const listRef = useRef(null)
   const navigate = useNavigate()
@@ -88,6 +88,7 @@ export default function ChatWidget() {
               voiceOn={voiceOn}
               onToggle={() => {
                 const turningOn = !voiceOn
+                if (turningOn) unlockAudio() // resume the AudioContext within the click gesture
                 toggleVoice()
                 if (turningOn) {
                   const last = [...messages].reverse().find((m) => m.role === 'assistant' && !m.pending && m.audio)

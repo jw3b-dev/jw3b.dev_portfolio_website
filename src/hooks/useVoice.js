@@ -20,8 +20,29 @@ export function useVoice() {
   const [voiceOn, setVoiceOn] = useState(false) // TTS opt-in (autoplay policy + user choice)
   const recorderRef = useRef(null)
   const chunksRef = useRef([])
-  const audioRef = useRef(null)
+  const ctxRef = useRef(null) // one AudioContext for TTS playback
+  const sourceRef = useRef(null) // the currently-playing buffer source (so we can stop it)
   const spokenRef = useRef(new Set())
+
+  // TTS playback uses WebAudio (decodeAudioData + AudioBufferSourceNode), NOT `new Audio()`: Aura
+  // returns a RAW MP3 stream (frame-sync bytes, no container/ID3), which the HTML <audio> element
+  // rejects with NotSupportedError even though the MP3 codec is supported — decodeAudioData decodes
+  // it fine (verified in-browser). SSR/jsdom-safe: getCtx returns null where AudioContext is absent.
+  const getCtx = () => {
+    if (!ctxRef.current && typeof window !== 'undefined') {
+      const AC = window.AudioContext || window.webkitAudioContext
+      if (AC) ctxRef.current = new AC()
+    }
+    return ctxRef.current
+  }
+  const stopPlayback = () => {
+    try {
+      if (sourceRef.current) sourceRef.current.stop()
+    } catch {
+      /* already stopped */
+    }
+    sourceRef.current = null
+  }
 
   const stopRecording = useCallback(() => {
     const r = recorderRef.current
@@ -63,6 +84,15 @@ export function useVoice() {
     [recording],
   )
 
+  /**
+   * Resume the AudioContext from a user gesture (the speaker-toggle click). WebAudio starts
+   * `suspended` until a gesture (the autoplay policy), so call this SYNCHRONOUSLY in the click.
+   */
+  const unlockAudio = useCallback(() => {
+    const ctx = getCtx()
+    if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {})
+  }, [])
+
   /** Speak `text` once via TTS (dedup). No-op when voice is off, text is empty, or on any error. */
   const speak = useCallback(
     async (text, { force = false } = {}) => {
@@ -72,20 +102,26 @@ export function useVoice() {
       if ((!voiceOn && !force) || !t || spokenRef.current.has(t)) return
       spokenRef.current.add(t)
       try {
+        const ctx = getCtx()
+        if (!ctx) return
+        if (ctx.state === 'suspended') await ctx.resume().catch(() => {})
         const res = await fetch(AGENT_TTS_URL, {
           method: 'POST',
           body: JSON.stringify({ text: t }),
           headers: { 'Content-Type': 'application/json' },
         })
         if (!res.ok || res.status === 204) return // worker degraded → silent
-        const blob = await res.blob()
-        if (!blob || !blob.size) return
-        if (audioRef.current) audioRef.current.pause()
-        const audio = new Audio(URL.createObjectURL(blob))
-        audioRef.current = audio
-        audio.play().catch(() => {}) // autoplay blocked → ignore
+        const bytes = await res.arrayBuffer()
+        if (!bytes || !bytes.byteLength) return
+        const audioBuf = await ctx.decodeAudioData(bytes)
+        stopPlayback() // stop any prior line before starting the new one
+        const src = ctx.createBufferSource()
+        src.buffer = audioBuf
+        src.connect(ctx.destination)
+        src.start(0)
+        sourceRef.current = src
       } catch {
-        /* fail-safe */
+        /* fail-safe: no audio, stay on text */
       }
     },
     [voiceOn],
@@ -93,10 +129,10 @@ export function useVoice() {
 
   const toggleVoice = useCallback(() => {
     setVoiceOn((v) => {
-      if (v && audioRef.current) audioRef.current.pause() // turning off → stop current playback
+      if (v) stopPlayback() // turning off → stop current playback
       return !v
     })
   }, [])
 
-  return { recording, voiceOn, canRecord: canRecord(), startRecording, stopRecording, speak, toggleVoice }
+  return { recording, voiceOn, canRecord: canRecord(), startRecording, stopRecording, speak, toggleVoice, unlockAudio }
 }
