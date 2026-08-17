@@ -6,6 +6,7 @@ import {
   CALIBRATE_MAX_START,
   CALIBRATE_FLOOR_MULT,
   calibrateVad,
+  encodeWavPcm16,
   computeRms,
   initialVad,
   updateVad,
@@ -150,6 +151,38 @@ describe('calibrateVad', () => {
     expect(calibrateVad([0.003]).bargeInRms).toBe(VAD_DEFAULTS.bargeInRms) // 4×gate < default → default
     const loud = calibrateVad([0.01, 0.01, 0.01]) // gate 0.03 → 4× = 0.12 > default 0.05
     expect(loud.bargeInRms).toBeCloseTo(loud.startRms * 4, 6)
+  })
+})
+
+describe('encodeWavPcm16', () => {
+  const header = (bytes) => ({
+    riff: String.fromCharCode(...bytes.slice(0, 4)),
+    wave: String.fromCharCode(...bytes.slice(8, 12)),
+    fmt: new DataView(bytes.buffer).getUint16(20, true),
+    channels: new DataView(bytes.buffer).getUint16(22, true),
+    rate: new DataView(bytes.buffer).getUint32(24, true),
+    bits: new DataView(bytes.buffer).getUint16(34, true),
+    dataLen: new DataView(bytes.buffer).getUint32(40, true),
+  })
+  it('writes a valid mono PCM16 RIFF header at 16kHz', () => {
+    const wav = encodeWavPcm16(new Float32Array([0, 0.5, -0.5]))
+    expect(wav.length).toBe(44 + 3 * 2)
+    expect(header(wav)).toEqual({ riff: 'RIFF', wave: 'WAVE', fmt: 1, channels: 1, rate: 16000, bits: 16, dataLen: 6 })
+  })
+  it('scales samples to int16 and clips out-of-range floats', () => {
+    const wav = encodeWavPcm16(new Float32Array([1, -1, 2, -2, 0]))
+    const v = new DataView(wav.buffer)
+    expect(v.getInt16(44, true)).toBe(32767)
+    expect(v.getInt16(46, true)).toBe(-32767)
+    expect(v.getInt16(48, true)).toBe(32767) // clipped
+    expect(v.getInt16(50, true)).toBe(-32767) // clipped
+    expect(v.getInt16(52, true)).toBe(0)
+  })
+  it('honors a custom sample rate and empty input', () => {
+    const wav = encodeWavPcm16(new Float32Array(0), 48000)
+    expect(wav.length).toBe(44)
+    expect(header(wav).rate).toBe(48000)
+    expect(encodeWavPcm16(null).length).toBe(44)
   })
 })
 

@@ -199,6 +199,14 @@ export default function ChatWidget() {
                   leaves the browser.
                 </p>
               )}
+              {/* Privacy disclosure: if on-device ASR stalls, the session degrades to server
+                  transcription — audio now leaves the browser, so the visitor must see it. */}
+              {live.sttMode === 'server' && live.state !== 'error' && live.state !== 'loading' && (
+                <p className="mt-1 text-content-muted">
+                  On-device transcription isn&rsquo;t responsive on this device — using server
+                  transcription for this call.
+                </p>
+              )}
               {live.state === 'error' && live.error && <p className="mt-1 text-caution">{live.error}</p>}
               {live.transcript && live.state !== 'error' && (
                 <p className="mt-1 truncate text-content-secondary">“{live.transcript}”</p>

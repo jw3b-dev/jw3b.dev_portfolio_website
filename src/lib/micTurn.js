@@ -117,6 +117,38 @@ export function resampleLinear(input, fromRate, toRate = WHISPER_SAMPLE_RATE) {
 }
 
 /**
+ * Encode mono Float32 samples as a PCM16 WAV file (pure). Used by the SERVER-STT fallback:
+ * when on-device transcription stalls (watchdog) the captured turn is re-sent to the Worker's
+ * Whisper endpoint, which takes plain audio bytes — WAV is the simplest container it accepts.
+ */
+export function encodeWavPcm16(samples, sampleRate = WHISPER_SAMPLE_RATE) {
+  const n = samples ? samples.length : 0
+  const buf = new ArrayBuffer(44 + n * 2)
+  const v = new DataView(buf)
+  const writeStr = (off, s) => {
+    for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i))
+  }
+  writeStr(0, 'RIFF')
+  v.setUint32(4, 36 + n * 2, true)
+  writeStr(8, 'WAVE')
+  writeStr(12, 'fmt ')
+  v.setUint32(16, 16, true) // fmt chunk size
+  v.setUint16(20, 1, true) // PCM
+  v.setUint16(22, 1, true) // mono
+  v.setUint32(24, sampleRate, true)
+  v.setUint32(28, sampleRate * 2, true) // byte rate (mono 16-bit)
+  v.setUint16(32, 2, true) // block align
+  v.setUint16(34, 16, true) // bits per sample
+  writeStr(36, 'data')
+  v.setUint32(40, n * 2, true)
+  for (let i = 0; i < n; i++) {
+    const clamped = Math.max(-1, Math.min(1, samples[i])) // clip out-of-range floats
+    v.setInt16(44 + i * 2, Math.round(clamped * 32767), true)
+  }
+  return new Uint8Array(buf)
+}
+
+/**
  * What the assistant should SAY for a completed reply: the [AUDIO:"…"] spoken summary when the
  * model provided one, else the stripped display text. Pure — parsed pieces come from
  * tagProtocol/conciergeClient at the call site.

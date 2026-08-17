@@ -14,11 +14,11 @@
  */
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { voiceSessionReducer, initialVoiceState, pickSttEngine, isEndOfSpeech, STT_ENGINE, VOICE_STATE } from '../lib/voiceSession.js'
-import { VAD_DEFAULTS, calibrateVad, computeRms, initialVad, updateVad, isNoiseTurn, isMaxedTurn, mergeChunks, resampleLinear, speakableReply } from '../lib/micTurn.js'
+import { VAD_DEFAULTS, calibrateVad, computeRms, encodeWavPcm16, initialVad, updateVad, isNoiseTurn, isMaxedTurn, mergeChunks, resampleLinear, speakableReply } from '../lib/micTurn.js'
 import { loadTranscriber } from '../lib/loadTranscriber.js'
 import { buildOutgoing, shouldDegrade, displayText } from '../lib/conciergeClient.js'
 import { parseSseLine, parseTags } from '../lib/tagProtocol.js'
-import { AGENT_CHAT_URL, AGENT_TTS_URL } from '../config/worker.js'
+import { AGENT_CHAT_URL, AGENT_STT_URL, AGENT_TTS_URL } from '../config/worker.js'
 
 // Abuse/cost guard: a hands-free session auto-ends after this long (each turn spends Worker
 // AI + Anthropic tokens). The visitor can just tap Live again.
@@ -39,6 +39,49 @@ const CALIBRATION_FRAMES = 8
 // Mic-level meter refresh (throttled setState — the meter is feedback, not a scope).
 const LEVEL_EMIT_MS = 150
 
+// On-device inference watchdogs. A software-emulated GPU or a pathological CPU path can make
+// one utterance take MINUTES (owner-observed: ~20 min on a llvmpipe adapter) — past these, the
+// session degrades rather than sitting on "transcribing" forever. Warm-up runs during LOADING
+// so a stall surfaces before the call starts, not mid-conversation.
+const WARMUP_TIMEOUT_MS = 20000
+const TRANSCRIBE_TIMEOUT_MS = 20000
+
+/** Race a promise against a timeout (the loser is ignored — callers gen-check anyway). */
+function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('on-device transcription timed out')), ms)
+    promise.then(
+      (v) => {
+        clearTimeout(t)
+        resolve(v)
+      },
+      (e) => {
+        clearTimeout(t)
+        reject(e)
+      },
+    )
+  })
+}
+
+/**
+ * True when a WebGPU adapter is real hardware. Linux Chromium/Brave will happily hand back a
+ * SOFTWARE adapter (Mesa llvmpipe / SwiftShader) that "works" at 100–1000× slowdown — the
+ * owner's 20-minute transcription. Software GPU is strictly worse than the WASM path.
+ */
+async function hasHardwareWebGpu(gpu) {
+  try {
+    const adapter = await gpu.requestAdapter()
+    if (!adapter) return false
+    if (adapter.isFallbackAdapter || adapter.info?.isFallbackAdapter) return false
+    const desc = [adapter.info?.vendor, adapter.info?.architecture, adapter.info?.device, adapter.info?.description]
+      .join(' ')
+      .toLowerCase()
+    return !/llvmpipe|swiftshader|software|lavapipe/.test(desc)
+  } catch {
+    return false
+  }
+}
+
 /** Detect the free STT capabilities available in this browser (SSR/jsdom-safe). */
 export function detectVoiceCaps() {
   if (typeof navigator === 'undefined' || typeof window === 'undefined') return {}
@@ -53,6 +96,7 @@ export function useLiveVoice() {
   const [state, dispatch] = useReducer(voiceSessionReducer, undefined, initialVoiceState)
   const [loadPct, setLoadPct] = useState(0) // model-download % (LOADING feedback)
   const [micLevel, setMicLevel] = useState(0) // 0–1 level vs the speech gate (meter feedback)
+  const [sttModeState, setSttModeState] = useState('device') // 'device' | 'server' — UI disclosure
 
   // Mirror the FSM state for the audio callback (fires outside React's render cycle).
   const stateRef = useRef(state)
@@ -79,6 +123,11 @@ export function useLiveVoice() {
   const cfgRef = useRef(VAD_DEFAULTS) // VAD gates — replaced by calibrateVad after the window
   const calSamplesRef = useRef([]) // idle RMS frames collected for calibration
   const levelAtRef = useRef(0) // last mic-level emit (throttle)
+  const sttModeRef = useRef('device') // audio-callback view of the STT mode (ref = no stale closure)
+  const setSttMode = useCallback((m) => {
+    sttModeRef.current = m
+    setSttModeState(m)
+  }, [])
 
   /** Tear down all live resources. Does NOT dispatch — callers pick the closing event. */
   const teardown = useCallback(() => {
@@ -115,6 +164,8 @@ export function useLiveVoice() {
     turnsRef.current = []
     cfgRef.current = VAD_DEFAULTS
     calSamplesRef.current = []
+    sttModeRef.current = 'device'
+    setSttModeState('device')
     setLoadPct(0)
     setMicLevel(0)
   }, [])
@@ -127,6 +178,26 @@ export function useLiveVoice() {
     },
     [teardown],
   )
+
+  /**
+   * Server-STT floor: the captured 16 kHz turn, WAV-encoded, through the Worker's Whisper —
+   * the same endpoint the push-to-talk mic uses. Slower than healthy on-device (~1–2 s/turn)
+   * but bounded — and disclosed in the strip, because audio leaving the browser is a privacy
+   * change the visitor must see.
+   */
+  const serverTranscribe = useCallback(async (audio16k) => {
+    try {
+      const res = await fetch(AGENT_STT_URL, {
+        method: 'POST',
+        body: new Blob([encodeWavPcm16(audio16k)], { type: 'audio/wav' }),
+      })
+      if (!res.ok) return ''
+      const data = await res.json().catch(() => null)
+      return data && data.text ? String(data.text).trim() : ''
+    } catch {
+      return '' // fail-safe: nothing usable → the turn resets to listening
+    }
+  }, [])
 
   /** Speak the reply via Aura TTS (WebAudio decode — Aura returns a raw MP3 stream). */
   const speakReply = useCallback(async (gen, text) => {
@@ -308,9 +379,25 @@ export function useLiveVoice() {
         try {
           const ctx = ctxRef.current
           const audio = resampleLinear(mergeChunks(captured), ctx ? ctx.sampleRate : 48000)
-          const out = await transcriberRef.current(audio)
+          let text = ''
+          let mode = sttModeRef.current
+          if (mode === 'device' && transcriberRef.current) {
+            try {
+              const out = await withTimeout(transcriberRef.current(audio), TRANSCRIBE_TIMEOUT_MS)
+              text = String(out && out.text ? out.text : '').trim()
+            } catch {
+              if (gen !== genRef.current) return
+              // Stalled/failed on-device → one-way switch to the server floor for this
+              // session, and the SAME captured turn is retried there — never lost.
+              mode = 'server'
+              setSttMode('server')
+            }
+          } else {
+            mode = 'server'
+          }
           if (gen !== genRef.current) return
-          const text = String(out && out.text ? out.text : '').trim()
+          if (mode === 'server' && !text) text = await serverTranscribe(audio)
+          if (gen !== genRef.current) return
           busyRef.current = false
           // Empty → SPEECH_FINAL('') resets TRANSCRIBING → LISTENING; else the turn runs.
           if (!text) return dispatch({ type: 'SPEECH_FINAL', text: '' })
@@ -322,7 +409,7 @@ export function useLiveVoice() {
         }
       })()
     },
-    [fail, runTurn],
+    [fail, runTurn, serverTranscribe, setSttMode],
   )
 
   const start = useCallback(async () => {
@@ -333,16 +420,10 @@ export function useLiveVoice() {
 
     // navigator.gpu existing does NOT guarantee a usable adapter (Linux/VM/driver gaps — and a
     // failed WebGPU pipeline load can't simply be retried on WASM: the library caches the
-    // rejected session per model id, verified in-browser). So pre-flight the REAL adapter and
-    // only pick the WebGPU engine when the hardware actually answers.
+    // rejected session per model id, verified in-browser). So pre-flight the REAL adapter —
+    // and reject SOFTWARE adapters (llvmpipe/SwiftShader), which "work" 100–1000× too slow.
     let webgpuUsable = false
-    if (caps.webgpu) {
-      try {
-        webgpuUsable = !!(await navigator.gpu.requestAdapter())
-      } catch {
-        webgpuUsable = false
-      }
-    }
+    if (caps.webgpu) webgpuUsable = await hasHardwareWebGpu(navigator.gpu)
     if (gen !== genRef.current) return
     const engine = pickSttEngine({ ...caps, webgpu: webgpuUsable })
     dispatch({ type: 'START', engine })
@@ -355,14 +436,34 @@ export function useLiveVoice() {
 
     try {
       // 1) On-device Whisper (lazy; cached by the browser after the first load). Progress is
-      // surfaced as a % — a multi-minute silent first download reads as broken.
-      transcriberRef.current = await loadTranscriber({
-        device: engine === STT_ENGINE.WHISPER_WEBGPU ? 'webgpu' : 'wasm',
-        onProgress: (pct) => {
-          if (gen === genRef.current) setLoadPct(pct)
-        },
-      })
-      if (gen !== genRef.current) return
+      // surfaced as a % — a multi-minute silent first download reads as broken. Each candidate
+      // is WARMED with a real (silent) inference under a watchdog, so a stalling path is
+      // caught HERE during "Loading" — never twenty minutes into a conversation. Chain:
+      // webgpu-base → wasm-tiny → server Whisper (different model ids, so the library's
+      // cached-rejection problem doesn't apply across steps).
+      const warmup = async (device) => {
+        const t = await loadTranscriber({
+          device,
+          onProgress: (pct) => {
+            if (gen === genRef.current) setLoadPct(pct)
+          },
+        })
+        if (gen !== genRef.current) return null
+        await withTimeout(t(new Float32Array(8000)), WARMUP_TIMEOUT_MS) // 0.5s of silence
+        return t
+      }
+      const candidates = engine === STT_ENGINE.WHISPER_WEBGPU ? ['webgpu', 'wasm'] : ['wasm']
+      transcriberRef.current = null
+      for (const device of candidates) {
+        try {
+          transcriberRef.current = await warmup(device)
+        } catch {
+          /* stalled or failed → next candidate */
+        }
+        if (gen !== genRef.current) return
+        if (transcriberRef.current) break
+      }
+      if (!transcriberRef.current) setSttMode('server') // on-device unusable → server Whisper floor
 
       // 2) Mic + AudioContext (resumed inside this user gesture — autoplay policy).
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -401,7 +502,7 @@ export function useLiveVoice() {
       if (gen === genRef.current)
         fail(e?.name === 'NotAllowedError' ? 'Mic permission denied — the text chat still works.' : e?.message || 'Live voice failed to start.')
     }
-  }, [teardown, fail, onFrame])
+  }, [teardown, fail, onFrame, setSttMode])
 
   const stop = useCallback(() => {
     teardown()
@@ -411,5 +512,14 @@ export function useLiveVoice() {
   // Unmount safety: release the mic/context if the widget goes away mid-call.
   useEffect(() => teardown, [teardown])
 
-  return { ...state, displayReply: displayText(state.reply), loadPct, micLevel, caps: detectVoiceCaps(), start, stop }
+  return {
+    ...state,
+    displayReply: displayText(state.reply),
+    loadPct,
+    micLevel,
+    sttMode: sttModeState,
+    caps: detectVoiceCaps(),
+    start,
+    stop,
+  }
 }
