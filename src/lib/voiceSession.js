@@ -39,7 +39,10 @@ export function isEndOfSpeech(silenceMs, threshold = ENDPOINT_SILENCE_MS) {
 export const VOICE_STATE = Object.freeze({
   IDLE: 'idle',
   LOADING: 'loading', // fetching/warming the on-device model
-  LISTENING: 'listening', // mic open, transcribing
+  LISTENING: 'listening', // mic open, waiting for speech
+  TRANSCRIBING: 'transcribing', // a turn was captured; on-device ASR running (visible feedback —
+  //                               on the WASM floor this can take seconds, and a silent
+  //                               "Listening" during it reads as "not working")
   THINKING: 'thinking', // transcript sent to the concierge; awaiting/streaming the reply
   SPEAKING: 'speaking', // TTS playing the reply
   ERROR: 'error',
@@ -62,10 +65,14 @@ export function voiceSessionReducer(s, e) {
     case 'PARTIAL': // interim transcript while the user is still speaking
       if (s.state !== VOICE_STATE.LISTENING) return s
       return { ...s, transcript: String(e.text || '') }
-    case 'SPEECH_FINAL': {
+    case 'TURN_CAPTURED': // endpoint hit — a turn is now being transcribed on-device
       if (s.state !== VOICE_STATE.LISTENING) return s
+      return { ...s, state: VOICE_STATE.TRANSCRIBING }
+    case 'SPEECH_FINAL': {
+      if (s.state !== VOICE_STATE.LISTENING && s.state !== VOICE_STATE.TRANSCRIBING) return s
       const text = String(e.text || '').trim()
-      if (!text) return s // empty/silence endpoint → keep listening
+      // Nothing usable (silence endpoint / ASR heard nothing) → back to listening.
+      if (!text) return { ...s, state: VOICE_STATE.LISTENING, transcript: '' }
       return { ...s, state: VOICE_STATE.THINKING, transcript: text, reply: '' }
     }
     case 'REPLY_DELTA':

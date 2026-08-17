@@ -171,13 +171,34 @@ export default function ChatWidget() {
                   }
                 />
                 <span className="font-mono uppercase tracking-label text-content-muted">
-                  {live.state === 'loading' && 'Loading voice model…'}
+                  {live.state === 'loading' &&
+                    (live.loadPct > 0 ? `Downloading voice model… ${live.loadPct}%` : 'Loading voice model…')}
                   {live.state === 'listening' && 'Listening — just talk'}
+                  {live.state === 'transcribing' && 'Heard you — transcribing…'}
                   {live.state === 'thinking' && 'Thinking…'}
                   {live.state === 'speaking' && 'Speaking — talk to interrupt'}
                   {live.state === 'error' && 'Live voice ended'}
                 </span>
+                {/* Mic-level meter: fills as speech crosses the (room-calibrated) gate, so a
+                    dead/quiet mic is visible at a glance instead of a silent "not listening". */}
+                {(live.state === 'listening' || live.state === 'thinking' || live.state === 'speaking') && (
+                  <span
+                    aria-hidden="true"
+                    className="ml-auto inline-block h-1.5 w-16 overflow-hidden rounded-full bg-hairline"
+                  >
+                    <span
+                      className="block h-full rounded-full bg-cyan motion-safe:transition-[width] motion-safe:duration-150"
+                      style={{ width: `${Math.round(live.micLevel * 100)}%` }}
+                    />
+                  </span>
+                )}
               </div>
+              {live.state === 'loading' && (
+                <p className="mt-1 text-content-muted">
+                  First call downloads the on-device speech model (cached after that) — your audio never
+                  leaves the browser.
+                </p>
+              )}
               {live.state === 'error' && live.error && <p className="mt-1 text-caution">{live.error}</p>}
               {live.transcript && live.state !== 'error' && (
                 <p className="mt-1 truncate text-content-secondary">“{live.transcript}”</p>

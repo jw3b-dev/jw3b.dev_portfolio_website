@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest'
 import {
   WHISPER_SAMPLE_RATE,
   VAD_DEFAULTS,
+  CALIBRATE_MIN_START,
+  CALIBRATE_MAX_START,
+  CALIBRATE_FLOOR_MULT,
+  calibrateVad,
   computeRms,
   initialVad,
   updateVad,
@@ -118,6 +122,34 @@ describe('resampleLinear', () => {
     expect(out.length).toBe(2)
     expect(out[0]).toBeCloseTo(0, 6)
     expect(out[1]).toBeCloseTo(2, 6)
+  })
+})
+
+describe('calibrateVad', () => {
+  it('returns the defaults untouched with no samples', () => {
+    expect(calibrateVad([])).toBe(VAD_DEFAULTS)
+    expect(calibrateVad(null)).toBe(VAD_DEFAULTS)
+    expect(calibrateVad([NaN, -1])).toBe(VAD_DEFAULTS) // nothing valid survives the filter
+  })
+  it('gates at floor × mult for a quiet-but-real room, with keep at half', () => {
+    const cfg = calibrateVad([0.003, 0.003, 0.003])
+    expect(cfg.startRms).toBeCloseTo(0.003 * CALIBRATE_FLOOR_MULT, 6)
+    expect(cfg.keepRms).toBeCloseTo(cfg.startRms / 2, 6)
+  })
+  it('clamps a near-silent mic UP to the minimum gate (never gates on electrical noise)', () => {
+    expect(calibrateVad([0.0001, 0.0001, 0.0002]).startRms).toBe(CALIBRATE_MIN_START)
+  })
+  it('clamps a roaring room DOWN to the maximum gate (speech must stay reachable)', () => {
+    expect(calibrateVad([0.2, 0.2, 0.2]).startRms).toBe(CALIBRATE_MAX_START)
+  })
+  it('is median-robust: one cough during calibration does not raise the gate', () => {
+    const cfg = calibrateVad([0.003, 0.003, 0.5, 0.003, 0.003])
+    expect(cfg.startRms).toBeCloseTo(0.003 * CALIBRATE_FLOOR_MULT, 6)
+  })
+  it('raises bargeInRms with the gate but never lowers it below the default', () => {
+    expect(calibrateVad([0.003]).bargeInRms).toBe(VAD_DEFAULTS.bargeInRms) // 4×gate < default → default
+    const loud = calibrateVad([0.01, 0.01, 0.01]) // gate 0.03 → 4× = 0.12 > default 0.05
+    expect(loud.bargeInRms).toBeCloseTo(loud.startRms * 4, 6)
   })
 })
 

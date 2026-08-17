@@ -58,11 +58,25 @@ describe('voiceSessionReducer — the hands-free call loop', () => {
     expect(voiceSessionReducer(at(VOICE_STATE.THINKING), { type: 'PARTIAL', text: 'x' }).state).toBe(VOICE_STATE.THINKING)
   })
 
-  it('SPEECH_FINAL → THINKING with the transcript; ignores an empty endpoint', () => {
-    const s = voiceSessionReducer(at(VOICE_STATE.LISTENING), { type: 'SPEECH_FINAL', text: '  what does John do?  ' })
+  it('TURN_CAPTURED → TRANSCRIBING (only from LISTENING) — visible ASR feedback', () => {
+    expect(voiceSessionReducer(at(VOICE_STATE.LISTENING), { type: 'TURN_CAPTURED' }).state).toBe(VOICE_STATE.TRANSCRIBING)
+    expect(voiceSessionReducer(at(VOICE_STATE.THINKING), { type: 'TURN_CAPTURED' }).state).toBe(VOICE_STATE.THINKING)
+  })
+
+  it('SPEECH_FINAL → THINKING with the transcript (from LISTENING or TRANSCRIBING)', () => {
+    const s = voiceSessionReducer(at(VOICE_STATE.TRANSCRIBING), { type: 'SPEECH_FINAL', text: '  what does John do?  ' })
     expect(s).toMatchObject({ state: VOICE_STATE.THINKING, transcript: 'what does John do?', reply: '' })
-    const empty = voiceSessionReducer(at(VOICE_STATE.LISTENING), { type: 'SPEECH_FINAL', text: '   ' })
-    expect(empty.state).toBe(VOICE_STATE.LISTENING) // silence → keep listening
+    expect(voiceSessionReducer(at(VOICE_STATE.LISTENING), { type: 'SPEECH_FINAL', text: 'hi' }).state).toBe(
+      VOICE_STATE.THINKING,
+    )
+  })
+
+  it('SPEECH_FINAL with nothing usable returns to LISTENING (cleared); guarded elsewhere', () => {
+    const empty = voiceSessionReducer(at(VOICE_STATE.TRANSCRIBING, { transcript: 'x' }), { type: 'SPEECH_FINAL', text: '   ' })
+    expect(empty).toMatchObject({ state: VOICE_STATE.LISTENING, transcript: '' }) // ASR heard nothing → keep listening
+    expect(voiceSessionReducer(at(VOICE_STATE.SPEAKING), { type: 'SPEECH_FINAL', text: 'x' }).state).toBe(
+      VOICE_STATE.SPEAKING,
+    )
   })
 
   it('REPLY_DELTA accumulates; REPLY_DONE → SPEAKING (only while THINKING)', () => {

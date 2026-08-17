@@ -15,13 +15,37 @@ export const WHISPER_SAMPLE_RATE = 16000
 // pair so a turn doesn't flicker off between words; bargeIn is deliberately LOUDER than start
 // because during TTS playback the mic can pick up our own speaker output — echoCancellation
 // suppresses most of it, but the higher bar keeps the assistant from barging in on itself.
+// The absolute levels are conservative DEFAULTS ONLY: real mics through browser processing
+// (AGC/noise-suppression) vary by an order of magnitude, so the session CALIBRATES against the
+// measured room floor (calibrateVad below) — a fixed threshold "hears" one mic and not another.
 export const VAD_DEFAULTS = Object.freeze({
-  startRms: 0.015, // frame energy that counts as speech onset from silence
-  keepRms: 0.008, // once speaking, quieter frames still count (hysteresis)
+  startRms: 0.008, // frame energy that counts as speech onset from silence (pre-calibration)
+  keepRms: 0.004, // once speaking, quieter frames still count (hysteresis)
   bargeInRms: 0.05, // onset bar while the assistant is SPEAKING/THINKING (echo guard)
   minSpeechMs: 240, // captured turns shorter than this are noise → discarded
   maxTurnMs: 15000, // hard per-utterance cap so a monologue can't grow unbounded
 })
+
+// Calibration bounds: however quiet the room floor is, never gate below MIN (electrical noise
+// would stream garbage turns — raw floors are typically ≤0.001, so 3× that); however loud,
+// never above MAX (or speech can't trigger at all).
+export const CALIBRATE_MIN_START = 0.003
+export const CALIBRATE_MAX_START = 0.05
+export const CALIBRATE_FLOOR_MULT = 3 // speech onset = this × the measured idle floor
+
+/**
+ * Tune the VAD gates from measured idle-room RMS frames (pure). Uses the MEDIAN of the
+ * samples (robust to a cough during calibration), multiplies by CALIBRATE_FLOOR_MULT, and
+ * clamps to the sane range. Returns a full config (spread over `cfg`).
+ */
+export function calibrateVad(idleRmsSamples, cfg = VAD_DEFAULTS) {
+  const clean = (idleRmsSamples || []).filter((x) => typeof x === 'number' && x >= 0)
+  if (!clean.length) return cfg
+  const sorted = [...clean].sort((a, b) => a - b)
+  const median = sorted[Math.floor(sorted.length / 2)]
+  const start = Math.min(CALIBRATE_MAX_START, Math.max(CALIBRATE_MIN_START, median * CALIBRATE_FLOOR_MULT))
+  return { ...cfg, startRms: start, keepRms: start / 2, bargeInRms: Math.max(cfg.bargeInRms, start * 4) }
+}
 
 /** Root-mean-square energy of one audio frame. Empty/invalid input → 0. */
 export function computeRms(samples) {

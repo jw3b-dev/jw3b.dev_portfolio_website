@@ -15,8 +15,13 @@
 import ortMjsUrl from '../../node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.asyncify.mjs?url'
 import ortWasmUrl from '../../node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.asyncify.wasm?url'
 
-// Small, fast English ASR model — good accuracy at a ~tens-of-MB download (cached after first load).
+// Per-device model choice (both cached by the browser after first load):
+// - WebGPU (real GPU): whisper-base — better accuracy, GPU absorbs the compute.
+// - WASM floor (no GPU): whisper-tiny — the fp32 constraint below makes base ~290 MB and
+//   CPU-slow (~15 s/turn, browser-verified); tiny is ~152 MB and ~3× faster, which is the
+//   difference between "voice call" and "broken" on the floor path.
 export const WHISPER_MODEL = 'onnx-community/whisper-base'
+export const WHISPER_MODEL_WASM = 'onnx-community/whisper-tiny'
 
 // Configure the transformers.js runtime exactly once (idempotent). We do NOT probe a local /models
 // path (there is none — the model is remote-fetched + cached in the browser), and we keep ORT on the
@@ -45,16 +50,34 @@ function configureEnv(env) {
   }
 }
 
-/** Lazily load the ASR pipeline. `device`: 'webgpu' (fast) or 'wasm' (universal). Never bundled eagerly. */
-export async function loadTranscriber({ device = 'wasm', model = WHISPER_MODEL } = {}) {
+/**
+ * Lazily load the ASR pipeline. `device`: 'webgpu' (fast, whisper-base) or 'wasm' (universal
+ * floor, whisper-tiny). `onProgress(pct)` reports 0–100 download progress so the UI can show a
+ * real percentage — a multi-minute silent load reads as broken. Never bundled eagerly.
+ */
+export async function loadTranscriber({ device = 'wasm', model, onProgress } = {}) {
   const { pipeline, env } = await import('@huggingface/transformers')
   configureEnv(env)
-  // WASM: pin fp32. EVERY quantized variant of this repo (default q8/quantized/uint8 — all
+  const chosenModel = model || (device === 'wasm' ? WHISPER_MODEL_WASM : WHISPER_MODEL)
+  // WASM: pin fp32. EVERY quantized variant of these repos (default q8/quantized/uint8 — all
   // verified in-browser) ships QDQ-format weights that the pinned onnxruntime-web build fails
   // to load on the wasm EP ("qdq_actions… Missing required scale"). fp32 has no DQ nodes and
-  // loads clean. Heavier download — but this is the no-WebGPU FLOOR path only, and the files
-  // are edge-cached by the /hf-models/ mirror + browser-cached after the first call. Revisit
-  // when the transformers.js ORT pin moves past the QDQ bug.
+  // loads clean. Revisit when the transformers.js ORT pin moves past the QDQ bug.
   const opts = device === 'wasm' ? { device, dtype: 'fp32' } : { device }
-  return pipeline('automatic-speech-recognition', model, opts)
+  if (typeof onProgress === 'function') {
+    // Aggregate per-file progress into one 0–100 number (weighted by bytes across files).
+    const files = new Map()
+    opts.progress_callback = (p) => {
+      if (!p || p.status !== 'progress' || !p.file || !p.total) return
+      files.set(p.file, { loaded: p.loaded || 0, total: p.total })
+      let loaded = 0
+      let total = 0
+      for (const f of files.values()) {
+        loaded += f.loaded
+        total += f.total
+      }
+      if (total > 0) onProgress(Math.min(100, Math.round((loaded / total) * 100)))
+    }
+  }
+  return pipeline('automatic-speech-recognition', chosenModel, opts)
 }

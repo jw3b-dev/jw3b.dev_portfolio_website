@@ -48,7 +48,8 @@ const SECURITY_HEADERS = {
 // server-side fetch carries no Origin, so it always resolves. STRICT allow-list — this is a
 // model mirror for the repos we ship, never an open proxy.
 export const HF_MODEL_PREFIX = '/hf-models/'
-export const HF_ALLOWED_REPOS = ['onnx-community/whisper-base/']
+// whisper-base = WebGPU path; whisper-tiny = the WASM floor (smaller + faster on CPU).
+export const HF_ALLOWED_REPOS = ['onnx-community/whisper-base/', 'onnx-community/whisper-tiny/']
 
 async function proxyModelFile(request, url, ctx) {
   if (request.method !== 'GET') return new Response('method not allowed', { status: 405 })

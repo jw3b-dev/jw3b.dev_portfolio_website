@@ -12,9 +12,9 @@
  * back to LISTENING. Speaking over the assistant (louder bar, echo guard) = BARGE_IN: the
  * in-flight fetch aborts, playback stops, and the interrupting speech starts the next turn.
  */
-import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { voiceSessionReducer, initialVoiceState, pickSttEngine, isEndOfSpeech, STT_ENGINE, VOICE_STATE } from '../lib/voiceSession.js'
-import { VAD_DEFAULTS, computeRms, initialVad, updateVad, isNoiseTurn, isMaxedTurn, mergeChunks, resampleLinear, speakableReply } from '../lib/micTurn.js'
+import { VAD_DEFAULTS, calibrateVad, computeRms, initialVad, updateVad, isNoiseTurn, isMaxedTurn, mergeChunks, resampleLinear, speakableReply } from '../lib/micTurn.js'
 import { loadTranscriber } from '../lib/loadTranscriber.js'
 import { buildOutgoing, shouldDegrade, displayText } from '../lib/conciergeClient.js'
 import { parseSseLine, parseTags } from '../lib/tagProtocol.js'
@@ -31,6 +31,14 @@ const BARGE_IN_MIN_MS = 160
 // Frames of pre-roll kept while idle so the first syllable isn't clipped off the turn.
 const PREROLL_FRAMES = 3
 
+// VAD calibration window: this many idle frames (~0.7 s) are measured for the room's noise
+// floor before the gate goes live — a FIXED threshold hears one mic and not another (real
+// mics behind AGC/noise-suppression differ by an order of magnitude; browser-verified).
+const CALIBRATION_FRAMES = 8
+
+// Mic-level meter refresh (throttled setState — the meter is feedback, not a scope).
+const LEVEL_EMIT_MS = 150
+
 /** Detect the free STT capabilities available in this browser (SSR/jsdom-safe). */
 export function detectVoiceCaps() {
   if (typeof navigator === 'undefined' || typeof window === 'undefined') return {}
@@ -43,6 +51,8 @@ export function detectVoiceCaps() {
 
 export function useLiveVoice() {
   const [state, dispatch] = useReducer(voiceSessionReducer, undefined, initialVoiceState)
+  const [loadPct, setLoadPct] = useState(0) // model-download % (LOADING feedback)
+  const [micLevel, setMicLevel] = useState(0) // 0–1 level vs the speech gate (meter feedback)
 
   // Mirror the FSM state for the audio callback (fires outside React's render cycle).
   const stateRef = useRef(state)
@@ -66,6 +76,9 @@ export function useLiveVoice() {
   const prerollRef = useRef([]) // rolling pre-onset frames
   const busyRef = useRef(false) // transcription in flight — pause capture
   const bargeRef = useRef(false) // the current turn was interrupted — drop its reply/TTS
+  const cfgRef = useRef(VAD_DEFAULTS) // VAD gates — replaced by calibrateVad after the window
+  const calSamplesRef = useRef([]) // idle RMS frames collected for calibration
+  const levelAtRef = useRef(0) // last mic-level emit (throttle)
 
   /** Tear down all live resources. Does NOT dispatch — callers pick the closing event. */
   const teardown = useCallback(() => {
@@ -100,6 +113,10 @@ export function useLiveVoice() {
     prerollRef.current = []
     busyRef.current = false
     turnsRef.current = []
+    cfgRef.current = VAD_DEFAULTS
+    calSamplesRef.current = []
+    setLoadPct(0)
+    setMicLevel(0)
   }, [])
 
   /** Hard-fail the session: close the mic, surface the error, leave text chat untouched. */
@@ -216,8 +233,27 @@ export function useLiveVoice() {
       if (!listening && !interruptible) return
 
       const rms = computeRms(samples)
+
+      // Live level meter (throttled): scaled against the speech gate so "the bar fills when I
+      // talk" is literally "the gate is being crossed" — makes a dead mic diagnosable at sight.
+      const now = Date.now()
+      if (now - levelAtRef.current >= LEVEL_EMIT_MS) {
+        levelAtRef.current = now
+        setMicLevel(Math.min(1, rms / (cfgRef.current.startRms * 2)))
+      }
+
+      // Calibrate the VAD against this room+mic before gating anything: fixed thresholds hear
+      // one mic and not another (the "it's not listening" failure). ~0.7 s of idle frames.
+      if (listening && calSamplesRef.current.length < CALIBRATION_FRAMES) {
+        calSamplesRef.current.push(rms)
+        if (calSamplesRef.current.length === CALIBRATION_FRAMES) {
+          cfgRef.current = calibrateVad(calSamplesRef.current)
+        }
+        return
+      }
+
       // While the assistant is talking, only a LOUDER onset counts (echo guard).
-      const cfg = interruptible ? { ...VAD_DEFAULTS, startRms: VAD_DEFAULTS.bargeInRms } : VAD_DEFAULTS
+      const cfg = interruptible ? { ...cfgRef.current, startRms: cfgRef.current.bargeInRms } : cfgRef.current
       const prev = vadRef.current
       const vad = updateVad(prev, rms, frameMs, cfg)
       vadRef.current = vad
@@ -259,14 +295,15 @@ export function useLiveVoice() {
       }
 
       // LISTENING: endpoint on 900ms of in-turn silence, or force-endpoint a maxed turn.
-      if (!isEndOfSpeech(vad.silenceMs) && !isMaxedTurn(vad)) return
+      if (!isEndOfSpeech(vad.silenceMs) && !isMaxedTurn(vad, cfgRef.current)) return
       const turnVad = vad
       vadRef.current = initialVad()
       const captured = chunksRef.current
       chunksRef.current = []
-      if (isNoiseTurn(turnVad)) return // breath/keyboard — drop silently, keep listening
+      if (isNoiseTurn(turnVad, cfgRef.current)) return // breath/keyboard — drop silently, keep listening
 
       busyRef.current = true
+      dispatch({ type: 'TURN_CAPTURED' }) // visible "heard you — transcribing" feedback
       ;(async () => {
         try {
           const ctx = ctxRef.current
@@ -275,7 +312,8 @@ export function useLiveVoice() {
           if (gen !== genRef.current) return
           const text = String(out && out.text ? out.text : '').trim()
           busyRef.current = false
-          if (!text) return // Whisper heard nothing usable — keep listening
+          // Empty → SPEECH_FINAL('') resets TRANSCRIBING → LISTENING; else the turn runs.
+          if (!text) return dispatch({ type: 'SPEECH_FINAL', text: '' })
           await runTurn(gen, text)
         } catch {
           if (gen === genRef.current) fail('Transcription failed — the text chat still works.')
@@ -316,9 +354,13 @@ export function useLiveVoice() {
     }
 
     try {
-      // 1) On-device Whisper (lazy ~tens-of-MB, cached by the browser after first load).
+      // 1) On-device Whisper (lazy; cached by the browser after the first load). Progress is
+      // surfaced as a % — a multi-minute silent first download reads as broken.
       transcriberRef.current = await loadTranscriber({
         device: engine === STT_ENGINE.WHISPER_WEBGPU ? 'webgpu' : 'wasm',
+        onProgress: (pct) => {
+          if (gen === genRef.current) setLoadPct(pct)
+        },
       })
       if (gen !== genRef.current) return
 
@@ -369,5 +411,5 @@ export function useLiveVoice() {
   // Unmount safety: release the mic/context if the widget goes away mid-call.
   useEffect(() => teardown, [teardown])
 
-  return { ...state, displayReply: displayText(state.reply), caps: detectVoiceCaps(), start, stop }
+  return { ...state, displayReply: displayText(state.reply), loadPct, micLevel, caps: detectVoiceCaps(), start, stop }
 }
