@@ -42,6 +42,7 @@ export default defineConfig({
         'src/lib/fuzzHarness.js',
         'src/lib/txDecode.js',
         'src/lib/xmtpFlow.js',
+        'src/lib/voiceSession.js',
       ],
       thresholds: {
         lines: 100,

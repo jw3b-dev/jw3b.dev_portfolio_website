@@ -22,6 +22,9 @@ export const FEATURE_DEFAULTS = Object.freeze({
   unlock: false, // P2 · Unlock Protocol paywall — needs real lock addresses (OD-03)
   ctf: false, // P2 · live on-chain Capture-the-Vault — needs CTF_VAULT_ADDRESS
   xmtp: false, // P3 · @xmtp/browser-sdk E2E messaging migration
+  voiceLive: false, // P3 · hands-free real-time voice concierge (on-device Whisper WebGPU→WASM +
+  //                    Claude + Aura TTS). $0/no key; each visitor lazy-loads a ~30–75MB ASR model.
+  //                    OFF by default; degrades to today's push-to-talk voice.
   kointelEmbed: false, // live iframe of kointel.co.za — OFF until the Kointel origin opts jw3b.dev
   //                      in via `frame-ancestors https://jw3b.dev`; else it degrades to the card
   kthulhuEmbed: false, // live iframe of kthulhu.co — the origin already allows `frame-ancestors
