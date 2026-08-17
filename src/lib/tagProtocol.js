@@ -42,6 +42,25 @@ export function parseTags(raw) {
   }
 }
 
+/**
+ * CLIENT-ONLY display helper (not part of the wire grammar — the Worker never trims):
+ * while a reply STREAMS, a tag can arrive split across chunks, so the visible text briefly
+ * ends in a raw fragment like `[AUDIO: "…`. Trim a trailing UNTERMINATED tag-start so the
+ * flash never renders. Closed tags are untouched (parseTags strips those), and non-tag
+ * brackets (markdown links, plain text) pass through unchanged.
+ */
+export function trimPartialTag(text) {
+  const s = text == null ? '' : String(text)
+  const i = s.lastIndexOf('[')
+  if (i === -1) return s
+  const tail = s.slice(i + 1)
+  if (tail.includes(']')) return s // bracket is closed → nothing partial here
+  const isPartial = ['AUDIO:', 'TOOL_CALL:', 'RENDER_CARD:'].some(
+    (n) => tail.startsWith(n) || n.startsWith(tail.slice(0, n.length)),
+  )
+  return isPartial ? s.slice(0, i).replace(/[ \t]+$/, '') : s
+}
+
 // ── SSE frame contract ───────────────────────────────────────────────────────────────────
 export const SSE_DONE = 'data: [DONE]\n\n'
 export const SSE_HEADERS = { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store' }

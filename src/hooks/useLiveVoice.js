@@ -17,7 +17,7 @@ import { voiceSessionReducer, initialVoiceState, pickSttEngine, isEndOfSpeech, S
 import { VAD_DEFAULTS, calibrateVad, computeRms, encodeWavPcm16, initialVad, updateVad, isNoiseTurn, isMaxedTurn, mergeChunks, resampleLinear, speakableReply } from '../lib/micTurn.js'
 import { loadTranscriber } from '../lib/loadTranscriber.js'
 import { buildOutgoing, shouldDegrade, displayText } from '../lib/conciergeClient.js'
-import { parseSseLine, parseTags } from '../lib/tagProtocol.js'
+import { parseSseLine, parseTags, trimPartialTag } from '../lib/tagProtocol.js'
 import { AGENT_CHAT_URL, AGENT_STT_URL, AGENT_TTS_URL } from '../config/worker.js'
 
 // Abuse/cost guard: a hands-free session auto-ends after this long (each turn spends Worker
@@ -97,6 +97,9 @@ export function useLiveVoice() {
   const [loadPct, setLoadPct] = useState(0) // model-download % (LOADING feedback)
   const [micLevel, setMicLevel] = useState(0) // 0–1 level vs the speech gate (meter feedback)
   const [sttModeState, setSttModeState] = useState('device') // 'device' | 'server' — UI disclosure
+  // Completed voice turns, mirrored into the chat thread ({role, content} — same shape as the
+  // text chat) so the conversation is durable and readable, not trapped in the status strip.
+  const [turns, setTurns] = useState([])
 
   // Mirror the FSM state for the audio callback (fires outside React's render cycle).
   const stateRef = useRef(state)
@@ -237,6 +240,7 @@ export function useLiveVoice() {
       dispatch({ type: 'SPEECH_FINAL', text: transcript })
       const controller = new AbortController()
       abortRef.current = controller
+      setTurns((t) => [...t, { role: 'user', content: transcript }]) // what the mic heard → chat
       let acc = ''
       try {
         const res = await fetch(AGENT_CHAT_URL, {
@@ -286,6 +290,9 @@ export function useLiveVoice() {
         { role: 'user', content: transcript },
         { role: 'assistant', content: parsed.text || acc },
       ]
+      // Mirror the completed reply into the chat thread (markdown renders properly there;
+      // the voice deliberately speaks the SHORT [AUDIO] summary, not this full text).
+      setTurns((t) => [...t, { role: 'assistant', content: parsed.text || acc }])
       dispatch({ type: 'REPLY_DONE' })
       await speakReply(gen, speakableReply(parsed.audio, parsed.text))
       if (gen !== genRef.current || bargeRef.current) return // barge-in mid-playback → already LISTENING
@@ -415,6 +422,7 @@ export function useLiveVoice() {
   const start = useCallback(async () => {
     if (stateRef.current.state !== VOICE_STATE.IDLE && stateRef.current.state !== VOICE_STATE.ERROR) return
     teardown() // fresh generation
+    setTurns([]) // new call = new visible conversation (the old one stays readable until now)
     const gen = genRef.current
     const caps = detectVoiceCaps()
 
@@ -514,7 +522,10 @@ export function useLiveVoice() {
 
   return {
     ...state,
-    displayReply: displayText(state.reply),
+    // Streaming preview text: closed tags stripped + a trailing half-arrived tag trimmed, so
+    // the strip never flashes raw `[AUDIO: "…` fragments mid-stream.
+    displayReply: displayText(trimPartialTag(state.reply)),
+    turns,
     loadPct,
     micLevel,
     sttMode: sttModeState,

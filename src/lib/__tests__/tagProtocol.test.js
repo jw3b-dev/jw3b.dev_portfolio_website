@@ -73,3 +73,25 @@ describe('SSE frames', () => {
     expect(client.parseSseLine('')).toBeNull()
   })
 })
+
+describe('trimPartialTag (client display helper — streaming flash guard)', () => {
+  it('trims a trailing unterminated AUDIO fragment (and its whitespace)', () => {
+    expect(client.trimPartialTag('Reply text. [AUDIO: "I don')).toBe('Reply text.')
+    expect(client.trimPartialTag('Reply. [AUD')).toBe('Reply.')
+    expect(client.trimPartialTag('Reply. [')).toBe('Reply.')
+  })
+  it('trims trailing TOOL_CALL and RENDER_CARD fragments', () => {
+    expect(client.trimPartialTag('Go. [TOOL_CALL: {"act')).toBe('Go.')
+    expect(client.trimPartialTag('See. [RENDER_C')).toBe('See.')
+  })
+  it('leaves closed tags for parseTags, and non-tag brackets alone', () => {
+    expect(client.trimPartialTag('Done [AUDIO: "x"] tail')).toBe('Done [AUDIO: "x"] tail')
+    expect(client.trimPartialTag('See [GraphRAG](https://x) docs')).toBe('See [GraphRAG](https://x) docs')
+    expect(client.trimPartialTag('array[0] indexing')).toBe('array[0] indexing')
+  })
+  it('handles empty/null and bracket-free text', () => {
+    expect(client.trimPartialTag('')).toBe('')
+    expect(client.trimPartialTag(null)).toBe('')
+    expect(client.trimPartialTag('no brackets here')).toBe('no brackets here')
+  })
+})

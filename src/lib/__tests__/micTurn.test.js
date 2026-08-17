@@ -15,6 +15,8 @@ import {
   mergeChunks,
   resampleLinear,
   speakableReply,
+  stripMarkdown,
+  sanitizeSpeech,
 } from '../micTurn.js'
 
 const FRAME = 85 // ~4096 samples at 48kHz ≈ 85ms
@@ -196,5 +198,38 @@ describe('speakableReply', () => {
   })
   it('returns empty when both are empty', () => {
     expect(speakableReply('', '')).toBe('')
+  })
+})
+
+describe('stripMarkdown / sanitizeSpeech', () => {
+  it('removes bold/italic markers but keeps the words', () => {
+    expect(stripMarkdown('pick **a direction** and _go_')).toBe('pick a direction and go')
+    expect(stripMarkdown('__strong__ and *soft*')).toBe('strong and soft')
+  })
+  it('flattens links, images, code, headers and bullets', () => {
+    expect(stripMarkdown('see [GraphRAG](https://x.dev)')).toBe('see GraphRAG')
+    expect(stripMarkdown('![alt text](img.png)')).toBe('alt text')
+    expect(stripMarkdown('run `npm ci` then:\n```js\ncode()\n```\ndone')).toBe('run npm ci then:\n \ndone')
+    expect(stripMarkdown('## Heading\n- item one\n2. item two')).toBe('Heading\nitem one\nitem two')
+  })
+  it('drops unbalanced asterisk stragglers', () => {
+    expect(stripMarkdown('broken **bold')).toBe('broken bold')
+  })
+  it('handles empty/null', () => {
+    expect(stripMarkdown('')).toBe('')
+    expect(stripMarkdown(null)).toBe('')
+  })
+  it('sanitizeSpeech also strips emoji for the TTS engine', () => {
+    expect(sanitizeSpeech('Pick a direction. 🎯')).toBe('Pick a direction.')
+    expect(sanitizeSpeech('**Ready to book?** ✅ Let’s go')).toBe('Ready to book? Let’s go')
+  })
+})
+
+describe('speakableReply sanitization', () => {
+  it('sanitizes the audio summary before speech', () => {
+    expect(speakableReply('**Short** spoken take. 🎯', 'ignored')).toBe('Short spoken take.')
+  })
+  it('sanitizes the fallback text too', () => {
+    expect(speakableReply('', '- **A**: pick\n- B: choose')).toBe('A: pick\nB: choose')
   })
 })

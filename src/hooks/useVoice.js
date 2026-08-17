@@ -7,6 +7,7 @@
  */
 import { useCallback, useRef, useState } from 'react'
 import { AGENT_STT_URL, AGENT_TTS_URL } from '../config/worker.js'
+import { sanitizeSpeech } from '../lib/micTurn.js'
 
 // True only in a browser that can actually record.
 export const canRecord = () =>
@@ -98,7 +99,9 @@ export function useVoice() {
     async (text, { force = false } = {}) => {
       // `force` speaks even if `voiceOn` reads false this tick — used when the user just clicked the
       // speaker ON (setVoiceOn hasn't committed yet), so enabling voice plays the last reply at once.
-      const t = String(text || '').trim()
+      // sanitizeSpeech: never hand the TTS markdown symbols or emoji — it pronounces them
+      // ("star star", owner-reported).
+      const t = sanitizeSpeech(text)
       if ((!voiceOn && !force) || !t || spokenRef.current.has(t)) return
       spokenRef.current.add(t)
       try {

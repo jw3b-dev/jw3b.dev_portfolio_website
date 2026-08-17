@@ -148,13 +148,44 @@ export function encodeWavPcm16(samples, sampleRate = WHISPER_SAMPLE_RATE) {
   return new Uint8Array(buf)
 }
 
+// Emoji + variation selectors + ZWJ — TTS engines spell these out or stumble on them.
+// (Separate alternatives, not one class: combining marks in a mixed class trip lint's
+// no-misleading-character-class, and rightly so.)
+const EMOJI_RE = /[\u{1F000}-\u{1FAFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|\u{200D}/gu
+
+/**
+ * Strip markdown syntax for PLAIN-TEXT surfaces (pure): the live-call strip preview and the
+ * TTS input. Without this the voice literally pronounces "star star" around bold text
+ * (owner-reported) and the strip shows raw asterisks.
+ */
+export function stripMarkdown(text) {
+  return String(text || '')
+    .replace(/```[\s\S]*?```/g, ' ') // fenced code blocks — unreadable aloud
+    .replace(/`([^`]*)`/g, '$1') // inline code
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1') // images → alt text
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1') // links → label
+    .replace(/(\*\*|__)([\s\S]*?)\1/g, '$2') // bold
+    .replace(/(\*|_)(?=\S)([\s\S]*?\S)\1/g, '$2') // italics
+    .replace(/^#{1,6}\s+/gm, '') // headers
+    .replace(/^\s*[-*•]\s+/gm, '') // bullet markers
+    .replace(/^\s*\d+\.\s+/gm, '') // ordered-list markers
+    .replace(/\*\*|\*/g, '') // unbalanced stragglers
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim()
+}
+
+/** Markdown-free AND emoji-free text for the TTS engine (pure). */
+export function sanitizeSpeech(text) {
+  return stripMarkdown(text).replace(EMOJI_RE, '').replace(/\s{2,}/g, ' ').trim()
+}
+
 /**
  * What the assistant should SAY for a completed reply: the [AUDIO:"…"] spoken summary when the
- * model provided one, else the stripped display text. Pure — parsed pieces come from
- * tagProtocol/conciergeClient at the call site.
+ * model provided one, else the stripped display text — both sanitized for speech (no markdown
+ * symbols, no emoji). Pure — parsed pieces come from tagProtocol/conciergeClient call sites.
  */
 export function speakableReply(audioTag, strippedText) {
-  const a = String(audioTag || '').trim()
+  const a = sanitizeSpeech(audioTag)
   if (a) return a
-  return String(strippedText || '').trim()
+  return sanitizeSpeech(strippedText)
 }

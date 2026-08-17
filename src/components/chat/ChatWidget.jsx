@@ -14,6 +14,7 @@ import Markdown from './Markdown.jsx'
 import { SpeakerToggle, MicButton } from './VoiceControls.jsx'
 import { useLiveVoice } from '../../hooks/useLiveVoice.js'
 import { isEnabled } from '../../config/features.js'
+import { stripMarkdown } from '../../lib/micTurn.js'
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
@@ -26,7 +27,7 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight
-  }, [messages, open])
+  }, [messages, live.turns, open])
 
   // Voice output (FR-016): read the [AUDIO] spoken-summary of a completed assistant reply aloud
   // when voice is on. speak() dedups + no-ops when off, so this is safe to run on every change.
@@ -120,11 +121,28 @@ export default function ChatWidget() {
           </header>
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
-            {messages.length === 0 && (
+            {messages.length === 0 && live.turns.length === 0 && (
               <p className="text-sm text-content-secondary">
                 Ask about John&rsquo;s shipped systems, the audit record, or how to hire him.
               </p>
             )}
+            {/* Live-voice turns, mirrored into the thread as real messages (FR-021 disclosure
+                covers both modes): what the mic heard + the full reply, markdown rendered —
+                so the spoken SUMMARY and the written detail are visibly two views of one turn. */}
+            {live.turns.map((m, i) => (
+              <div key={`v${i}`} className={m.role === 'user' ? 'text-right' : 'text-left'}>
+                <div
+                  className={
+                    'inline-block max-w-[85%] rounded-xl px-3 py-2 text-left text-sm ' +
+                    (m.role === 'user'
+                      ? 'whitespace-pre-wrap bg-cyan/15 text-content-primary'
+                      : 'bg-raised text-content-secondary')
+                  }
+                >
+                  {m.role === 'assistant' ? <Markdown source={m.content} /> : `🎙 ${m.content}`}
+                </div>
+              </div>
+            ))}
             {messages.map((m, i) => (
               <div key={i} className={m.role === 'user' ? 'text-right' : 'text-left'}>
                 <div
@@ -211,9 +229,11 @@ export default function ChatWidget() {
               {live.transcript && live.state !== 'error' && (
                 <p className="mt-1 truncate text-content-secondary">“{live.transcript}”</p>
               )}
+              {/* Streaming preview is PLAIN text (markdown stripped — no raw asterisks in the
+                  ticker); the completed reply lands in the thread above, properly rendered. */}
               {live.displayReply && (live.state === 'thinking' || live.state === 'speaking') && (
                 <p className="mt-1 max-h-16 overflow-y-auto whitespace-pre-wrap text-content-secondary">
-                  {live.displayReply}
+                  {stripMarkdown(live.displayReply)}
                 </p>
               )}
             </div>
