@@ -49,8 +49,13 @@ export async function checkRateLimit(env, req, endpoint, nowMs) {
   const ip = clientIp(req)
   const ws = windowStart(nowMs)
   try {
+    // Table is rate_limits_v2, NOT rate_limits: the reused production D1 still holds v1's
+    // table (PK (ip, window_start), no endpoint column) — v2's 3-column UPSERT against it
+    // throws and the limiter silently fails OPEN (caught live in the P3-08 GA sweep: 13×200
+    // past a budget of 10). A separate table sidesteps the shared-schema fight; v1 prod
+    // keeps its limiter until promotion. Migration: 0002_rate_limits_v2.sql.
     const row = await env.DB.prepare(
-      `INSERT INTO rate_limits (ip, endpoint, window_start, count) VALUES (?1, ?2, ?3, 1)
+      `INSERT INTO rate_limits_v2 (ip, endpoint, window_start, count) VALUES (?1, ?2, ?3, 1)
        ON CONFLICT(ip, endpoint, window_start) DO UPDATE SET count = count + 1
        RETURNING count`,
     )

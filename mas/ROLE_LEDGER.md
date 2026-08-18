@@ -244,3 +244,14 @@ cyfrin-updraft-track), every href curl-verified 200 pre-link; MB-agentic is 404 
 deliberately absent; commercial flagships' closed-source status stated honestly; forbidden-repo
 absence (bets/DecentX) asserted in test. Live-verified on `/work`. Remaining P3 is owner/research-
 gated (P3-02 provisioning · P3-03/04 legal research · P3-09 external input) except P3-08 (GA sweep).
+
+**P3-08 (qa-tester + security + codebase-auditor + performance-monitor) — GA sweep · PASS w/ 2 findings, both fixed+re-verified (`mas/audits/P3-08_GA_SWEEP.md`).**
+FINDING-1 (P1): rate limiting silently failed OPEN live — v1's reused D1 table shape made every v2
+UPSERT throw (IF-NOT-EXISTS migration no-op'd over v1's table). Fixed: `rate_limits_v2` table +
+migration 0002 applied remote; re-probed 10×200→429×3. FINDING-2 (P2): axios <1.18.0 transitive
+advisories → `overrides` pin ^1.18.0 (closes P2-GATE backlog SEC-P2); audit high 5→4 (rest =
+Node-only stubbed chain). Perf: LCP 1.107s ✓ · first-token ~230ms ✓ · CLS 0.10 (watch). SC-5: 4
+CodeHawks surfaces. **Incident:** a piped-exit-masked chain + prod-named root config briefly
+deployed v2 to production jw3b.dev (~3–4 min); rolled back to John's prior version and verified;
+guardrail: both wrangler configs now default to `-v2` names (prod promotion = explicit `--name`).
+Remaining Ps are all owner-gated: P3-02 (addresses) · P3-03/04 (legal research) · P3-09 (OD-04).

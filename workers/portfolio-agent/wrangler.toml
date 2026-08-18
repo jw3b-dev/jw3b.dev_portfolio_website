@@ -1,7 +1,7 @@
 # jw3b.dev v2 — portfolio-agent Worker  ·  backend-specialist (MAS P0-05/06)
 # DEPLOY IS OWNER-GATED (John). Real D1/KV/R2 ids + ANTHROPIC_API_KEY secret are provisioned
 # by the owner; the placeholders below let `wrangler d1 migrations apply --local` + `wrangler dev` run.
-name = "portfolio-agent"
+name = "portfolio-agent-v2" # v2-preview default — prod promotion passes --name portfolio-agent explicitly
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
