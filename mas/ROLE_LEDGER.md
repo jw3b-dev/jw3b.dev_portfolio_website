@@ -318,3 +318,8 @@ health check + D1 analytics digest queries + rollback. Probe dry-run GREEN on al
 **GitHub constraint documented:** schedule/dispatch workflows only register from the DEFAULT
 branch, so it auto-activates when v2→main (owner-gated promotion) — nothing verifiable was left
 unverified (YAML valid, probe logic proven). Remaining P4: P4-GATE.
+
+**P4-GATE — PASS (mas/audits/P4-GATE.md).** qa 536 tests · security (no secrets in P4 files,
+CSP/headers intact, liveness-only healthcheck) · auditor (every P4 change task-mapped, owner items
+in DEFERRED.md) · performance (LCP 0.66s, CLS 0.1047→0.00, transformers off boot). **★ P4 COMPLETE.**
+P4-01 CTF-activated (escrow/Unlock owner-gated) · P4-02 perf · P4-03 SEO · P4-04 ops · P4-GATE ✓.
