@@ -27,10 +27,22 @@ export const PERSON_LD = {
   sameAs: [STUDIO_URL, CODEHAWKS_URL],
 }
 
+// WebSite entity so the brand terms ("jw3b", "AgileGypsy") resolve to this site in branded
+// search (SC-5). Identity only — name/alternates/url; NO SearchAction (the site has no
+// site-search endpoint, and a schema'd search box that doesn't exist would be a false claim).
+export const WEBSITE_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  alternateName: ['JW3B', 'AgileGypsy', 'John Wellard'],
+  url: SITE.domain,
+}
+
 export default function PersonJsonLd() {
   return (
     <Helmet>
       <script type="application/ld+json">{JSON.stringify(PERSON_LD)}</script>
+      <script type="application/ld+json">{JSON.stringify(WEBSITE_LD)}</script>
       <link rel="me" href={STUDIO_URL} />
     </Helmet>
   )

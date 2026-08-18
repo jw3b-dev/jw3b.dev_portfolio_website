@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { PERSON_LD, STUDIO_URL, CODEHAWKS_URL } from './PersonJsonLd.jsx'
+import { PERSON_LD, WEBSITE_LD, STUDIO_URL, CODEHAWKS_URL } from './PersonJsonLd.jsx'
 import { getClaim } from '../../lib/claimsRegister.js'
 
 describe('PersonJsonLd — structured data + cross-link (FR-054/FR-044)', () => {
@@ -10,6 +10,14 @@ describe('PersonJsonLd — structured data + cross-link (FR-054/FR-044)', () => 
     expect(PERSON_LD.alternateName).toMatch(/JW3B/)
     expect(PERSON_LD.url).toMatch(/^https:\/\/jw3b\.dev/)
     expect(() => JSON.stringify(PERSON_LD)).not.toThrow()
+  })
+
+  it('emits a valid WebSite entity for branded search, with no fabricated SearchAction', () => {
+    expect(WEBSITE_LD['@type']).toBe('WebSite')
+    expect(WEBSITE_LD.url).toMatch(/^https:\/\/jw3b\.dev/)
+    expect(WEBSITE_LD.alternateName).toEqual(expect.arrayContaining(['JW3B', 'AgileGypsy']))
+    expect(WEBSITE_LD.potentialAction).toBeUndefined() // no site-search endpoint exists → no claim
+    expect(() => JSON.stringify(WEBSITE_LD)).not.toThrow()
   })
 
   it('cross-links the studio (person↔AgileGypsy) via sameAs + worksFor', () => {

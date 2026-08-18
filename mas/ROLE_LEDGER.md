@@ -298,3 +298,13 @@ routes (v2 clean). Real fixes, browser-verified:
 - **PERF-P2 (wagmi boot) re-justified:** the web3 chunk (2.9 MB) stays a static import of the
   provider tree; the static hero shell paints LCP (0.66s) before any JS, so it breaches no NFR.
   A careful lazy-provider refactor is tracked as a P5 perf item, not risked in an autonomous loop.
+
+**P4-03 (frontend-engineer) — SEO & branded-search follow-through (SC-5) · DONE.**
+Audit found real gaps: `/sitemap.xml` + `/robots.txt` were the SPA HTML fallback (crawlers got
+HTML), and the LIVE `/ctf` branch (CtfChallenge) rendered with no `<Seo>` (only the gated
+RouteGate branch had it). Fixes, browser-verified: real `public/sitemap.xml` (9 routes,
+application/xml) + `public/robots.txt` (text/plain → sitemap), with a drift-guard test that
+parses App.jsx paths and fails CI if a route lacks a `<loc>`; `<Seo>` added to the live CTF
+branch (title + OG confirmed); `WebSite` JSON-LD (name + JW3B/AgileGypsy alternates, NO
+fabricated SearchAction) alongside Person on home → branded-search anchor. Home JSON-LD now
+[Person, WebSite]; canonicals resolve to jw3b.dev. Gate 77 files/536 tests green.

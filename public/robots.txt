@@ -1,0 +1,5 @@
+# jw3b.dev — John Wellard (JW3B / AgileGypsy)
+User-agent: *
+Allow: /
+
+Sitemap: https://jw3b.dev/sitemap.xml
