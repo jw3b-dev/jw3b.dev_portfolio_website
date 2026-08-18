@@ -1,0 +1,104 @@
+# Zero-cost ops health check (P4-04 · devops-engineer)
+# Pings the live surfaces on a schedule and opens/closes ONE GitHub issue on a state change,
+# so a silent outage surfaces as a notification instead of being discovered by a visitor.
+# Cost discipline: only liveness endpoints are hit (SPA document + the worker's cheap
+# /ctf/leaderboard GET) — never the PAID concierge/AI routes, which would spend tokens every run.
+name: Health check
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # every 6 hours
+  workflow_dispatch: {} # manual "check now" button
+
+# Least privilege: read the repo, write issues (to raise/close the alert).
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ALERT_LABEL: health-alert
+    steps:
+      - name: Probe live surfaces
+        id: probe
+        run: |
+          set -uo pipefail
+          # name|url|mode — no AI spend (liveness endpoints only). Modes:
+          #   200   — must return HTTP 200 (the SPA document; the homepage is expected up).
+          #   alive — must merely RESPOND (any 2xx/3xx/4xx); only a timeout/refused (000) or a
+          #           5xx is "down". Workers use this: prod and preview run different code (the
+          #           prod worker predates the v2 routes), so a 404/405 still proves it's serving.
+          TARGETS=(
+            "prod-site|https://jw3b.dev/|200"
+            "prod-worker|https://portfolio-agent.agilegypsy.workers.dev/|alive"
+            "preview-site|https://jw3b-dev-site-v2.agilegypsy.workers.dev/|200"
+            "preview-worker|https://portfolio-agent-v2.agilegypsy.workers.dev/ctf/leaderboard|200"
+          )
+          FAILURES=""
+          for t in "${TARGETS[@]}"; do
+            name="${t%%|*}"; rest="${t#*|}"; url="${rest%|*}"; mode="${rest##*|}"
+            code=""
+            # 3 attempts with backoff so a single transient blip doesn't false-alarm.
+            for attempt in 1 2 3; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$url" || echo "000")
+              if [ "$mode" = "200" ]; then
+                [ "$code" = "200" ] && break
+              else
+                # alive: anything that isn't a connection failure or a 5xx is a pass.
+                { [ "$code" != "000" ] && [ "$code" -lt 500 ]; } && break
+              fi
+              sleep $((attempt * 5))
+            done
+            down=""
+            if [ "$mode" = "200" ]; then
+              [ "$code" != "200" ] && down=1
+            else
+              { [ "$code" = "000" ] || [ "$code" -ge 500 ]; } && down=1
+            fi
+            if [ -n "$down" ]; then
+              echo "DOWN  $name ($url) → HTTP $code"
+              FAILURES="${FAILURES}- **${name}** (${url}) → HTTP ${code}"$'\n'
+            else
+              echo "ok    $name → HTTP $code ($mode)"
+            fi
+          done
+          if [ -n "$FAILURES" ]; then
+            echo "healthy=false" >> "$GITHUB_OUTPUT"
+            { echo "body<<EOF"; echo "Automated health check failed at $(date -u '+%Y-%m-%d %H:%M UTC'):"; echo; printf '%s' "$FAILURES"; echo; echo "_Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}_"; echo EOF; } >> "$GITHUB_OUTPUT"
+          else
+            echo "healthy=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ensure alert label exists
+        run: gh label create "$ALERT_LABEL" --repo "$GITHUB_REPOSITORY" --color b60205 --description "Automated health-check alert" 2>/dev/null || true
+
+      - name: Raise or refresh the alert (on failure)
+        if: steps.probe.outputs.healthy == 'false'
+        env:
+          BODY: ${{ steps.probe.outputs.body }}
+        run: |
+          set -euo pipefail
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label "$ALERT_LABEL" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            echo "Refreshed alert #$existing"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "🔴 Health check failing" --label "$ALERT_LABEL" --body "$BODY"
+            echo "Opened new alert"
+          fi
+
+      - name: Resolve the alert (on recovery)
+        if: steps.probe.outputs.healthy == 'true'
+        run: |
+          set -euo pipefail
+          for n in $(gh issue list --repo "$GITHUB_REPOSITORY" --label "$ALERT_LABEL" --state open --json number --jq '.[].number'); do
+            gh issue close "$n" --repo "$GITHUB_REPOSITORY" --comment "✅ All surfaces healthy again as of $(date -u '+%Y-%m-%d %H:%M UTC') — auto-resolved."
+            echo "Closed alert #$n"
+          done
+
+      - name: Fail the run when unhealthy (visible red X)
+        if: steps.probe.outputs.healthy == 'false'
+        run: exit 1
