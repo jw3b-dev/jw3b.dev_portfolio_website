@@ -275,3 +275,11 @@ both -v2 targets deployed; prod untouched. **P3-09 closes on one owner line: "OD
 yet** (v2 stays preview; promotion runbook in DEFERRED.md); **voiceLive: ON** (default flipped,
 owner decision — preview now lights it without env override). Gate 76/531 green.
 P0 ✓ · P1+GATE ✓ · P2+GATE ✓ · P3-01 ✓ 02 deferred-by-owner ✓ 03 ✓ 04 ✓ 05 ✓ 06 ✓ 07 ✓ 08 ✓ 09 ✓.
+
+**P4-01 (web3-blockchain + smart-contract-engineer) — testnet rails activation · PARTIAL (CTF done; escrow/Unlock owner-gated).**
+viem selector check proved the v2 rebuild's contracts are INCOMPATIBLE with the old Base Sepolia
+deployments (escrow 2/10 selectors) — so no blind reuse. CTF vault IS compatible (deposit/withdraw
+match; worker verifies by eth_getBalance) → ACTIVATED on preview (VITE_FEATURE_CTF=true), live
+challenge browser-verified (testnet label, connect-ready, vault armed). Escrow → redeploy prepared
+(forge build + 27 tests green, DeployEscrow dry-run clean; broadcast = owner keystore, turnkey ask in
+DEFERRED.md). Unlock → owner locks. Prod-default CTF withheld (bait too small). Loop continues to P4-02.
