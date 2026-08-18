@@ -41,15 +41,20 @@ This is kept in order to respond to your enquiry. Providing it is your choice; w
 
 ## Retention
 
-Engagement requests are kept while your enquiry is active and for a reasonable period afterwards, then removed. Analytics are retained to operate the service. Rate-limiting records are short-lived.
+Engagement requests are kept while your enquiry is active and for a reasonable period afterwards, then removed. Analytics are retained to operate the service. Rate-limiting records (which include your IP address) are purged automatically after roughly ten minutes.
+
+## Which law applies
+
+This site is operated from South Africa, so POPIA governs how your information is handled; for visitors in the EU or UK, the GDPR / UK GDPR applies to you as well. Where the regimes differ, the stricter rule is followed.
 
 ## Your choices and rights
 
-- You can ask for a copy of the data tied to your request, ask to correct it, or ask for it to be deleted. Email john@agilegypsy.com and it will be actioned.
+- You can ask for a copy of the data tied to your request, ask to correct it, or ask for it to be deleted. Email john@agilegypsy.com and it will be actioned within 30 days (one month), as POPIA and the GDPR require.
 - You can browse and use the site without connecting a wallet and without sending an engagement request — booking a call needs only a way to reach you.
+- Wallet addresses are treated as personal data. Nothing that directly identifies you is ever written on-chain.
 
 ## Contact
 
 John Wellard — john@agilegypsy.com
 
-Last updated: 16 August 2026
+Last updated: 18 August 2026

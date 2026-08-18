@@ -25,6 +25,9 @@ export const FEATURE_DEFAULTS = Object.freeze({
   voiceLive: false, // P3 · hands-free real-time voice concierge (on-device Whisper WebGPU→WASM +
   //                    Claude + Aura TTS). $0/no key; each visitor lazy-loads a ~30–75MB ASR model.
   //                    OFF by default; degrades to today's push-to-talk voice.
+  consent: false, // P3 · cookie/analytics consent banner (FR-058) — OFF because the site sets NO
+  //                 cookies/tracking storage (research: docs/COMPLIANCE_RESEARCH.md Q2). RULE:
+  //                 adding any non-essential analytics/marketing storage REQUIRES flipping this ON.
   kointelEmbed: false, // live iframe of kointel.co.za — OFF until the Kointel origin opts jw3b.dev
   //                      in via `frame-ancestors https://jw3b.dev`; else it degrades to the card
   kthulhuEmbed: false, // live iframe of kthulhu.co — the origin already allows `frame-ancestors

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 
 /*
  * CheckoutStateMachine test (P2-07). Proves the routing → rail wiring and, above all, that
@@ -32,22 +32,34 @@ describe('CheckoutStateMachine — route to a rail, never a dead-end (OBJ-01)', 
     expect(screen.getByText('BOOK A CALL FLOOR')).toBeInTheDocument()
   })
 
-  it('retainer/project + escrow live → escrow rail', () => {
+  // FR-059 (P3-04): a live PAID rail renders the terms gate FIRST; acceptance reveals the rail.
+  const acceptTerms = () => {
+    fireEvent.click(screen.getByRole('checkbox'))
+    fireEvent.click(screen.getByRole('button', { name: 'Accept and continue' }))
+  }
+
+  it('retainer/project + escrow live → terms gate, then the escrow rail on acceptance', () => {
     escrowOn = escrowOk = true
     renderSM('project')
+    expect(screen.getByRole('heading', { name: 'Engagement terms' })).toBeInTheDocument()
+    expect(screen.queryByText('ESCROW RAIL')).not.toBeInTheDocument() // unreachable pre-acceptance
+    acceptTerms()
     expect(screen.getByText('ESCROW RAIL')).toBeInTheDocument()
   })
 
-  it('escrow enabled but NOT provisioned → still the floor (degrade)', () => {
+  it('escrow enabled but NOT provisioned → still the floor (degrade, no terms friction)', () => {
     escrowOn = true
     escrowOk = false
     renderSM('retainer')
     expect(screen.getByText('BOOK A CALL FLOOR')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Engagement terms' })).not.toBeInTheDocument()
   })
 
-  it('low-ticket fixed-price + unlock live → unlock rail', () => {
+  it('low-ticket fixed-price + unlock live → terms gate, then the unlock rail on acceptance', () => {
     unlockOn = unlockOk = true
     renderSM('fixed')
+    expect(screen.queryByText('UNLOCK RAIL')).not.toBeInTheDocument()
+    acceptTerms()
     expect(screen.getByText('UNLOCK RAIL')).toBeInTheDocument()
   })
 })

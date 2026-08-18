@@ -62,6 +62,16 @@ export async function checkRateLimit(env, req, endpoint, nowMs) {
       .bind(ip, endpoint, ws)
       .first()
     const count = (row && row.count) || 1
+    // Data minimization (POPIA §14 / GDPR Art. 5(1)(e), docs/COMPLIANCE_RESEARCH.md Q5): rows
+    // hold raw IPs, needed only for the current window. Purge stale windows opportunistically —
+    // on the FIRST hit of each key's window (bounds it to one DELETE per key per minute), drop
+    // everything older than 10 windows. Fire-and-forget; a purge failure must not block.
+    if (count === 1) {
+      env.DB.prepare('DELETE FROM rate_limits_v2 WHERE window_start < ?1')
+        .bind(ws - 10 * WINDOW_SEC)
+        .run()
+        .catch(() => {})
+    }
     const limited = count > budget
     const retryAfter = limited ? ws + WINDOW_SEC - Math.floor(nowMs / 1000) : 0
     return { limited, count, budget, retryAfter }

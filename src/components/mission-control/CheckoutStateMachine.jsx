@@ -15,6 +15,7 @@ import { routeForTicket } from '../../lib/checkoutRouting.js'
 import EscrowCheckout from './EscrowCheckout.jsx'
 import UnlockPaywall from '../pricing/UnlockPaywall.jsx'
 import BookACall from './BookACall.jsx'
+import CheckoutTerms from '../compliance/CheckoutTerms.jsx'
 
 export default function CheckoutStateMachine({ selection, loadout, onBack = () => {} }) {
   const route = routeForTicket({
@@ -23,18 +24,26 @@ export default function CheckoutStateMachine({ selection, loadout, onBack = () =
     unlock: { enabled: isEnabled('unlock'), available: unlockProvisioned() },
   })
 
+  // FR-059 (P3-04): every PAID rail sits behind the terms gate — structurally unreachable
+  // without acceptance. The free book-a-call floor is untouched (no purchase, no friction).
   if (route.primary === 'escrow') {
-    return <EscrowCheckout selection={selection} loadout={loadout} onBack={onBack} />
+    return (
+      <CheckoutTerms onBack={onBack}>
+        <EscrowCheckout selection={selection} loadout={loadout} onBack={onBack} />
+      </CheckoutTerms>
+    )
   }
   if (route.primary === 'unlock') {
     return (
-      <UnlockPaywall
-        lockKey={selection?.tier?.id ?? loadout?.tier?.id}
-        title={loadout?.tier?.name}
-        selection={selection}
-        loadout={loadout}
-        onBack={onBack}
-      />
+      <CheckoutTerms onBack={onBack}>
+        <UnlockPaywall
+          lockKey={selection?.tier?.id ?? loadout?.tier?.id}
+          title={loadout?.tier?.name}
+          selection={selection}
+          loadout={loadout}
+          onBack={onBack}
+        />
+      </CheckoutTerms>
     )
   }
   // The guaranteed floor — always completes, no wallet required (BR-11).

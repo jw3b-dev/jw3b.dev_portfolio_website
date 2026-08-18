@@ -255,3 +255,16 @@ CodeHawks surfaces. **Incident:** a piped-exit-masked chain + prod-named root co
 deployed v2 to production jw3b.dev (~3–4 min); rolled back to John's prior version and verified;
 guardrail: both wrangler configs now default to `-v2` names (prod promotion = explicit `--name`).
 Remaining Ps are all owner-gated: P3-02 (addresses) · P3-03/04 (legal research) · P3-09 (OD-04).
+
+**P3-03 + P3-04 + P3-09(dispositions) (research-specialist → compliance-officer + frontend/app-ui + backend-specialist) — DONE.**
+The 6 `[NEEDS RESEARCH]` items were assigned to research/compliance ROLES, not John — researched at
+HIGH confidence (`docs/COMPLIANCE_RESEARCH.md`; key currency: **AI Act Art. 50 in force 2 Aug 2026**
+— site already compliant via FR-021; **EDPB blockchain Guidelines v2.0 final 7 Jul 2026** — wallet
+address = PII, nothing identifying on-chain ✓). Encoded (`docs/COMPLIANCE.md`): P3-03
+`ConsentBanner.jsx` behind new `consent` flag (OFF — verified cookieless, banner = contingency +
+standing rule); P3-04 `terms.md` + `CheckoutTerms.jsx` structurally gating BOTH paid rails
+(state-machine tests prove pre-acceptance unreachability; floor friction-free); DSAR runbook +
+privacy-notice updates (30-day commitment, regime statement, wallet-as-PII); data-minimization fix —
+`rate_limits_v2` raw-IP rows now purge (~10 min) in `rateLimit.js`. Gate 76 files/531 tests green;
+both -v2 targets deployed; prod untouched. **P3-09 closes on one owner line: "OD-04: ratified"
+(strictest-rule lead recommended, already what ships).**

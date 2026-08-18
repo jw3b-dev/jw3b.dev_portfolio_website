@@ -8,6 +8,8 @@ import { MotionConfig } from 'framer-motion'
 import '@rainbow-me/rainbowkit/styles.css'
 import { config } from './config/wagmi'
 import ChatWidget from './components/chat/ChatWidget'
+import ConsentBanner from './components/compliance/ConsentBanner'
+import { isEnabled } from './config/features.js'
 import HireSpine from './components/layout/HireSpine'
 import SiteFooter from './components/layout/SiteFooter'
 
@@ -43,6 +45,8 @@ function RootLayout() {
           the privacy link the compliance gate requires be reachable from every collection point. */}
       <SiteFooter />
       <ChatWidget />
+      {/* FR-058 (P3-03): consent banner — flag-off while the site is cookieless (see features.js). */}
+      {isEnabled('consent') && <ConsentBanner />}
     </>
   )
 }
