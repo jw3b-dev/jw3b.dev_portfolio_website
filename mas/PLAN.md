@@ -522,3 +522,50 @@
 5. **MUST FRs whose roadmap stories are SHOULD-in-P1** (FR-029/031/035): placed to honor the FR MoSCoW (FR-029 in P1; FR-031/035 in P2 alongside the rails they depend on). The roadmap's SHOULD label was phase-slack, not a downgrade.
 
 *End PLAN.md — 64 tasks (P0 12 / P1 23 [22 build + gate] / P2 20 [19 build + gate] / P3 9 [7 build + GA-sweep + compliance-final]). Ready for Phase-5 dispatch under John's per-gate approval. No code, scaffold, installs, or configs produced.*
+
+---
+
+## P4 — Activation & Amplification (seeded 2026-08-18, owner-authorized via /loop goal)
+
+Scope note: production promotion is deliberately NOT a P4 task (owner: "not yet", 2026-08-18 —
+runbook in DEFERRED.md). The old AI×Web3 roadmap items (EAS attestations, gasless 4337,
+ZK proof-of-reputation, Push) are P5 stubs, not P4.
+
+### P4-01 — Testnet rails activation via the EXISTING Base Sepolia deployments
+- **role:** web3-blockchain + smart-contract-engineer · **implements:** the deferred P3-02, without new deploys
+- **discovery:** v2-upgrade-era contracts are still live on Base Sepolia — MilestoneEscrow
+  `0xF75ea6Ba560b8aC3314a8196cb74fDF99672B543`, ReentrantVault `0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240`.
+- **work:** selector-level ABI compatibility check (v2 client ABIs vs deployed runtime bytecode);
+  if compatible → wire addresses into preview config, flip `escrow`/`ctf` ON for the PREVIEW build,
+  browser-verify the rails' UI states + testnet labels; if incompatible → prepare the redeploy
+  script + exact owner ask (keystore broadcast is John's). Unlock stays deferred (locks = owner).
+- **verification:** preview shows the live rail states (not the degrade floor) with honest
+  "Base Sepolia · no real funds" labels; simulate-first path intact; prod untouched.
+
+### P4-02 — Proof polish (no owner input)
+- **role:** frontend-engineer + performance-monitor
+- **work:** real screenshots of the LIVE flagship products (captured from kthulhu.co / kointel.co.za /
+  artofzeta.com in a real browser) replacing placeholders where cards use them; CLS 0.10 watch item
+  diagnosed + fixed; carried PERF-P2 (wagmi provider off the boot path) resolved or formally
+  re-justified; orphan cleanups.
+- **verification:** Lighthouse CLS < 0.1; LCP holds ≤2.5s; gate green.
+
+### P4-03 — SEO & branded-search follow-through (SC-5)
+- **role:** frontend-engineer · **work:** structured-data sweep (Person/Org/WebSite JSON-LD
+  coverage), sitemap.xml + robots.txt on the site worker, canonical/OG audit across routes,
+  thesis pages internally linked. **verification:** valid JSON-LD on every route class; sitemap
+  served; OG cards render.
+
+### P4-04 — Zero-cost ops loop
+- **role:** devops-engineer · **work:** scheduled GitHub Actions health check (preview + prod
+  workers: /, concierge first-token, TTS head) opening/closing a repo issue on state change;
+  D1 analytics weekly digest doc. **verification:** workflow runs green; forced-fail drill opens
+  an issue.
+
+### P4-GATE — qa + security + auditor + performance re-run over the P4 surface.
+
+## P5 — Conversion & Productization (STUBS — scope on entry)
+P5-01 tools→products (meter /audit suite behind the P2 rails) · P5-02 concierge closes
+(calendar + triage) · P5-03 content engine cadence · P5-04 ecosystem cross-links (live
+KTHULHU/Kointel data through the claims gate) · P5-05 analytics-driven iteration ·
+P5-06 old-roadmap on-chain continuation (EAS · 4337 paymaster · ZK proof-of-reputation · Push).
