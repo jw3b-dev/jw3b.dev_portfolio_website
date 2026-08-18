@@ -32,14 +32,12 @@ owner decision open (OD-04 below).**
    response rather than claiming impossible on-chain erasure.
 7. Record each request + outcome (date, type, action) in a private log.
 
-## OD-04 — jurisdiction lead (OWNER DECISION — the one open item)
+## OD-04 — jurisdiction lead · **RATIFIED by John, 2026-08-18**
 
-**Recommendation: "comply-with-strictest" (POPIA as operator baseline + GDPR/UK-GDPR for
-EU/UK visitors) — which is what every shipped surface already implements.** The privacy
-notice now states exactly this. Choosing a single exclusive regime instead would change
-nothing technical today and would weaken the notice's honesty for cross-border visitors, so
-the recommendation is to ratify the strictest-rule lead as OD-04.
-**John: reply "OD-04: ratified" (or name a different lead) — that closes P3-09.**
+**Ruling: "comply-with-strictest"** — POPIA as the operator baseline + GDPR/UK-GDPR for
+EU/UK visitors; where the regimes differ, the stricter rule is followed. This is what every
+shipped surface implements and what the privacy notice states. With this ratification the
+six research dispositions above are final and **P3-09 is closed** (NFR-07 finalized).
 
 ## Standing rules encoded by this phase
 

@@ -268,3 +268,10 @@ privacy-notice updates (30-day commitment, regime statement, wallet-as-PII); dat
 `rate_limits_v2` raw-IP rows now purge (~10 min) in `rateLimit.js`. Gate 76 files/531 tests green;
 both -v2 targets deployed; prod untouched. **P3-09 closes on one owner line: "OD-04: ratified"
 (strictest-rule lead recommended, already what ships).**
+
+**P-SERIES CLOSED — 2026-08-18.** Owner decisions captured via structured ask: **OD-04 RATIFIED**
+(strictest-rule lead → P3-09 CLOSED, NFR-07 final); **P3-02 formally DEFERRED to post-GA**
+(recorded in DEFERRED.md — rails degrade by design; terms gate pre-wired); **prod promotion: not
+yet** (v2 stays preview; promotion runbook in DEFERRED.md); **voiceLive: ON** (default flipped,
+owner decision — preview now lights it without env override). Gate 76/531 green.
+P0 ✓ · P1+GATE ✓ · P2+GATE ✓ · P3-01 ✓ 02 deferred-by-owner ✓ 03 ✓ 04 ✓ 05 ✓ 06 ✓ 07 ✓ 08 ✓ 09 ✓.
