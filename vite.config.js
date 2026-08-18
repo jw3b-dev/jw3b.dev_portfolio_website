@@ -11,15 +11,22 @@ import { fileURLToPath } from 'node:url'
 // CSS uses only system fonts (no external font blocks the LCP paint); the token font
 // (Geist) swaps in after mount. Single source of truth lives here, not hand-maintained
 // in index.html — running the build IS the prerender pipeline.
+// Geometry MIRRORS the real Hero (src/components/hero/Hero.jsx) so the shell→React swap causes
+// no layout shift (CLS ≤ 0.1, NFR-01). The real H1 sits inside <main class="pt-14"> with an
+// inner grid at pt-[12vh] → its top is calc(3.5rem + 12vh); the section is px-5 sm:px-8, the
+// grid max-w-6xl (72rem). The kicker/H1/sub font clamps, line-heights, margins and max-widths
+// below are copied from the real hero's zone-1 classes — mismatches here MOVE the LCP element.
 const CRITICAL_CSS = `
 :root{color-scheme:dark}
+html{scrollbar-gutter:stable}
 html,body{margin:0;background:#0A0C10;color:#F2F5F8;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 #root{min-height:100vh}
-.pshell{max-width:72rem;margin:0 auto;padding:14vh 1.5rem 0}
-.pshell__kicker{font:600 .75rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;color:#22D3EE;margin:0 0 1.25rem}
-.pshell__h1{font-weight:600;font-size:clamp(2.25rem,6vw,4.5rem);line-height:1.02;letter-spacing:-.02em;margin:0;max-width:18ch}
-.pshell__sub{margin:1.5rem 0 0;font-size:clamp(1rem,2vw,1.25rem);color:#9BA6B4;max-width:48ch}
-.pshell__hint{margin-top:3rem;font:400 .8125rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#78828F}
+.pshell{max-width:72rem;margin:0 auto;padding:calc(3.5rem + 12vh) 1.25rem 0}
+@media(min-width:640px){.pshell{padding-left:2rem;padding-right:2rem}}
+.pshell__kicker{font:600 11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:#22D3EE;margin:0}
+.pshell__h1{font-weight:600;font-size:clamp(2.25rem,6vw,4rem);line-height:1.03;letter-spacing:-.025em;text-wrap:balance;margin:1rem 0 0;max-width:20ch}
+.pshell__sub{margin:1rem 0 0;font-size:clamp(1rem,2vw,1.15rem);line-height:1.625;color:#9BA6B4;max-width:52ch}
+.pshell__hint{margin-top:2rem;font:400 .8125rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#78828F}
 `.trim()
 
 // The shell headline MUST match Hero.jsx's position line so the LCP element is stable
@@ -27,15 +34,27 @@ html,body{margin:0;background:#0A0C10;color:#F2F5F8;font-family:ui-sans-serif,sy
 const HERO_SHELL = `<div class="pshell">
       <p class="pshell__kicker">Senior Agentic AI Developer</p>
       <h1 class="pshell__h1">Multi-agent systems that survive production — verified in front of you.</h1>
-      <p class="pshell__sub">Not a résumé. A console John left running — edit the contract and the auditor re-runs, the same discipline behind KTHULHU: reproduce the finding, don't assert it.</p>
+      <p class="pshell__sub">Not a résumé. A console John left running. Edit the contract below and the auditor re-runs — the same discipline behind KTHULHU: reproduce the finding, don&rsquo;t assert it.</p>
       <p class="pshell__hint">Loading the operable surface…</p>
     </div>`
+
+// Heavy vendor chunks that must NOT be eagerly modulepreloaded on boot. Vite auto-injects
+// <link rel="modulepreload"> for the entry's heavy deps; that FETCHES megabytes before the
+// static hero shell's job is done. `transformers` is dynamic-only (live-voice — most visitors
+// never start a call), and the wallet stack loads after the shell paints (LCP is served by the
+// prerendered shell, measured ~0.65s). Stripping the preload hints keeps the chunks code-split
+// and available on demand; it just stops them racing the app chunk on first paint.
+const NO_PRELOAD = ['transformers-', 'web3-', 'metamask-', 'walletconnect-', 'xmtp-']
 
 function heroShellPrerender() {
   return {
     name: 'hero-shell-prerender',
     transformIndexHtml(html) {
       return html
+        .replace(
+          /\n?\s*<link rel="modulepreload"[^>]*href="\/assets\/([^"]+)"[^>]*>/g,
+          (m, file) => (NO_PRELOAD.some((p) => file.startsWith(p)) ? '' : m),
+        )
         .replace('</head>', `  <style id="critical-shell">${CRITICAL_CSS}</style>\n</head>`)
         .replace('<div id="root"></div>', `<div id="root">${HERO_SHELL}</div>`)
     },

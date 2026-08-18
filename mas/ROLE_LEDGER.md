@@ -283,3 +283,18 @@ match; worker verifies by eth_getBalance) → ACTIVATED on preview (VITE_FEATURE
 challenge browser-verified (testnet label, connect-ready, vault armed). Escrow → redeploy prepared
 (forge build + 27 tests green, DeployEscrow dry-run clean; broadcast = owner keystore, turnkey ask in
 DEFERRED.md). Unlock → owner locks. Prod-default CTF withheld (bait too small). Loop continues to P4-02.
+
+**P4-02 (frontend-engineer + performance-monitor) — proof polish · DONE.**
+No screenshots to replace (v2 design is deliberately imageless — the design lock); no orphan
+routes (v2 clean). Real fixes, browser-verified:
+- **CLS 0.1047 → 0.00.** Culprits (via PerformanceObserver layout-shift sources, NOT the hero as
+  first guessed): the SiteFooter reflowing when the lazy route resolved under a short "Loading…"
+  fallback, + the scrollbar appearing and shifting the fixed concierge button. Fixes: `main`/
+  fallback `min-h-[100svh]` reserves the footer's position during Suspense; `scrollbar-gutter:
+  stable` (index.css + critical CSS). Hero-shell geometry also aligned to the real hero (bonus).
+- **Boot bandwidth:** stripped the auto-injected heavy-vendor modulepreload hints, and made
+  `loadTranscriber` a DYNAMIC import in useLiveVoice — the ~534 KB transformers chunk is now
+  fetched only when a visitor starts a live call (verified: 0 on boot, 1 on demand). LCP 0.66s.
+- **PERF-P2 (wagmi boot) re-justified:** the web3 chunk (2.9 MB) stays a static import of the
+  provider tree; the static hero shell paints LCP (0.66s) before any JS, so it breaches no NFR.
+  A careful lazy-provider refactor is tracked as a P5 perf item, not risked in an autonomous loop.

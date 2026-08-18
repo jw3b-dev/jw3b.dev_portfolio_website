@@ -15,7 +15,11 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { voiceSessionReducer, initialVoiceState, pickSttEngine, isEndOfSpeech, STT_ENGINE, VOICE_STATE } from '../lib/voiceSession.js'
 import { VAD_DEFAULTS, calibrateVad, computeRms, encodeWavPcm16, initialVad, updateVad, isNoiseTurn, isMaxedTurn, mergeChunks, resampleLinear, speakableReply } from '../lib/micTurn.js'
-import { loadTranscriber } from '../lib/loadTranscriber.js'
+// loadTranscriber is imported DYNAMICALLY inside start() (below), not here — a static import
+// puts it in the eager boot graph, and Vite then injects a modulepreload for its transitive
+// ~534 KB transformers chunk on every page load (voiceLive is ON, so ChatWidget mounts this
+// hook eagerly). Keeping it dynamic means the on-device ASR runtime is fetched only when a
+// visitor actually starts a live call.
 import { buildOutgoing, shouldDegrade, displayText } from '../lib/conciergeClient.js'
 import { parseSseLine, parseTags, trimPartialTag } from '../lib/tagProtocol.js'
 import { AGENT_CHAT_URL, AGENT_STT_URL, AGENT_TTS_URL } from '../config/worker.js'
@@ -449,6 +453,8 @@ export function useLiveVoice() {
       // caught HERE during "Loading" — never twenty minutes into a conversation. Chain:
       // webgpu-base → wasm-tiny → server Whisper (different model ids, so the library's
       // cached-rejection problem doesn't apply across steps).
+      const { loadTranscriber } = await import('../lib/loadTranscriber.js') // dynamic — off the boot graph
+      if (gen !== genRef.current) return
       const warmup = async (device) => {
         const t = await loadTranscriber({
           device,

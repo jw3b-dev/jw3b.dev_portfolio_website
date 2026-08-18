@@ -11,6 +11,11 @@
 
   html, body, #root { min-height: 100%; }
 
+  /* Reserve the scrollbar gutter ALWAYS so it doesn't appear when the lazy content fills in —
+     its appearance narrowed the viewport ~15px and shifted the fixed concierge button (a CLS
+     source measured alongside the footer reflow). Stable in both the shell and the app. */
+  html { scrollbar-gutter: stable; }
+
   body {
     /* Geist grotesk = body/identity voice; mono is applied on instruments/numerals. §5 */
     @apply bg-void text-content-secondary font-display antialiased;

@@ -36,8 +36,18 @@ function RootLayout() {
   return (
     <>
       <HireSpine />
-      <main className="pt-14">
-        <Suspense fallback={<div role="status" aria-live="polite" className="p-8 text-content-secondary">Loading…</div>}>
+      {/* min-h-[100svh] RESERVES viewport height during the lazy-route Suspense fallback, so the
+          footer starts below the fold instead of high under a short "Loading…" and then dropping
+          when content resolves — that drop was the dominant CLS source (measured 0.10 → footer
+          reflow). The fallback fills the same height for the same reason. */}
+      <main className="min-h-[100svh] pt-14">
+        <Suspense
+          fallback={
+            <div role="status" aria-live="polite" className="grid min-h-[100svh] place-items-center p-8 text-content-secondary">
+              Loading…
+            </div>
+          }
+        >
           <Outlet />
         </Suspense>
       </main>
