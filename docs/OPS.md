@@ -5,6 +5,12 @@ analytics review. Nothing here spends AI tokens.
 
 ## Health check (`.github/workflows/healthcheck.yml`)
 
+> **Activation:** GitHub only registers `schedule`/`workflow_dispatch` workflows from the
+> **default branch**. This file lives on `v2`, so the health check starts running automatically
+> when `v2` is promoted to `main` (see `DEFERRED.md`) — no extra step. Its probe logic is
+> dry-run-verified green against all four live targets today; it just isn't schedulable from a
+> non-default branch. (The `push`-triggered CI workflow is unaffected — that runs from any branch.)
+
 Runs every 6 hours (and on-demand via **Actions → Health check → Run workflow**). It probes:
 
 | Target | Check |

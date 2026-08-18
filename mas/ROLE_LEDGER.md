@@ -308,3 +308,13 @@ parses App.jsx paths and fails CI if a route lacks a `<loc>`; `<Seo>` added to t
 branch (title + OG confirmed); `WebSite` JSON-LD (name + JW3B/AgileGypsy alternates, NO
 fabricated SearchAction) alongside Person on home → branded-search anchor. Home JSON-LD now
 [Person, WebSite]; canonicals resolve to jw3b.dev. Gate 77 files/536 tests green.
+
+**P4-04 (devops-engineer) — zero-cost ops loop · DONE (activates at promotion).**
+`.github/workflows/healthcheck.yml`: 6-hourly + manual probe of prod+preview SPA/worker liveness
+(3× retry backoff; worker uses an 'alive'/non-5xx mode since prod portfolio-agent predates v2
+routes and 405s on GET — caught in dry-run), opens/closes ONE `health-alert` issue on state
+change, reddens the run when down; hits only liveness endpoints (no AI spend). `docs/OPS.md`:
+health check + D1 analytics digest queries + rollback. Probe dry-run GREEN on all 4 live targets.
+**GitHub constraint documented:** schedule/dispatch workflows only register from the DEFAULT
+branch, so it auto-activates when v2→main (owner-gated promotion) — nothing verifiable was left
+unverified (YAML valid, probe logic proven). Remaining P4: P4-GATE.
