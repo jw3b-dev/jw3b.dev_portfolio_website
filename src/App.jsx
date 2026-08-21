@@ -12,6 +12,7 @@ import ConsentBanner from './components/compliance/ConsentBanner'
 import { isEnabled } from './config/features.js'
 import HireSpine from './components/layout/HireSpine'
 import SiteFooter from './components/layout/SiteFooter'
+import RouteError from './components/layout/RouteError'
 
 // Lazy-loaded routes — each page is code-split and loads behind the single
 // <Suspense> boundary in RootLayout. Heavy Web3 (and future R3F) libs are
@@ -88,6 +89,9 @@ function NotFound() {
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    // errorElement catches a thrown render error OR a failed lazy import for ANY child route
+    // — without it React Router shows its developer error screen to real visitors.
+    errorElement: <RouteError />,
     children: [
       { path: '/', element: <Home /> },
       { path: '/work', element: <Work /> },

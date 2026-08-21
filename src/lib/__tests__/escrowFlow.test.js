@@ -76,3 +76,39 @@ describe('milestoneHash — deterministic bytes32', () => {
     expect(milestoneHash()).toBe(milestoneHash('engagement'))
   })
 })
+
+describe('resolveEscrowPhase — ERC-20 allowance gate (P5 audit fix)', () => {
+  // fund() ends in safeTransferFrom, so simulation cannot succeed without prior approval.
+  // These lock in that the visitor is given a way to grant it instead of hitting a dead end.
+  const live = { provisioned: true, connected: true, correctChain: true }
+
+  it('asks for approval when allowance is insufficient — BEFORE the simulate gate', () => {
+    const r = resolveEscrowPhase({ ...live, allowance: { sufficient: false }, sim: { ready: true } })
+    expect(r.phase).toBe('needs-approval')
+    expect(r.degrade).toBe(false) // a solvable step, NOT a drop to the floor
+  })
+
+  it('reports the allowance check while it is in flight', () => {
+    expect(resolveEscrowPhase({ ...live, allowance: { loading: true } }).phase).toBe('checking-allowance')
+  })
+
+  it('shows an approving state while the approve receipt is pending', () => {
+    expect(resolveEscrowPhase({ ...live, allowance: { approving: true } }).phase).toBe('approving')
+  })
+
+  it('proceeds to the simulate gate once allowance is sufficient', () => {
+    expect(resolveEscrowPhase({ ...live, allowance: { sufficient: true }, sim: { ready: true } }).phase).toBe('ready')
+    expect(resolveEscrowPhase({ ...live, allowance: { sufficient: true }, sim: { loading: true } }).phase).toBe('simulating')
+  })
+
+  it('surfaces an allowance read failure with the floor', () => {
+    const r = resolveEscrowPhase({ ...live, allowance: { error: new Error('rpc down') } })
+    expect(r.phase).toBe('error')
+    expect(r.degrade).toBe(true)
+  })
+
+  it('never blocks the settled lifecycle on allowance (a funded receipt still wins)', () => {
+    const r = resolveEscrowPhase({ ...live, allowance: { sufficient: false }, receipt: { success: true } })
+    expect(r.phase).toBe('funded')
+  })
+})

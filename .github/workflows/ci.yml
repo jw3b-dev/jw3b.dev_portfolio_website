@@ -37,7 +37,9 @@ jobs:
 
       # .npmrc sets legacy-peer-deps=true (React 19 peer graph) — npm ci inherits it.
       - name: Install
-        run: npm ci
+        # Retried: runner network blips (ENETUNREACH / ECONNRESET reaching the registry)
+        # were turning healthy commits red. A flaky gate trains people to ignore the gate.
+        run: npm ci || (sleep 15 && npm ci) || (sleep 45 && npm ci)
 
       - name: Lint
         run: npm run lint
@@ -63,14 +65,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Install is retried because the foundryup download has been reset mid-transfer on
+      # runners, turning healthy commits red. The retry is a real second attempt — NOT
+      # continue-on-error alone, which would let the job limp on with no forge and fail
+      # confusingly later. If both attempts fail the job still fails, as it must.
       - name: Install Foundry
+        id: foundry
+        continue-on-error: true
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Install Foundry (retry)
+        if: steps.foundry.outcome == 'failure'
         uses: foundry-rs/foundry-toolchain@v1
 
       - name: Fetch contract deps (contracts/lib is gitignored)
         working-directory: contracts
+        # git clone against github.com is the same flaky hop — retry once before failing.
         run: |
-          git clone --depth 1 --branch v5.6.1 https://github.com/OpenZeppelin/openzeppelin-contracts lib/openzeppelin-contracts
-          git clone --depth 1 https://github.com/foundry-rs/forge-std lib/forge-std
+          clone() { git clone --depth 1 "$@" || (sleep 15 && git clone --depth 1 "$@"); }
+          clone --branch v5.6.1 https://github.com/OpenZeppelin/openzeppelin-contracts lib/openzeppelin-contracts
+          clone https://github.com/foundry-rs/forge-std lib/forge-std
 
       - name: Format check
         working-directory: contracts
@@ -103,7 +117,9 @@ jobs:
       # The worker bundles @anthropic-ai/sdk + @neondatabase/serverless, so install its deps
       # before wrangler bundles the script.
       - name: Install worker deps
-        run: npm ci
+        # Retried: runner network blips (ENETUNREACH / ECONNRESET reaching the registry)
+        # were turning healthy commits red. A flaky gate trains people to ignore the gate.
+        run: npm ci || (sleep 15 && npm ci) || (sleep 45 && npm ci)
         working-directory: workers/portfolio-agent
       - name: Deploy preview worker
         uses: cloudflare/wrangler-action@v3
@@ -133,7 +149,9 @@ jobs:
           node-version: 22
           cache: npm
       - name: Install
-        run: npm ci
+        # Retried: runner network blips (ENETUNREACH / ECONNRESET reaching the registry)
+        # were turning healthy commits red. A flaky gate trains people to ignore the gate.
+        run: npm ci || (sleep 15 && npm ci) || (sleep 45 && npm ci)
       # Point the preview SPA at the preview worker (not production). Feature flags + the public
       # WalletConnect id come from the committed .env.production (mode=production).
       - name: Build (→ preview worker)

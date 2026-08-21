@@ -44,7 +44,7 @@ export default function EscrowCheckout({ selection, loadout, onBack = () => {} }
     provider: PROVIDER_WALLET,
     amountUsdc: loadout?.tier?.price ?? null,
   })
-  const { phase, reason, degrade, funds, fund, recordEngagement, txHash } = escrow
+  const { phase, reason, degrade, funds, fund, approve, recordEngagement, txHash } = escrow
 
   // Record the engagement exactly once, when the receipt confirms (route=escrow → D1).
   useEffect(() => {
@@ -83,6 +83,37 @@ export default function EscrowCheckout({ selection, loadout, onBack = () => {} }
       {phase === 'simulating' && (
         <p role="status" aria-live="polite" className="text-sm text-content-secondary">
           Checking the transaction…
+        </p>
+      )}
+
+      {/* ERC-20 allowance gate (P5 audit fix): fund() moves the client's USDC via
+          safeTransferFrom, so the escrow must be approved first. Before this existed the
+          simulation always reverted and the rail silently dropped to book-a-call. */}
+      {phase === 'checking-allowance' && (
+        <p role="status" aria-live="polite" className="text-sm text-content-secondary">
+          Checking your USDC allowance…
+        </p>
+      )}
+
+      {phase === 'needs-approval' && (
+        <div className="space-y-3">
+          <p className="text-sm text-content-secondary">
+            One-time step: approve the escrow to move the USDC for this milestone. Approving does
+            not send anything — the funding transaction is a separate confirmation.
+          </p>
+          <button
+            type="button"
+            onClick={approve}
+            className="rounded-md border border-cyan/50 bg-cyan/5 px-4 py-2 font-mono text-[12px] font-semibold uppercase tracking-label text-cyan hover:bg-cyan/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+          >
+            Approve USDC
+          </button>
+        </div>
+      )}
+
+      {phase === 'approving' && (
+        <p role="status" aria-live="polite" className="text-sm text-content-secondary">
+          Approval submitted — waiting for it to confirm, then you can fund.
         </p>
       )}
 

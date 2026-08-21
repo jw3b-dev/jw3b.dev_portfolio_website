@@ -22,14 +22,16 @@ export function milestoneHash(label) {
  * falls back to the guaranteed floor rather than a dead-end (SC-1/SC-2).
  *
  * @returns {{phase: string, reason: string|null, degrade: boolean}}
- *   phase ∈ unprovisioned | disconnected | wrong-chain | simulating | blocked |
- *           ready | signing | pending | funded | error
+ *   phase ∈ unprovisioned | disconnected | wrong-chain | checking-allowance |
+ *           needs-approval | approving | simulating | blocked | ready | signing |
+ *           pending | funded | error
  *   degrade = true means the UI should offer the book-a-call floor for this phase.
  */
 export function resolveEscrowPhase({
   provisioned,
   connected,
   correctChain,
+  allowance = {},
   sim = {},
   write = {},
   receipt = {},
@@ -45,6 +47,17 @@ export function resolveEscrowPhase({
   }
   if (write.pending) return phase('pending') // broadcast, awaiting receipt
   if (write.signing) return phase('signing') // awaiting wallet signature
+
+  // ERC-20 ALLOWANCE GATE — before the simulate gate, because it must be.
+  // MilestoneEscrow.fund() ends in `usdc.safeTransferFrom(msg.sender, ...)`, so without a
+  // prior approve() the simulation ALWAYS reverts. Until this existed the rail was
+  // unwinnable: every attempt fell through to `blocked` and dropped to book-a-call, with an
+  // "insufficient allowance" reason and no way for the visitor to grant it. (Found in the
+  // P5 audit; the rail was flag-off, so it had never been exercised end to end.)
+  if (allowance.error) return phase('error', revertReason(allowance.error), true)
+  if (allowance.approving) return phase('approving') // approve() signed, awaiting its receipt
+  if (allowance.loading) return phase('checking-allowance')
+  if (allowance.sufficient === false) return phase('needs-approval')
 
   // Simulate-first gate — a write is unreachable until simulation succeeds (FR-027).
   if (sim.error) return phase('blocked', revertReason(sim.error), true) // reason + floor

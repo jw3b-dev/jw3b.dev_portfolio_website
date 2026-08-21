@@ -114,3 +114,48 @@ describe('site worker headers (GAP-01 guard)', () => {
     })
   })
 })
+
+describe('missing /assets/* must 404, never the SPA shell (P5 audit fix)', () => {
+  // SPA fallback rewrites unmatched paths to index.html with a 200. For a hashed chunk that
+  // hands the browser HTML where a JS module was expected — "Failed to fetch dynamically
+  // imported module" — disguising a 404 as success so nothing can handle it.
+  const htmlFallback = () =>
+    new Response('<!doctype html><html lang="en"></html>', {
+      status: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+    })
+
+  it('returns a real 404 when an asset request falls through to the HTML shell', async () => {
+    const env = { ASSETS: { fetch: async () => htmlFallback() } }
+    const res = await siteWorker.fetch(new Request('https://jw3b.dev/assets/Work-OLDHASH.js'), env)
+    expect(res.status).toBe(404)
+    expect(res.headers.get('content-type')).toMatch(/text\/plain/)
+    expect(res.headers.get('content-type')).not.toMatch(/text\/html/)
+  })
+
+  it('keeps the security headers on that 404 and never caches it', async () => {
+    const env = { ASSETS: { fetch: async () => htmlFallback() } }
+    const res = await siteWorker.fetch(new Request('https://jw3b.dev/assets/gone-XYZ.js'), env)
+    expect(res.headers.get('content-security-policy')).toBeTruthy()
+    expect(res.headers.get('cache-control')).toMatch(/no-store/)
+  })
+
+  it('still serves a real asset untouched, with the immutable cache header', async () => {
+    const env = {
+      ASSETS: {
+        fetch: async () =>
+          new Response('export default 1', { status: 200, headers: { 'content-type': 'text/javascript' } }),
+      },
+    }
+    const res = await siteWorker.fetch(new Request('https://jw3b.dev/assets/index-REAL.js'), env)
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toMatch(/immutable/)
+  })
+
+  it('does NOT 404 a normal route — the SPA fallback still works off /assets/', async () => {
+    const env = { ASSETS: { fetch: async () => htmlFallback() } }
+    const res = await siteWorker.fetch(new Request('https://jw3b.dev/work'), env)
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toMatch(/text\/html/)
+  })
+})

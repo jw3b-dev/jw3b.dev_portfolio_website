@@ -86,6 +86,25 @@ export default {
     for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v)
     out.headers.set('x-served-by', 'jw3b-dev-site-worker')
 
+    // A missing /assets/* file must 404 — never fall through to the SPA shell.
+    //
+    // `not_found_handling: single-page-application` rewrites ANY unmatched path to index.html
+    // with a 200. For a hashed chunk that is actively harmful: a visitor whose tab predates a
+    // deploy lazy-loads a chunk whose hash no longer exists, receives an HTML document with
+    // `content-type: text/html`, and the browser fails parsing it as a module —
+    // "Failed to fetch dynamically imported module". The real 404 was disguised as success,
+    // so nothing could detect or handle it. Owner-reported on /work, /audit and /messages.
+    //
+    // Assets are content-hashed, so an /assets/* request can only be a hit or a genuine miss;
+    // returning HTML is never correct. The client's error boundary turns this honest 404 into
+    // a "new version shipped — reload" prompt.
+    if (url.pathname.startsWith('/assets/') && (out.headers.get('content-type') || '').includes('text/html')) {
+      return new Response('Not found', {
+        status: 404,
+        headers: { ...SECURITY_HEADERS, 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+      })
+    }
+
     // Caching (ADR-07 stale-shell rule): content-hashed /assets/* are immutable and cached
     // forever; the SPA shell (HTML) must NEVER be cached, or a deploy strands visitors on a
     // stale index.html pointing at deleted hashed chunks.
