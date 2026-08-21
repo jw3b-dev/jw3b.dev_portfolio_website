@@ -13,6 +13,10 @@ coverage/
 .env.local
 .env.*.local
 
+# Telegram bot token, staged here only long enough for `npm run telegram:setup` to pipe it into
+# `wrangler secret put`. Delete it after. A token in git history is compromised, not just leaked.
+workers/portfolio-agent/.telegram
+
 # editor / OS
 .DS_Store
 *.log

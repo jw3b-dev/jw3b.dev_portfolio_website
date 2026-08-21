@@ -86,6 +86,43 @@ describe('flush — FR-037 delivery with retry/backoff', () => {
     expect(readQueue(storage)).toHaveLength(0)
   })
 
+  /*
+   * W1 — the flush reports whether the Worker actually has an alert channel configured, because
+   * the confirmation UI must not promise "John will follow up" when nothing is listening. The
+   * parse is best-effort in both directions: a delivered lead stays delivered even if the body
+   * is unreadable, and an unreadable body never counts as an alert.
+   */
+  it('reports alerting:true when the Worker says a channel is configured', async () => {
+    const storage = memStorage()
+    enqueue(SUBMISSION, { storage, id: 'eq-1', now: 0 })
+    const fetchImpl = vi.fn().mockResolvedValue({ ...ok(), json: async () => ({ alerting: true }) })
+    const out = await flush({ storage, fetchImpl, url: '/e', now: 10 })
+    expect(out.results[0]).toMatchObject({ ok: true, alerting: true })
+  })
+
+  it('reports alerting:false when the Worker says no channel is configured', async () => {
+    const storage = memStorage()
+    enqueue(SUBMISSION, { storage, id: 'eq-1', now: 0 })
+    const fetchImpl = vi.fn().mockResolvedValue({ ...ok(), json: async () => ({ alerting: false }) })
+    const out = await flush({ storage, fetchImpl, url: '/e', now: 10 })
+    expect(out.results[0]).toMatchObject({ ok: true, alerting: false })
+  })
+
+  it('still counts the lead as delivered when the response body cannot be parsed', async () => {
+    const storage = memStorage()
+    enqueue(SUBMISSION, { storage, id: 'eq-1', now: 0 })
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ...ok(),
+      json: async () => {
+        throw new SyntaxError('not json')
+      },
+    })
+    const out = await flush({ storage, fetchImpl, url: '/e', now: 10 })
+    // Delivered (the POST succeeded) but never claimed as alerted — the safe direction.
+    expect(out.results[0]).toMatchObject({ ok: true, alerting: false })
+    expect(readQueue(storage)).toHaveLength(0)
+  })
+
   it('keeps a 5xx item and schedules a backed-off retry', async () => {
     const storage = memStorage()
     enqueue(SUBMISSION, { storage, id: 'eq-1', now: 0 })
