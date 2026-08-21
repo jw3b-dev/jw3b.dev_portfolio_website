@@ -37,6 +37,17 @@ const SECURITY_HEADERS = {
   'referrer-policy': 'strict-origin-when-cross-origin',
   'permissions-policy': 'camera=(), microphone=(self), geolocation=(), payment=()',
   'content-security-policy': CSP,
+  // HSTS. A DAST pass found this absent: the site is HTTPS-only and the edge redirects, but
+  // without this a visitor's FIRST request over http:// is still strippable on a hostile network.
+  //
+  // Deliberately starting at ONE DAY, not the usual year. HSTS is a commitment a browser caches:
+  // once it has seen a long max-age it will refuse http:// for that whole period, so a mistake
+  // here is not something you can simply redeploy away. The standard rollout is to ramp — ship a
+  // short max-age, confirm nothing on the domain needs plain HTTP, then raise it.
+  // Owner's call to raise: `max-age=31536000; includeSubDomains` (a year, all subdomains — check
+  // every subdomain serves HTTPS first), plus `preload` only if submitting to the preload list,
+  // which is effectively irreversible.
+  'strict-transport-security': 'max-age=86400',
 }
 
 // ── On-device Whisper model proxy (voiceLive) ────────────────────────────────────────────

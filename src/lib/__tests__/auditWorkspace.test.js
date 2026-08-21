@@ -183,10 +183,10 @@ describe('auditWorkspace — runs', () => {
     let ws = createWorkspace('a')
     let run
     ;[ws, run] = startRun(ws)
-    expect(runIsStale(ws, run)).toBe(false)
+    expect(runIsStale(run, ws.draft)).toBe(false)
     ws = setDraft(ws, 'a changed')
-    expect(runIsStale(ws, run)).toBe(true)
-    expect(runIsStale(ws, null)).toBe(false)
+    expect(runIsStale(run, ws.draft)).toBe(true)
+    expect(runIsStale(null, ws.draft)).toBe(false)
   })
 })
 

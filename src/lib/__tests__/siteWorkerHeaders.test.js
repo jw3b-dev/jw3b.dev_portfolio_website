@@ -29,6 +29,18 @@ describe('site worker headers (GAP-01 guard)', () => {
     expect(h.get('cache-control')).toBe('no-store, must-revalidate')
   })
 
+  it('sends HSTS, and keeps the max-age on the deliberate short ramp', async () => {
+    // A DAST pass on the live site found transport security missing entirely. It ships ramped:
+    // HSTS is cached by the browser, so a long max-age is a commitment you cannot redeploy away.
+    // This asserts BOTH that it is present and that it has not been quietly jumped to a year
+    // without the subdomain check that a year deserves.
+    const h = await headersOf('https://jw3b.dev/', 'text/html; charset=utf-8')
+    const hsts = h.get('strict-transport-security')
+    expect(hsts).toMatch(/^max-age=\d+/)
+    expect(Number(hsts.match(/max-age=(\d+)/)[1])).toBeLessThanOrEqual(86400)
+    expect(hsts).not.toContain('preload') // irreversible — never without an explicit decision
+  })
+
   it('caches hashed /assets/* immutably (and still stamps the CSP)', async () => {
     const h = await headersOf('https://jw3b.dev/assets/index-abcd1234.js', 'application/javascript')
     expect(h.get('cache-control')).toBe('public, max-age=31536000, immutable')

@@ -161,9 +161,15 @@ export function updateRun(ws, runId, patch) {
   return { ...ws, runs: ws.runs.map((r) => (r.id === runId ? { ...r, ...patch } : r)) }
 }
 
-/** True when this run's source is no longer what's in the editor. */
-export function runIsStale(ws, run) {
-  return Boolean(run) && run.source !== ws.draft
+/**
+ * True when this run's source is no longer what's in the editor.
+ *
+ * The one definition of staleness (honesty rule §5.2). It takes the draft directly rather than a
+ * whole workspace so the run-history component can call it too — it was reimplementing the
+ * comparison inline, which is a rule living in two places and free to drift (audit A-1).
+ */
+export function runIsStale(run, draft) {
+  return Boolean(run) && run.source !== draft
 }
 
 /**

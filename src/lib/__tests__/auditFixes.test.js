@@ -98,6 +98,42 @@ contract V {
     expect(fixFor(src, 'reentrancy')).toBeUndefined()
   })
 
+  it('offers the fix for an identifier containing `$` — a legal Solidity name, not a regex anchor', () => {
+    // Audit finding S-1. The scope check used to build `new RegExp('\\b' + id + '\\b')` from a
+    // name lifted out of the visitor's own contract. `$` is an ANCHOR in a pattern, so `\b$amt\b`
+    // matched nothing and the fix was silently withheld from a contract that qualified for it —
+    // a security tool quietly declining to help. Identifiers are tokenised now, never compiled.
+    const src = `pragma solidity 0.8.20;
+contract V {
+  mapping(address => uint256) public balances;
+  function withdraw() external {
+    uint256 $amt = balances[msg.sender];
+    (bool ok,) = msg.sender.call{value: $amt}("");
+    require(ok);
+    balances[msg.sender] = $amt;
+  }
+}`
+    expect(idsIn(src)).toContain('reentrancy')
+    const fix = fixFor(src, 'reentrancy')
+    expect(fix).toBeTruthy()
+    expect(applyFixAndVerify(fix, src).cleared).toBe(true)
+  })
+
+  it('still withholds the fix when a `$` identifier really is defined after the call', () => {
+    // The negative half: tokenising must not turn the scope check into a rubber stamp.
+    const src = `pragma solidity 0.8.20;
+contract V {
+  mapping(address => uint256) public balances;
+  function withdraw() external {
+    (bool ok,) = msg.sender.call{value: 1}("");
+    uint256 $later = 7;
+    balances[msg.sender] = $later;
+  }
+}`
+    expect(idsIn(src)).toContain('reentrancy')
+    expect(fixFor(src, 'reentrancy')).toBeUndefined()
+  })
+
   it('is NOT offered when the balance write shares a line with other statements', () => {
     // The rule fires, but the write is not a clean standalone statement — moving the whole line
     // would drag `require(ok)` above the call with it. Conservative: offer nothing.

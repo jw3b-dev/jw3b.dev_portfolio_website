@@ -38,9 +38,16 @@ const CALL_LINE = /\.call\s*\{[^}]*value\s*:/
 function rhsIsHoistable(rhs, linesBeforeCall) {
   const trimmed = rhs.trim()
   if (/^\d+$/.test(trimmed)) return true // a literal (the classic `= 0`) is always safe
-  const before = linesBeforeCall.join('\n')
+
+  // Tokenise ONCE into a Set rather than building `new RegExp('\\b' + id + '\\b')` per identifier.
+  // Two reasons, and the first is a real defect this replaced (audit S-1): a Solidity name may
+  // legally contain `$`, which is an ANCHOR inside a pattern — so `\b$amt\b` matched nothing and
+  // the reentrancy fix was silently withheld from contracts that qualified for it. A security
+  // tool that quietly declines to help is worse than one that says it can't. The second reason is
+  // the rule it belongs to: never build a regex out of input you didn't write.
+  const before = new Set(linesBeforeCall.join('\n').match(IDENT) || [])
   const idents = trimmed.match(IDENT) || []
-  return idents.every((id) => GLOBALS.has(id) || new RegExp(`\\b${id}\\b`).test(before))
+  return idents.every((id) => GLOBALS.has(id) || before.has(id))
 }
 
 /**

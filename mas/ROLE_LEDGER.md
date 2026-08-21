@@ -422,3 +422,48 @@ reentrancy detector matches `balances[...]`, so it produced no finding and passe
 heading assertion. Gate: lint 0 errors · 94 files / 759 tests · coverage 100% lines+functions
 (3 new pure modules at 100%, aggregate branches 95.2 → 96.0) · build 0-warn · 26/26 E2E · claims ·
 secret-scan.
+
+**MAS verification gate over ADR-P5-02 (owner: "verify with mas") — 2026-08-21.** Ran the Phase-5
+gate roles as INDEPENDENT audits over commit `91c55fb`, not as a re-read of the build notes.
+Verdict CONDITIONAL → remediated → PASS. Four findings, three of them real defects the build's own
+tests could not have caught, because each is a property of the code's *shape* rather than its
+behaviour.
+
+**codebase-auditor.** Coverage map: W-1…W-7 all `implemented` with evidence. Architecture
+compliance mechanically verified rather than asserted — runs carry no `findings` field (0
+occurrences), auto-run defaults off (`useAuditWorkspace.js:48`), zero `localStorage`/
+`sessionStorage`/`indexedDB` anywhere in the workspace, disclaimer present in `RunTabs`.
+**A-1 (P2)** — `runIsStale` was defined in `auditWorkspace.js:165` and *reimplemented inline* in
+`RunTabs.jsx:29` as `run.source !== draft`: the §5.2 honesty rule living in two places, free to
+drift. Remediated — the helper now takes `(run, draft)` so the component can use the one
+definition.
+
+**security.** SAST clean on the new surfaces: no `eval`, no `new Function`, no
+`dangerouslySetInnerHTML`, no secrets in the bundle. The client-side budget was checked for
+authority and has none — `runsUsed`/`AUDIT_BUDGET` drive display and the auto-policy only, while
+`ROUTE_LIMITS['POST /audit']` counts server-side per IP.
+**S-1 (P2)** — `auditFixes.js:43` built `new RegExp('\\b' + id + '\\b')` from an identifier lifted
+out of visitor-supplied contract source. Reproducible: a Solidity name may legally contain `$`,
+which is an ANCHOR in a pattern, so `\b$amt\b` matched nothing and the reentrancy fix was
+**silently withheld** from a contract that qualified for it — a security tool quietly declining to
+help. No ReDoS (the tokeniser cannot emit other metacharacters), hence P2 not P0. Remediated by
+tokenising into a Set — safer and cheaper than N regex constructions — with a positive and a
+negative guard.
+**DAST** — probed `POST /audit` itself (never a neighbouring route) with an empty source, which
+the router rejects before any model call while the limiter still counts it: **10 × 400 → 429 with
+`retry-after: 47`**. The server enforces exactly the 10 the client claims, so the parity test is
+asserting the truth and not a shared fiction. An unauthorised `Origin` is not echoed back.
+**S-2 (P2, outside the feature)** — jw3b.dev sent **no `Strict-Transport-Security` header at all**;
+it was set neither by our worker nor by the zone. Fixed in `worker.js`, deliberately ramped at
+`max-age=86400` rather than the usual year: HSTS is cached by the browser, so a long max-age is a
+commitment that cannot be redeployed away. Raising it to `max-age=31536000; includeSubDomains` is
+the owner's call and wants a check that every subdomain serves HTTPS first; `preload` is
+effectively irreversible. A guard asserts it is present AND has not been quietly jumped.
+
+**performance-monitor (advisory, PASS).** Measured rather than assumed, since the heuristics +
+fixes now run on every keystroke: **0.088 ms** for a typical contract, **1.417 ms** at the
+24,000-char cap — ~11× inside a 16.7 ms frame at the worst case the input validator permits. No
+debounce needed, and adding one would only introduce lag and test flakiness.
+
+Gate after remediation: lint 0 errors · 94 files / 762 tests · coverage 100% lines+functions ·
+build 0-warn · 26/26 E2E · claims · secret-scan.

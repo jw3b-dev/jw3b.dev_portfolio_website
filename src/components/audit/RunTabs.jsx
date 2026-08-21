@@ -19,14 +19,15 @@ import ResultTabs from './ResultTabs.jsx'
 import { auditSolidity, SEVERITY_META } from '../../lib/auditHeuristics.js'
 import { fixesFor } from '../../lib/auditFixes.js'
 import { AUDIT_DISCLAIMER } from '../../lib/auditClient.js'
-import { RUN_STATUS } from '../../lib/auditWorkspace.js'
+import { RUN_STATUS, runIsStale } from '../../lib/auditWorkspace.js'
 
 function RunPanel({ run, draft, onApplyFix, onRestore }) {
   // Derived from the run's pinned source, never stored — same rule as the live panel, so a run
   // tab always re-screens to exactly what the detector said about that text.
   const findings = useMemo(() => auditSolidity(run.source).findings, [run.source])
   const fixes = useMemo(() => fixesFor(findings, draft), [findings, draft])
-  const stale = run.source !== draft
+  // The staleness rule has ONE definition (auditWorkspace) — this used to re-derive it inline.
+  const stale = runIsStale(run, draft)
   const streaming = run.status === RUN_STATUS.STREAMING
 
   return (
