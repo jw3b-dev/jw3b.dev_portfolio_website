@@ -231,7 +231,7 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
                 type="checkbox"
                 checked={w.autoRun}
                 onChange={(e) => w.setAutoRun(e.target.checked)}
-                className="h-3.5 w-3.5 accent-cyan"
+                className="h-3.5 w-3.5 accent-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
               />
               Re-run on edit
             </label>
