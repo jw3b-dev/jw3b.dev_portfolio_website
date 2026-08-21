@@ -209,7 +209,8 @@ is work that arrived, was accepted, and was silently skipped. Between three and 
 
 Two separate conditions, and they should not be conflated:
 
-1. **Four stuck submissions** — dispatch never picked them up even while healthy. A real defect.
+1. **Four submissions in the insert-default `queued` state** — see Rev 6: DOWNGRADED from "a real
+   defect" to unresolved, pending the plan tier on those rows.
 2. **Thirteen days of no activity since 8 August** — no new submissions either, so this is
    consistent with no demand rather than a second fault. Not proof of health; just not evidence of
    breakage.
@@ -253,6 +254,49 @@ is true of *config and box*, but the deployed Worker carries a `secret_text` bin
 a secret binding only exists once `wrangler secret put` has run. So they **are set to something**.
 "Not set" is refuted; **"off" remains unproven**, because secret values are unreadable. The split is
 exact: every flag the owner could resolve is config, every flag he could not is a secret.
+
+### ✎ Rev 6 — discovery RESOLVED (nothing broken), and my own stuck-audits claim DOWNGRADED
+
+**`claude-discovery` is billing-tier gated. It works as designed.** Owner-verified end to end.
+
+```
+tier starter            frontierDiscovery = false
+tier managed_standard   frontierDiscovery = false
+tier managed_pro        frontierDiscovery = true   ← the only one
+```
+
+The gate at `overmind.ts:285` is `tierFor(state.plan).frontierDiscovery && LEDGER_PULL_DISCOVERY
+=== 'true'` — **tier first, flag second**. The flag reading `"true"` was never the operative
+condition, so its visibility in plain config is exactly what made it look like the cause.
+
+The ledger closes it: **35 rows across exactly 7 audits** (21 done · 9 skipped · 5 failed),
+2026-07-15 → 07-31, then nothing. Those seven were `managed_pro`. Discovery did not regress on
+07-31 — **the last managed_pro audit did**. Every audit since has been on a tier without frontier
+discovery.
+
+And the missing `claude-discovery.yml` is dead by design, not broken: `overmind.ts:435` — *"when the
+box runs claude-discovery from the ledger (pre-built image, no GHA), skip the GitHub Actions
+dispatch entirely"* — returns before it is ever called.
+
+**✎ Applying the same test to MY claim, which does not survive it intact.**
+
+Rev 4 said four submissions were *"accepted and silently skipped"*. That was inferred from a status
+column without reading what sets it — the same shape as the discovery error, made by me. Checking:
+
+- `neon.ts:98` — `status: text('status').notNull().default('queued')`. **`queued` is the INSERT
+  DEFAULT**, not a state something must actively place a row into.
+- `audit-status.ts:204` — an unrecognised status also *falls back* to `queued`.
+- Against that: `workers/api/routes/audits.ts:514,549` reject submission with **402
+  PAYMENT_REQUIRED** on insufficient credits, so a row that exists is one whose credit check passed.
+
+So the honest statement is **not** "silently skipped". It is: *four submissions that passed the
+credit gate sit in the insert-default state, oldest 2026-07-06, while other audits ran to completion
+through 2026-08-08.* That is worth investigating and is **not** established as a defect — the
+discovery case is precisely the precedent for a tier or plan condition explaining an apparent gap.
+
+**The check that would settle it** (owner-side, needs the row): the `plan` on those four
+submissions, and whether anything advances `queued` for that plan. If they are a tier the pipeline
+does not serve, this is the discovery finding again. If they are `managed_pro`, they are stuck.
 
 ### Confidence, stated per fact
 
