@@ -7,6 +7,7 @@
  * on-chain verify live upstream (P2-02/P2-08). Semantic tokens only.
  */
 import { useEffect } from 'react'
+import ChallengeBrief from './ChallengeBrief.jsx'
 import { useCtf } from '../../hooks/useCtf.js'
 import { CTF_LABEL } from '../../lib/ctfFlow.js'
 import ConnectButton from '../wallet/ConnectButton.jsx'
@@ -49,10 +50,20 @@ export default function CtfChallenge() {
           <p className="text-sm text-content-secondary">The CTF vault isn’t deployed yet — check back once it’s live on Base Sepolia.</p>
         )}
 
+        {/*
+            The brief comes BEFORE the wallet ask. This surface used to be a heading, a testnet
+            label, one sentence and a Connect button — it demanded the visitor's wallet before
+            telling them what the challenge was, what they'd be attacking, or whether anyone had
+            solved it. All of that already existed in the bundle and on the Worker, reachable by
+            nobody.
+        */}
         {phase === 'disconnected' && (
-          <div className="space-y-3">
-            <p className="text-sm text-content-secondary">Connect a wallet on Base Sepolia to take on the challenge.</p>
-            <ConnectButton />
+          <div className="space-y-5">
+            <ChallengeBrief />
+            <div className="space-y-2 border-t border-hairline pt-4">
+              <p className="text-sm text-content-secondary">Ready? Connect a wallet on Base Sepolia to take it on.</p>
+              <ConnectButton />
+            </div>
           </div>
         )}
 

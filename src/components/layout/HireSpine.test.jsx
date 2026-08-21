@@ -27,6 +27,16 @@ describe('HireSpine — the persistent hire spine (FR-002 / SC-1)', () => {
     expect(home).toHaveAttribute('href', '/')
   })
 
+  /*
+   * The spine links surfaces that WORK. /messages was in this list while XMTP was unbuilt, so the
+   * primary nav of a site arguing "operable, not slideware" advertised a stub. The route still
+   * exists and wears an honest gate; it returns to the spine when it does something.
+   */
+  it('does not promote a surface that is not built yet', () => {
+    renderAt('/')
+    expect(screen.queryAllByRole('link', { name: /^Messages$/i })).toHaveLength(0)
+  })
+
   it('links each operable surface out of the current route', () => {
     renderAt('/')
     // Rendered twice (desktop nav + mobile disclosure) — assert the targets exist.
@@ -34,7 +44,6 @@ describe('HireSpine — the persistent hire spine (FR-002 / SC-1)', () => {
       ['Work', '/work'],
       ['Audit', '/audit'],
       ['CTF', '/ctf'],
-      ['Messages', '/messages'],
     ]) {
       const links = screen.getAllByRole('link', { name: new RegExp(`^${label}$`, 'i') })
       expect(links.length).toBeGreaterThan(0)

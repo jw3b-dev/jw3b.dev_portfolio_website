@@ -28,7 +28,7 @@ describe('provisioning-gated routes wear the honest gate (P1-21 / SC-2)', () => 
     const cta = screen.getByRole('link', { name: /book a call/i })
     expect(cta).toHaveAttribute('href', '/hire-me')
     // Not a dead-end: home is also reachable.
-    expect(screen.getByRole('link', { name: /back to the console/i })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: /back to jw3b\.dev/i })).toHaveAttribute('href', '/')
   })
 
   it('/messages renders a titled gate that routes to the book-a-call floor', () => {

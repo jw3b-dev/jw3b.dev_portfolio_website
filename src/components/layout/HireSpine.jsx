@@ -14,7 +14,10 @@ const SURFACES = [
   { to: '/work', label: 'Work' },
   { to: '/audit', label: 'Audit' },
   { to: '/ctf', label: 'CTF' },
-  { to: '/messages', label: 'Messages' },
+  // /messages is NOT here. The route exists and renders an honest "on the way" gate, but XMTP is
+  // not built (the dependency decision defers it to @xmtp/browser-sdk, a migration rather than a
+  // version bump). Promoting a stub in the primary nav of a site whose whole argument is
+  // "operable, not slideware" spends credibility to advertise a gap. It returns when it works.
 ]
 
 const linkClass = ({ isActive }) =>

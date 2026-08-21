@@ -37,7 +37,7 @@ export default function RouteGate({ title, kicker, reason, seoTitle, seoDescript
           to="/"
           className="font-mono text-[12px] uppercase tracking-label text-content-secondary hover:text-content-primary"
         >
-          ← Back to the console
+          ← Back to jw3b.dev
         </Link>
       </div>
     </section>
