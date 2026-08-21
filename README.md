@@ -92,6 +92,7 @@ reaches `src/` or the client bundle.
 | [`mas/`](mas/) | The multi-agent build record: plan, role ledger, phase gate audits |
 | [`design/`](design/) | Design story and creative briefs |
 | [`scripts/`](scripts/) | Gate scripts (claims, secret scan) |
+| [`config/`](config/) | Build tooling — Vite, Vitest, ESLint, Tailwind, PostCSS (kept out of the root) |
 
 Pure, exhaustively-tested logic lives in `src/lib/` — audit heuristics, checkout routing, the
 voice state machine, VAD maths — deliberately separated from React so it can be verified

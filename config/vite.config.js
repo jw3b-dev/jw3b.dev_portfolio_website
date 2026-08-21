@@ -79,6 +79,10 @@ export default defineConfig({
     heroShellPrerender(),
     // nodePolyfills({ globals: { Buffer: true, global: true, process: false } }),
   ],
+  // These configs live in config/ to keep the repo root readable. Vite resolves `root` from
+  // the CWD (npm scripts always run from the project root), so index.html and dist/ are
+  // unaffected — but it searches for a PostCSS config from `root`, so point it here explicitly.
+  css: { postcss: fileURLToPath(new URL('.', import.meta.url)) },
   optimizeDeps: {
     entries: ['index.html'], // avoid scanning stray HTML folders that crash the dep scanner
     // @xmtp/browser-sdk ships WASM (@xmtp/wasm-bindings); don't pre-bundle it — let it load as its
@@ -96,8 +100,8 @@ export default defineConfig({
       'string_decoder/': 'string_decoder',
       // @huggingface/transformers lists onnxruntime-node + sharp (Node-only) as deps; stub them out
       // of the browser bundle — the browser path uses onnxruntime-web (WASM/WebGPU), not these.
-      'onnxruntime-node': fileURLToPath(new URL('./src/lib/empty.js', import.meta.url)),
-      sharp: fileURLToPath(new URL('./src/lib/empty.js', import.meta.url)),
+      'onnxruntime-node': fileURLToPath(new URL('../src/lib/empty.js', import.meta.url)),
+      sharp: fileURLToPath(new URL('../src/lib/empty.js', import.meta.url)),
     },
   },
   build: {

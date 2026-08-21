@@ -18,6 +18,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    // This config lives in config/, so pin `root` to the project root — every path below
+    // (setupFiles, include globs, coverage include-list) then resolves exactly as before.
+    root: resolve(__dirname, '..'),
     setupFiles: ['./src/setupTests.js'],
     include: ['src/**/*.{test,spec}.{js,jsx}'],
     // Multi-step jsdom interaction tests (e.g. the Mission Control wizard walk) can exceed
@@ -65,6 +68,6 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: { '@': resolve(__dirname, './src') },
+    alias: { '@': resolve(__dirname, '../src') },
   },
 })

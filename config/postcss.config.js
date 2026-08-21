@@ -6,7 +6,9 @@
  */
 export default {
   plugins: {
-    tailwindcss: {},
+    // tailwind.config.js moved into config/ alongside this file; the plugin would otherwise
+    // look for it relative to the CWD (the project root) and silently emit unstyled CSS.
+    tailwindcss: { config: './config/tailwind.config.js' },
     autoprefixer: {},
   },
 }

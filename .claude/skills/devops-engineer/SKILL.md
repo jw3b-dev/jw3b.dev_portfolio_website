@@ -12,7 +12,7 @@ rollback + DR, independent from the security audit) at user scope; pinned to the
 
 - **CI:** `.github/workflows/ci.yml` — `verify` job runs **lint → coverage → claims → build →
   secret-scan** on push/PR. Order is cheap→expensive; any gate fails the pipeline.
-- **Coverage gate:** `vitest.config.js`, scoped include-list of pure-logic `src/lib/*.js`
+- **Coverage gate:** `config/vitest.config.js`, scoped include-list of pure-logic `src/lib/*.js`
   (tagProtocol, claimsValidate, replay, knowledgeBase, conciergeClient, auditClient, motion,
   loadout, engagementQueue, markdown) at **100% lines/functions**, branches 85, statements 90.
   Adding a covered file to the list can break the gate — mind the include-list.
