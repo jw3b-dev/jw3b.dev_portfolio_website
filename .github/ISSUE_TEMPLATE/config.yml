@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/jw3b-dev/jw3b.dev_portfolio_website/security/policy
+    about: Please do NOT open a public issue. Email john@agilegypsy.com — see SECURITY.md for scope and response times.
+  - name: Hire John / talk about work
+    url: https://jw3b.dev/hire-me
+    about: Engagements, audits, and retainers — book a call rather than opening an issue.

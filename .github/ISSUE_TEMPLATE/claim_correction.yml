@@ -1,0 +1,36 @@
+name: Factual correction
+description: A number, credential, or claim on the site looks wrong or unsupported
+labels: [claims]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every figure this site presents is supposed to trace to a real evidence pointer in the
+        claims register — a build fails if it doesn't. So a claim you can't verify is a bug by
+        this project's own rules, and this is a welcome report to file.
+  - type: input
+    id: claim
+    attributes:
+      label: The claim, as it appears
+      placeholder: e.g. "17 findings (8 High)"
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where you saw it
+      placeholder: https://jw3b.dev/...
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong with it?
+      description: Unsupported, out of date, contradicted by a source, or overstated — say which.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence, if you have it
+      description: A link or citation that supports the correction.

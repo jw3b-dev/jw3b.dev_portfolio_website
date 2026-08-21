@@ -1,0 +1,41 @@
+name: Bug report
+description: Something on jw3b.dev is broken, mislabelled, or inaccessible
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. If this is a **security** issue, stop here and email
+        john@agilegypsy.com instead — see [SECURITY.md](../blob/v2/SECURITY.md).
+  - type: input
+    id: url
+    attributes:
+      label: Where
+      description: The page or endpoint, e.g. https://jw3b.dev/audit
+      placeholder: https://jw3b.dev/...
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Observe ...
+  - type: input
+    id: env
+    attributes:
+      label: Browser / device
+      placeholder: Brave 1.6 on Linux, Safari on iPhone 15, ...
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors, if any
+      render: shell
