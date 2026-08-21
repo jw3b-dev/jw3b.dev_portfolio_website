@@ -85,3 +85,39 @@ the shipped product.
 4. **Product-owner pass** in every brief: the job the visitor finishes + ≥3 proposed next-needs.
 5. This document is falsification criteria for R4: the rerun's exit gate fails unless the shipped
    site disproves all five causes.
+
+---
+
+## Addendum — root cause 3, restated after it bit four more times
+
+Cause 3 was written as "gates measured code properties, never visitor outcomes". A day of work
+showed it is narrower and sharper than that:
+
+> **A repo artifact was consulted in place of the running system, and the artifact agreed with a
+> plausible wrong answer.**
+
+Every instance, all real, all from 2026-08-21:
+
+| Consulted | Concluded | Actually |
+|---|---|---|
+| `wrangler.toml` grep for a queue binding | "Queues is inert" | Binding lives in `wrangler.overmind.toml`; four job kinds actively enqueuing to a consumerless queue |
+| MCP account enumeration | "one Cloudflare worker" | Connector bound to a different account and structurally blind to six |
+| `CREATE TABLE IF NOT EXISTS` + a ✅ from `d1 migrations apply` | "the migration applied" | No-op against an existing table; five days of transcripts and every CTF solve lost |
+| Green CI after defining a prompt block | "the fix shipped" | Never concatenated into the system string; the deployed model kept fabricating |
+| `grep -cE "^gate:"` returning 0 | "unstamped" | The guard itself returned rc=0 |
+
+**The rule.** Before asserting what a deployed system does, ask the system — the live API, the
+running process, the deployed endpoint, the actual database. A file, a grep or a green pipeline is
+evidence about the repo; it is evidence about production only once something has proven the two
+agree.
+
+**Corollary: state confidence per fact, not per document.** "Confirmed (live API)", "confirmed to
+exist, value unreadable" and "plausible, unverified" are three different claims. Collapsing them is
+how a report becomes wrong while every sentence in it still feels true. See
+`KTHULHU_INFRA_AUDIT.md` §3 for the format.
+
+**Standing gap:** the v2 worktree has **no `CLAUDE.md`**. The project instructions loaded in
+sessions come from the v1 repo — the tree this project's own consolidation retired to the
+`v1-archive` tag. Process rules are therefore being read from dead code, which is the same class of
+error as everything above. That file needs writing in `jw3b.dev-v2`.
+

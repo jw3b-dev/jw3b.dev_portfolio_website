@@ -153,15 +153,38 @@ So the Queues cutover is **half-deployed**: the producer side is live on the orc
 `SHADOW_DISPATCH` and per-tool `LEDGER_PULL_*` canaries in place, while the consumer side does not
 exist. Real work still reaches the box through GitHub Actions.
 
-Two readings, and both are worth checking:
+**✎ Rev 3 — the branch is decidable, and it is the first one. Owner-verified.**
 
-- If `SHADOW_DISPATCH` is **on**, the orchestrator is enqueuing shadow jobs for comparison — but
-  the comparison cannot happen, because nothing reads them.
-- If it is **off**, the queue has been idle since 2026-07-13 and the enqueue path is untested in
-  production.
+`kindEnqueueEnabled` returns true if `SHADOW_DISPATCH === 'true'` **or** the per-kind flag is set.
+`SHADOW_DISPATCH` is absent from config, but `LEDGER_PULL_DISCOVERY`, `_PDF`, `_ENSEMBLE` and
+`_FV` are all `"true"`, and `TOOL_QUEUE` is bound. So **four job kinds are actively enqueued to a
+queue with no consumer**. Not idle — actively discarding.
 
-Either way the box's dispatcher must be reached another way today, which matches the GHA path
-below.
+**And no work is lost, which rev 2 failed to say.** `dispatch.sh`'s own header: *"Drains queued
+tool_jobs from prod D1."* **The box polls the D1 ledger, not the queue.** Dispatch runs on the
+database row; the queue send is the vestigial half of an unfinished cutover — live, producing,
+discarded. That is a materially different defect from "dispatch is broken": nothing fails, a
+side-channel is simply dead weight, and the comparison shadow mode exists to perform cannot happen.
+
+**✎ Why the grep missed the producer.** The binding, both `[[workflows]]`, the `[[services]]`
+binding to the API and `crons = ["* * * * *"]` all live in **`wrangler.overmind.toml`** — a second
+config file. Rev 1 grepped `wrangler.toml`, found zero, and concluded zero. The file was never the
+system.
+
+**✎ An orphan worker.** `kthulhu-scraper` (singular) was last deployed 2026-07-06 and has **no
+config anywhere in the repo** — it exists only in the account. Deployed, scheduled `0 */6 * * *`,
+and unreproducible from source.
+
+### Confidence, stated per fact
+
+| Fact | Verified how | Confidence |
+|---|---|---|
+| Queue: 1 producer, 0 consumers | REST `GET /queues` + owner's `wrangler queues` | **Confirmed** (independently, twice) |
+| Retention 86400s | REST `GET /accounts/{a}/queues/{id}` → `settings.message_retention_period` | **Confirmed via REST.** The owner's `queues info` does not surface it — the CLI is the weaker instrument here |
+| 4 kinds actively enqueued | Owner read `kindEnqueueEnabled` + the `"true"` flags in config | **Confirmed** |
+| Box drains D1, not the queue | `dispatch.sh` header | **Confirmed** |
+| `LEDGER_PULL_{FUZZ,SCENARIO,STATIC}`, `STATIC_ADJ_ON_BOX`, `SHADOW_DISPATCH` **exist** | REST worker settings → present as `secret_text` bindings | **Confirmed to exist** |
+| …their VALUES | — | **Unverified.** Secret values are unreadable; absent from config, so dashboard- or CLI-set. Do not treat as on |
 
 ### Job deadlines (`DEADLINE_MS`) — where the wall-clock goes
 
