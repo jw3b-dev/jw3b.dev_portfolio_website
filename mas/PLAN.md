@@ -528,7 +528,7 @@
 ## P4 — Activation & Amplification (seeded 2026-08-18, owner-authorized via /loop goal)
 
 Scope note: production promotion is deliberately NOT a P4 task (owner: "not yet", 2026-08-18 —
-runbook in DEFERRED.md). The old AI×Web3 roadmap items (EAS attestations, gasless 4337,
+runbook in docs/DEFERRED.md). The old AI×Web3 roadmap items (EAS attestations, gasless 4337,
 ZK proof-of-reputation, Push) are P5 stubs, not P4.
 
 ### P4-01 — Testnet rails activation via the EXISTING Base Sepolia deployments

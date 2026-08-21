@@ -1,3 +1,14 @@
+/*
+ * Vitest — the test half of the quality gate (unit + component, jsdom).
+ * NOTE: test config lives HERE, not in vite.config.js, so the app build and the test run
+ * can diverge safely.
+ *
+ * The coverage thresholds are intentionally strict but SCOPED: they apply to an
+ * include-list of pure logic modules in src/lib/ (audit heuristics, checkout routing, the
+ * voice state machine, VAD maths) — the code where a silent regression would be most
+ * expensive and where a DOM adds nothing. Adding a file to that list means committing to
+ * covering it, so the gate stays meaningful rather than becoming a number to game.
+ */
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'

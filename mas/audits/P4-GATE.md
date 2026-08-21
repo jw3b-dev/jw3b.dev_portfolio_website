@@ -7,7 +7,7 @@ P4-03 (SEO), P4-04 (ops). Target: the v2 preview; production untouched (promotio
 |---|---|---|
 | **qa-tester** | PASS | 536 tests / 77 files green; coverage thresholds met; lint 0; build 0-warn; claims 28 cleared; secret-scan clean. New tests: sitemap drift-guard, CheckoutTerms/ConsentBanner, WebSite JSON-LD, calibrateVad/encodeWavPcm16/stripMarkdown/trimPartialTag. |
 | **security** | PASS | No secrets in the P4 files (workflow uses `github.token`; sitemap/robots/OPS are public). Live CSP + headers intact on the preview (`/` carries CSP, nosniff, x-served-by). Health-check hits only liveness endpoints — no credentialed or AI routes. |
-| **codebase-auditor** | PASS | Every P4 change maps to a task: CTF activation (P4-01), CLS/boot fixes (P4-02), sitemap/robots/CTF-SEO/WebSite-LD (P4-03), healthcheck + OPS (P4-04). No orphan modules. Owner-gated items (escrow/Unlock redeploy, prod promotion, vault top-up) recorded in DEFERRED.md with turnkey asks. |
+| **codebase-auditor** | PASS | Every P4 change maps to a task: CTF activation (P4-01), CLS/boot fixes (P4-02), sitemap/robots/CTF-SEO/WebSite-LD (P4-03), healthcheck + OPS (P4-04). No orphan modules. Owner-gated items (escrow/Unlock redeploy, prod promotion, vault top-up) recorded in docs/DEFERRED.md with turnkey asks. |
 | **performance-monitor** | PASS | LCP 0.66 s (NFR-01 ≤2.5 s); **CLS 0.1047 → 0.00**; ~534 KB transformers removed from the boot path (0 on boot, fetched on demand). web3 static import re-justified (shell paints LCP first) with a lazy-provider refactor tracked to P5. |
 
 ## What shipped in P4

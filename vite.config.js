@@ -1,3 +1,14 @@
+/*
+ * Vite — the production build for the React 19 SPA.
+ *
+ * Three things here are load-bearing rather than boilerplate:
+ *   1. The hero-shell prerender (below) injects critical CSS + static hero HTML into
+ *      index.html at build time, so the largest element paints before any JS executes.
+ *   2. manualChunks splits the heavy vendors (wallet stack, XMTP, the on-device ASR
+ *      runtime) into separately-cacheable chunks off the boot path.
+ *   3. The modulepreload strip stops Vite eagerly fetching those chunks on first paint.
+ * See the comments at each for the measurements behind them.
+ */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'

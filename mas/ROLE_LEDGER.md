@@ -271,8 +271,8 @@ both -v2 targets deployed; prod untouched. **P3-09 closes on one owner line: "OD
 
 **P-SERIES CLOSED — 2026-08-18.** Owner decisions captured via structured ask: **OD-04 RATIFIED**
 (strictest-rule lead → P3-09 CLOSED, NFR-07 final); **P3-02 formally DEFERRED to post-GA**
-(recorded in DEFERRED.md — rails degrade by design; terms gate pre-wired); **prod promotion: not
-yet** (v2 stays preview; promotion runbook in DEFERRED.md); **voiceLive: ON** (default flipped,
+(recorded in docs/DEFERRED.md — rails degrade by design; terms gate pre-wired); **prod promotion: not
+yet** (v2 stays preview; promotion runbook in docs/DEFERRED.md); **voiceLive: ON** (default flipped,
 owner decision — preview now lights it without env override). Gate 76/531 green.
 P0 ✓ · P1+GATE ✓ · P2+GATE ✓ · P3-01 ✓ 02 deferred-by-owner ✓ 03 ✓ 04 ✓ 05 ✓ 06 ✓ 07 ✓ 08 ✓ 09 ✓.
 
@@ -321,7 +321,7 @@ unverified (YAML valid, probe logic proven). Remaining P4: P4-GATE.
 
 **P4-GATE — PASS (mas/audits/P4-GATE.md).** qa 536 tests · security (no secrets in P4 files,
 CSP/headers intact, liveness-only healthcheck) · auditor (every P4 change task-mapped, owner items
-in DEFERRED.md) · performance (LCP 0.66s, CLS 0.1047→0.00, transformers off boot). **★ P4 COMPLETE.**
+in docs/DEFERRED.md) · performance (LCP 0.66s, CLS 0.1047→0.00, transformers off boot). **★ P4 COMPLETE.**
 P4-01 CTF-activated (escrow/Unlock owner-gated) · P4-02 perf · P4-03 SEO · P4-04 ops · P4-GATE ✓.
 
 **CLOSE-OUT 2026-08-21 (owner-approved: promote + testnet escrow + vault top-up).**

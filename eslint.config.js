@@ -1,3 +1,10 @@
+/*
+ * ESLint (flat config) — the lint half of the quality gate.
+ * Scope: the React app in src/, the edge Workers, and the root build config. CI runs
+ * `npm run lint` first because it is the cheapest gate; any error blocks the build.
+ * The React-specific rules (hooks + fast-refresh) are what catch the classes of bug the
+ * type system can't here, since this project is deliberately JSX-not-TypeScript.
+ */
 import js from '@eslint/js'
 import globals from 'globals'
 import react from 'eslint-plugin-react'

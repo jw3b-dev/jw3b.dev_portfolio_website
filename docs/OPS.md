@@ -5,11 +5,10 @@ analytics review. Nothing here spends AI tokens.
 
 ## Health check (`.github/workflows/healthcheck.yml`)
 
-> **Activation:** GitHub only registers `schedule`/`workflow_dispatch` workflows from the
-> **default branch**. This file lives on `v2`, so the health check starts running automatically
-> when `v2` is promoted to `main` (see `DEFERRED.md`) — no extra step. Its probe logic is
-> dry-run-verified green against all four live targets today; it just isn't schedulable from a
-> non-default branch. (The `push`-triggered CI workflow is unaffected — that runs from any branch.)
+> **Status: ACTIVE.** GitHub only registers `schedule`/`workflow_dispatch` workflows from the
+> **default branch**, which is now `v2` — so this runs on schedule and can be triggered manually.
+> Verified end-to-end on 2026-08-21: a real run detected a failure, opened alert issue #3, and
+> after the fix a re-run went green and auto-closed it.
 
 Runs every 6 hours (and on-demand via **Actions → Health check → Run workflow**). It probes:
 
@@ -57,4 +56,4 @@ privacy notice; DSAR/erasure runbook in `docs/COMPLIANCE.md`.
 
 Worker: `npx wrangler@4 rollback --name jw3b-dev-site --version-id <prev>` (SPA) /
 `--name portfolio-agent` (agent). List versions: `wrangler deployments list --name <worker>`.
-Full promotion + rollback notes: `DEFERRED.md`.
+Full promotion + rollback notes: `docs/DEFERRED.md`.
