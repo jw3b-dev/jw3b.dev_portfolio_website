@@ -80,12 +80,12 @@ for (const route of ['/audit', '/work']) {
     // The pre-fix text was pinned on the way past, so undoing the fix returns YOUR contract —
     // not the sample the page happened to ship with.
     await expect(page.getByRole('button', { name: /^Fix · / })).toBeVisible()
-    await page.getByRole('button', { name: 'Edit 1' }).click()
+    await page.getByRole('button', { name: /^Edit 1 ·/ }).click()
     await expect(box).toHaveValue(REENTRANT)
     await expect(reentrancy).toBeVisible()
 
     // ...and the contract the page loaded with is still reachable behind it.
-    await page.getByRole('button', { name: 'Original' }).click()
+    await page.getByRole('button', { name: /^Sample ·/ }).click()
     await expect(box).toHaveValue(/contract Vault/)
   })
 
@@ -93,27 +93,62 @@ for (const route of ['/audit', '/work']) {
     await page.goto(route)
     await expect(page.getByRole('checkbox', { name: /re-run on edit/i })).not.toBeChecked()
     await expect(page.getByText(/auto re-run is off/i)).toBeVisible()
-    await expect(page.getByText(/10 of 10 analyses left/i)).toBeVisible()
+    await expect(page.getByText(/10 of 10 AI analyses left this session/i)).toBeVisible()
   })
 
   /*
-   * Owner-reported: with re-run-on-edit armed, clicking a checkpoint to compare it fired a fresh
-   * model call. Asserted here WITHOUT letting a real request leave the browser — the budget
-   * counter is the tell, because it only moves when a run actually starts.
+   * Owner-reported, three ways: clicking a checkpoint fired a rerun; the version chips "got mixed
+   * up and lost"; and re-run fired with no original run to re-run. The /audit endpoint is ROUTED
+   * to a stub so the whole journey is deterministic and costs nothing — the budget counter is the
+   * tell, because it only moves when a run actually starts.
    */
-  test(`looking back at an older version spends no analysis (${route})`, async ({ page }) => {
+  test(`browsing versions never spends an analysis (${route})`, async ({ page }) => {
+    // Match the WORKER endpoint only — a bare '**/audit' glob also matches the SPA route itself,
+    // which serves the stub as the page document and leaves you with no editor to type into.
+    await page.route(
+      (url) => url.pathname === '/audit' && url.host.includes('workers.dev'),
+      (r) =>
+        r.fulfill({ status: 200, contentType: 'text/event-stream', body: 'data: {"response":"## Summary\\nstubbed"}\n\ndata: [DONE]\n\n' }),
+    )
     await page.goto(route)
     const box = page.locator('#audit-src')
     await box.fill(REENTRANT)
     await page.getByRole('checkbox', { name: /re-run on edit/i }).check()
 
-    // Armed, but nothing has been authored since — the control means what it says.
-    await expect(page.getByText(/armed — your next edit/i)).toBeVisible()
+    // Nothing analysed yet, so there is nothing to RE-run — it says so instead of firing a first
+    // call nobody asked for.
+    await expect(page.getByText(/nothing to re-run yet/i)).toBeVisible()
+    await expect(page.getByText(/10 of 10 AI analyses left this session/i)).toBeVisible()
 
-    await page.getByRole('button', { name: 'Original' }).click()
+    // One deliberate press establishes the baseline.
+    await page.getByRole('button', { name: 'Run AI analysis' }).click()
+    await expect(page.getByRole('tab', { name: /Run 1/ })).toBeVisible()
+    await expect(page.getByText(/9 of 10 AI analyses left this session/i)).toBeVisible()
+
+    // Now LOOK at an earlier version — repeatedly. Navigation must cost nothing and add nothing.
+    const chipsBefore = await page.getByRole('button', { name: /^(Original|Edit \d|Fix · )/ }).count()
+    for (let i = 0; i < 4; i++) {
+      await page.getByRole('button', { name: /^Sample ·/ }).click()
+      await page.getByRole('button', { name: /^Edit 1 ·/ }).click()
+    }
     await expect(page.getByText(/looking back through your own history/i)).toBeVisible()
     await page.waitForTimeout(1500)
-    await expect(page.getByText(/10 of 10 analyses left/i)).toBeVisible()
+
+    await expect(page.getByText(/9 of 10 AI analyses left this session/i)).toBeVisible()
+    await expect(page.getByRole('tab', { name: /Run 2/ })).toHaveCount(0)
+    // ...and the chip list is exactly as it was — browsing does not rewrite the history.
+    await expect(page.getByRole('button', { name: /^(Original|Edit \d|Fix · )/ })).toHaveCount(chipsBefore)
+  })
+
+  test(`each section states what it costs (${route})`, async ({ page }) => {
+    await page.goto(route)
+    await expect(page.getByText(/no network, no cost/i)).toBeVisible()
+    await expect(page.getByText(/one model call per run, metered at 10 per session/i)).toBeVisible()
+    // "live" is reserved for model provenance — the free tier is never described that way.
+    // Target the section by its own label id — `filter({hasText})` also matches every ancestor
+    // section, so `.first()` returns the whole page and the assertion becomes meaningless.
+    const instant = page.locator('section[aria-labelledby="ac-screen-title"]')
+    await expect(instant.getByText(/\blive\b/i)).toHaveCount(0)
   })
 }
 

@@ -508,3 +508,53 @@ Guards added: policy tests for authored-vs-navigation and already-analysed; cons
 you untick"; E2E on both routes for "looking back at an older version spends no analysis". Gate:
 lint 0 errors · 94 files / 772 tests · coverage 100% lines+functions · build 0-warn · 28/28 E2E ·
 claims · secret-scan.
+
+**Audit console redesign + five owner reports (MAS design track) — 2026-08-21.** Owner: *"the whole
+thing is very unclear and confusing … redesign the whole audit page UI … use mas for this."*
+Ran the design track: **art-director** → `design/briefs/audit-console.md` → **frontend-engineer**
+implements → gate.
+
+**Design-system gate: SKIP (system frozen).** Zero new tokens, zero new colours. The console was
+confusing because of what it SAID and how it was GROUPED, not how it looked.
+
+**The naming collision that caused most of it.** The findings panel was headed `Heuristic pass ·
+live`, where "live" meant *updates as you type*; ten centimetres below, each run carried a badge
+reading `live`, meaning *came from the model rather than a recording*. One word, two meanings, one
+screen — a reader who learned either was then misled by the other. The free tier is **instant** now
+and may never be called live; provenance says the whole thing (`live model` / `recorded fallback`);
+the run button and the history heading share one noun phrase verbatim (`Run AI analysis` /
+`AI analyses (n)`); the counter says which currency it spends (`N of 10 AI analyses left this
+session`).
+
+**The structural fix.** Four numbered sections, each stating ITS OWN COST in its header — the
+brief's hard constraint, because "which of these costs me something?" was the unanswered question.
+1 · Your contract (+ versions, which are *source* history and now sit with the source) · 2 · Instant
+screen (*no network, no cost*) · 3 · AI analysis (*one model call per run, metered at 10 per
+session*) — the auto-run toggle, pause, budget and status moved here from under the editor, where
+they had been sitting as though they governed typing · 4 · AI analyses. `cyan` is now reserved for
+the metered tier so the eye learns the colour means "this spends something".
+
+**Five reports fixed in the same pass.** (1) *"re-run on edit fires even if there was no original
+run"* — it is called RE-run, so an `AWAITING_FIRST_RUN` gate makes one deliberate press establish
+the baseline. (2) *"versions show only the edits … analysis only runs on the tiny edited code"* —
+the engine was correct (versions hold FULL snapshots, proven: `v1=19ch v2=800ch v3=817ch`), but the
+UI created the opposite belief: chips named after ACTIONS read as "just my edit", and the preloaded
+demo was claiming the name "Original" while the visitor's own paste became "Edit 1". v1 is now
+**Sample** unless the visitor arrived with a source, every chip shows its snapshot size (`Edit 1 ·
+34L`), and the strip states that versions are full snapshots and never diffs. (3) *"would be
+helpful if the edits are shown in a different colour"* — a `<textarea>` cannot colour its own
+contents, so rather than a fragile highlight overlay behind the editing surface, a read-only
+**What changed** panel diffs the current version against the one before it (`lineDiff.js`, pure LCS,
+100% covered, added in `verified` / removed in `failed`, long unchanged runs collapsed behind a
+counted marker so nothing vanishes silently). (4) *"no option to apply optional and informational
+fixes — these should only be fixable once the main fixes are applied and run"* — `gateFixes`
+enforces the audit order: HIGH/MEDIUM fixes are never locked, LOW/INFO unlock only once no
+higher-severity finding stands AND this exact version has been analysed. A locked fix is SHOWN with
+its reason, never hidden. (5) *"clicking run 1 or run 2 produces the same result … under both
+versions as well as original"* — the runs were right (proven live with a stubbed endpoint:
+Run 1 → NARRATIVE-1, Run 2 → NARRATIVE-2), but moving between versions left the NEWEST run on
+screen under every one of them, so the analysis of the edited contract sat under the original as
+though it described it. Restoring a version now brings that version's own analysis forward.
+
+Gate: lint 0 errors · 94 files / 795 tests · coverage 100% lines+functions (lineDiff added to the
+gated set) · build 0-warn · 30/30 E2E · claims · secret-scan.

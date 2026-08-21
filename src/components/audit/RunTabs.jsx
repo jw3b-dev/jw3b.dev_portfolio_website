@@ -49,7 +49,7 @@ function RunPanel({ run, draft, onApplyFix, onRestore }) {
             (streaming ? 'text-content-muted' : run.degraded ? 'text-caution' : 'text-verified')
           }
         >
-          {streaming ? 'streaming…' : run.degraded ? 'recorded' : 'live'}
+          {streaming ? 'streaming…' : run.degraded ? 'recorded fallback' : 'live model'}
         </span>
         {stale && (
           <span
@@ -132,12 +132,15 @@ export default function RunTabs({ runs, selectedRun, onSelect, draft, onApplyFix
   }
 
   return (
-    <section aria-labelledby="run-history-title" className="mt-4 border-t border-hairline pt-3">
-      <h4 id="run-history-title" className="text-xs font-semibold uppercase tracking-wide text-content-muted">
-        Analyses ({runs.length})
+    <section aria-labelledby="run-history-title" className="rounded-lg border border-cyan/25 bg-panel p-4">
+      <p className="font-mono text-[10px] uppercase tracking-label text-content-muted">
+        <span className="text-cyan">4</span> · AI analyses ({runs.length})
+      </p>
+      <h4 id="run-history-title" className="mt-0.5 text-[11px] text-content-muted">
+        Every analysis you&rsquo;ve run, each pinned to the version it read. Opening one costs nothing.
       </h4>
 
-      <div role="tablist" aria-label="Audit runs" onKeyDown={onKeyDown} className="mt-2 flex flex-wrap gap-1.5">
+      <div role="tablist" aria-label="AI analyses" onKeyDown={onKeyDown} className="mt-3 flex flex-wrap gap-1.5">
         {runs.map((r) => {
           const isActive = r.id === activeId
           return (

@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   createWorkspace,
+  findVersion,
   setDraft as setDraftPure,
   applyFix as applyFixPure,
   restoreVersion as restorePure,
@@ -27,7 +28,7 @@ import {
   RUN_STATUS,
 } from '../lib/auditWorkspace.js'
 import { auditSolidity, SAMPLE_CONTRACT } from '../lib/auditHeuristics.js'
-import { fixesFor, applyFixAndVerify } from '../lib/auditFixes.js'
+import { fixesFor, applyFixAndVerify, gateFixes } from '../lib/auditFixes.js'
 import { validateAuditSource, SOURCE_CAP } from '../lib/auditClient.js'
 import {
   evaluateAutoRun,
@@ -45,7 +46,10 @@ const idle = (reason) => ({ reason, explain: explainAutoRun(reason) })
 const EMPTY_FINDINGS = Object.freeze([])
 
 export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fetchImpl } = {}) {
-  const [ws, setWs] = useState(() => createWorkspace(initialSource || SAMPLE_CONTRACT))
+  // v1 is named for what it actually is: the visitor's own starting point, or our demo contract.
+  const [ws, setWs] = useState(() =>
+    createWorkspace(initialSource || SAMPLE_CONTRACT, { label: initialSource ? undefined : 'Sample' }),
+  )
   const [autoRun, setAutoRun] = useState(false) // OFF by default — ADR-P5-02 §2
   const [paused, setPaused] = useState(false)
   const [running, setRunning] = useState(false)
@@ -72,7 +76,7 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
   // which would silently defeat the two memos below and re-derive the fixes each pass.
   const findings = useMemo(() => screen?.findings ?? EMPTY_FINDINGS, [screen])
   const fingerprint = useMemo(() => heuristicFingerprint(findings), [findings])
-  const fixes = useMemo(() => (screen ? fixesFor(findings, ws.draft) : []), [screen, findings, ws.draft])
+  const rawFixes = useMemo(() => (screen ? fixesFor(findings, ws.draft) : []), [screen, findings, ws.draft])
 
   const lastRun = ws.runs.length ? ws.runs[ws.runs.length - 1] : null
   const selectedRun = ws.runs.find((r) => r.id === selectedRunId) || lastRun || null
@@ -82,6 +86,12 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
   // frame (each chunk replaces the run object, which would otherwise churn the timer).
   // Every source that already has a run — so an exact repeat is answered from its tab, never re-bought.
   const analysedSources = useMemo(() => ws.runs.map((r) => r.source), [ws.runs])
+  // Optional/informational fixes unlock only once the serious findings are gone AND this exact
+  // source has been analysed — the audit order, enforced rather than suggested.
+  const fixes = useMemo(
+    () => gateFixes(findings, rawFixes, { analysed: analysedSources.includes(ws.draft) }),
+    [findings, rawFixes, analysedSources, ws.draft],
+  )
   const lastRunSource = lastRun ? lastRun.source : null
   const lastRunFingerprint = useMemo(
     () => (lastRunSource === null ? null : heuristicFingerprint(auditSolidity(lastRunSource).findings)),
@@ -143,6 +153,15 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
     // Navigation, not authorship — this is what stops "compare my last three attempts" from
     // quietly costing three analyses.
     setChangeOrigin(CHANGE_ORIGIN.RESTORE)
+
+    // Bring this version's OWN analysis forward if it has one. Without this, moving between
+    // versions left the newest run on screen under every one of them — so the analysis of your
+    // edited contract sat under "Original" as though it described it. Computed before the update
+    // (never inside the updater, which must stay side-effect free).
+    const target = findVersion(wsRef.current, versionId)
+    const match = target && [...wsRef.current.runs].reverse().find((r) => r.source === target.source)
+    if (match) setSelectedRunId(match.id)
+
     setWs((prev) => restorePure(prev, versionId))
   }, [])
 

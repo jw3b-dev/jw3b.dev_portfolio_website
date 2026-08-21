@@ -117,6 +117,53 @@ export const FIXES = Object.freeze({
 })
 
 /**
+ * Severities that must be dealt with before the cosmetic ones are worth touching. Pinning a pragma
+ * while a reentrancy is still live is motion without progress — and worse, it feels like progress.
+ */
+export const MAIN_SEVERITIES = Object.freeze(['high', 'medium'])
+
+/**
+ * Decide which offered fixes are UNLOCKED, and say why the others are not.
+ *
+ * The order is the point: fix what can drain the contract first, re-analyse, and only then tidy.
+ * A locked fix is still SHOWN with its reason — hiding it would leave someone hunting for a button
+ * that exists but hasn't been earned yet.
+ *
+ * @param {Array} findings   the current screen
+ * @param {Array} fixes      what `fixesFor` offered
+ * @param {{analysed:boolean}} ctx  has THIS exact source been through an AI analysis?
+ * @returns {Array} fixes, each with `severity`, `locked` and `lockReason`
+ */
+export function gateFixes(findings, fixes, { analysed = false } = {}) {
+  const list = Array.isArray(findings) ? findings : []
+  const severityOf = (id) => list.find((f) => f?.id === id)?.severity
+  const outstanding = list.filter((f) => MAIN_SEVERITIES.includes(f?.severity))
+
+  return (Array.isArray(fixes) ? fixes : []).map((fix) => {
+    const severity = severityOf(fix.findingId)
+    if (MAIN_SEVERITIES.includes(severity)) return { ...fix, severity, locked: false, lockReason: null }
+
+    if (outstanding.length) {
+      return {
+        ...fix,
+        severity,
+        locked: true,
+        lockReason: `Clear the ${outstanding.length} higher-severity finding${outstanding.length > 1 ? 's' : ''} first — tidying the pragma while those stand is motion, not progress.`,
+      }
+    }
+    if (!analysed) {
+      return {
+        ...fix,
+        severity,
+        locked: true,
+        lockReason: 'Run an AI analysis on this version first, then the optional fixes unlock.',
+      }
+    }
+    return { ...fix, severity, locked: false, lockReason: null }
+  })
+}
+
+/**
  * The fixes actually offerable for this screen of this source.
  * One fix per FINDING TYPE, not per finding — three tx.origin hits are one remediation. A fix
  * whose transformation is a no-op or unsafe here is omitted entirely (honesty rule 4).

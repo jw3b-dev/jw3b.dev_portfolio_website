@@ -78,6 +78,7 @@ export default defineConfig({
         'src/lib/auditWorkspace.js',
         'src/lib/autoRunPolicy.js',
         'src/lib/auditFixes.js',
+        'src/lib/lineDiff.js',
       ],
       // RAISED in the P5 expansion. Branches 85 -> 92 and statements 90 -> 98 for the pure
       // core, which the suite already clears — the old numbers had drifted well below actual

@@ -159,7 +159,7 @@ describe('AuditConsole — checkpoints and restore (ADR-P5-02 §4)', () => {
     setSource(TX_ORIGIN_CONTRACT)
     expect(editor().value).toBe(TX_ORIGIN_CONTRACT)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Original' }))
+    fireEvent.click(screen.getByRole('button', { name: /^Sample ·/ }))
     expect(editor().value).toBe(original)
     expect(screen.getByText('Reentrancy — external call before state update')).toBeInTheDocument()
   })
@@ -170,7 +170,7 @@ describe('AuditConsole — checkpoints and restore (ADR-P5-02 §4)', () => {
     fireEvent.click(screen.getAllByRole('button', { name: /apply fix/i })[0])
 
     expect(screen.getByRole('button', { name: /^Fix · / })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Original' }))
+    fireEvent.click(screen.getByRole('button', { name: /^Sample ·/ }))
     expect(editor().value).toBe(original)
     // Restoring is additive — the fix version is still reachable.
     expect(screen.getByRole('button', { name: /^Fix · / })).toBeInTheDocument()
@@ -182,7 +182,7 @@ describe('AuditConsole — checkpoints and restore (ADR-P5-02 §4)', () => {
     setSource('ab')
     setSource('abc')
     // Only the permanent Original exists; typing is not history.
-    expect(screen.getAllByRole('button', { name: /^(Original|Fix ·|Edited|Restored ·)/ })).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: /^(Sample|Edit \\d|Fix ·) ·/ })).toHaveLength(1)
   })
 
   it('states that nothing is persisted — the site stores nothing on the device', () => {
@@ -202,9 +202,9 @@ describe('AuditConsole — per-run tabs (ADR-P5-02 §5)', () => {
     fireEvent.click(runButton())
     await waitFor(() => expect(screen.getByRole('tab', { name: /Run 2/ })).toBeInTheDocument())
 
-    expect(screen.getByText(/Analyses \(2\)/)).toBeInTheDocument()
+    expect(screen.getByText(/AI analyses \(2\)/)).toBeInTheDocument()
     // Run 1 analysed the Original; run 2 analysed the edit that followed.
-    expect(screen.getByRole('tab', { name: /Run 1 · Original/ })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /Run 1 · Sample/ })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /Run 2 · Edit 1/ })).toBeInTheDocument()
   })
 
@@ -225,7 +225,8 @@ describe('AuditConsole — per-run tabs (ADR-P5-02 §5)', () => {
     fireEvent.click(runButton())
 
     await waitFor(() => expect(screen.getByTitle(/bundled fallback/i)).toBeInTheDocument())
-    expect(screen.getByText(/the heuristic findings are real regardless/i)).toBeInTheDocument()
+    expect(screen.getByText(/recorded fallback/i)).toBeInTheDocument() // says the whole thing
+    expect(screen.getByText(/findings are real regardless/i)).toBeInTheDocument()
     // Listed twice by design — once live for the editor, once inside the run that analysed it.
     expect(screen.getAllByText('Reentrancy — external call before state update').length).toBeGreaterThan(0)
   })
@@ -258,30 +259,61 @@ describe('AuditConsole — gated auto-rerun (ADR-P5-02 §2)', () => {
     expect(screen.getByText(/auto re-run is off/i)).toBeInTheDocument()
   })
 
-  it('states its COST and why the default is off, on the page (ADR-P5-02 §5.5)', () => {
-    // Compliance finding C-1: this reasoning existed only in a code comment, which leaves a
-    // visitor holding a switch with no reason to think twice about flipping it.
+  it('states its COST in its own section header (brief §4 hard constraint)', () => {
+    // Compliance finding C-1 + the owner's "which of these costs me something?". Every section
+    // header carries a cost line; a section that does not say what it costs does not ship.
     renderConsole()
-    expect(screen.getByText(/one model call against a 10-per-session budget/i)).toBeInTheDocument()
-    expect(screen.getByText(/off by default/i)).toBeInTheDocument()
+    expect(screen.getByText(/no network, no cost/i)).toBeInTheDocument() // 2 · Instant screen
+    expect(screen.getByText(/one model call per run, metered at 10 per session/i)).toBeInTheDocument() // 3 · AI analysis
+  })
+
+  it('never calls the free tier "live" — that word is reserved for model provenance (brief §2)', () => {
+    // The owner's core confusion: "Heuristic pass · live" meant updates-as-you-type while a run
+    // badge reading "live" meant from-the-model-not-a-recording. One word, two meanings, one screen.
+    renderConsole()
+    const screenSection = screen.getByText(/instant screen/i).closest('section')
+    expect(screenSection.textContent).not.toMatch(/\blive\b/i)
+  })
+
+  it('names the run history with the button’s own noun phrase (brief §2)', async () => {
+    stubStream('## Summary\nx')
+    renderConsole()
+    expect(screen.getByRole('button', { name: /run ai analysis/i })).toBeInTheDocument()
+    fireEvent.click(runButton())
+    await waitFor(() => expect(screen.getByText(/AI analyses \(1\)/i)).toBeInTheDocument())
   })
 
   it('shows the analyses left against the budget the Worker enforces', () => {
     renderConsole()
-    expect(screen.getByText(/10 of 10 analyses left/i)).toBeInTheDocument()
+    expect(screen.getByText(/10 of 10 AI analyses left/i)).toBeInTheDocument()
   })
 
-  it('runs itself once the editor goes idle after an EDIT', async () => {
-    stubStream('## Summary\nAuto-run analysis.')
+  it('will not spend the FIRST call on its own — "re-run" needs something to re-run', async () => {
+    // Owner-reported: armed on a fresh page, an edit fired an analysis nobody had asked for.
+    const fetchMock = vi.fn(async () => sseResponse([frame('nope'), 'data: [DONE]\n\n']))
+    vi.stubGlobal('fetch', fetchMock)
     renderConsole({ idleMs: 10 })
     fireEvent.click(screen.getByRole('checkbox', { name: /re-run on edit/i }))
-    // Arming it is not an edit — the control says "on edit" and behaves that way.
+    expect(screen.getByText(/nothing to re-run yet/i)).toBeInTheDocument()
+
+    setSource(TX_ORIGIN_CONTRACT)
+    await new Promise((r) => setTimeout(r, 120))
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(screen.getByText(/10 of 10 AI analyses left/i)).toBeInTheDocument()
+  })
+
+  it('re-runs on an edit once a baseline analysis exists', async () => {
+    stubStream('## Summary\nAuto-run analysis.')
+    renderConsole({ idleMs: 10 })
+    fireEvent.click(runButton()) // the deliberate first press establishes the baseline
+    await waitFor(() => expect(screen.getByRole('tab', { name: /Run 1/ })).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /re-run on edit/i }))
     expect(screen.getByText(/armed — your next edit/i)).toBeInTheDocument()
     setSource(TX_ORIGIN_CONTRACT)
 
-    await waitFor(() => expect(screen.getByText(/auto-run analysis/i)).toBeInTheDocument())
-    expect(screen.getByRole('tab', { name: /Run 1/ })).toBeInTheDocument()
-    expect(screen.getByText(/9 of 10 analyses left/i)).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByRole('tab', { name: /Run 2/ })).toBeInTheDocument())
+    expect(screen.getByText(/8 of 10 AI analyses left/i)).toBeInTheDocument()
   })
 
   it('does NOT spend an analysis when you look back at an older version', async () => {
@@ -295,13 +327,15 @@ describe('AuditConsole — gated auto-rerun (ADR-P5-02 §2)', () => {
     // Arm FIRST — switching the toggle on must not retroactively analyse what you typed before
     // deciding to arm it.
     fireEvent.click(screen.getByRole('checkbox', { name: /re-run on edit/i }))
-    setSource(TX_ORIGIN_CONTRACT)
+    fireEvent.click(runButton()) // baseline
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+    setSource(TX_ORIGIN_CONTRACT)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
 
-    fireEvent.click(screen.getByRole('button', { name: 'Original' }))
+    fireEvent.click(screen.getByRole('button', { name: /^Sample ·/ }))
     await waitFor(() => expect(screen.getByText(/looking back through your own history/i)).toBeInTheDocument())
     await new Promise((r) => setTimeout(r, 60)) // well past the idle window
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it('does NOT re-buy an analysis for a source that already has a run tab', async () => {
@@ -334,12 +368,12 @@ describe('AuditConsole — gated auto-rerun (ADR-P5-02 §2)', () => {
 
     setSource(TX_ORIGIN_CONTRACT)
     fireEvent.click(screen.getAllByRole('button', { name: /apply fix/i })[0])
-    fireEvent.click(screen.getByRole('button', { name: 'Original' }))
+    fireEvent.click(screen.getByRole('button', { name: /^Sample ·/ }))
     fireEvent.click(screen.getAllByRole('button', { name: /apply fix/i })[0])
     await new Promise((r) => setTimeout(r, 120)) // many idle windows
 
     expect(fetchMock).not.toHaveBeenCalled()
-    expect(screen.getByText(/10 of 10 analyses left/i)).toBeInTheDocument()
+    expect(screen.getByText(/10 of 10 AI analyses left/i)).toBeInTheDocument()
   })
 
   it('stops an already-armed run when the box is unchecked mid-countdown', async () => {
@@ -379,5 +413,47 @@ describe('AuditConsole — gated auto-rerun (ADR-P5-02 §2)', () => {
 
     await waitFor(() => expect(screen.getByText(/heuristic screen is unchanged/i)).toBeInTheDocument())
     expect(screen.queryByRole('tab', { name: /Run 2/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('AuditConsole — the analysis follows the version you are viewing', () => {
+  it('brings a version’s OWN analysis forward when you move back to it', async () => {
+    // Owner-reported: "clicking run 1 or run 2 produces the same result … the final run's results
+    // under both versions as well as original". The runs were right; what was wrong is that
+    // navigating between versions left the NEWEST run on screen under every one of them, so the
+    // analysis of the edited contract sat under "Sample" as though it described it.
+    let n = 0
+    vi.stubGlobal('fetch', vi.fn(async () => sseResponse([frame(`## Summary\nNARRATIVE-${++n}`), 'data: [DONE]\n\n'])))
+    renderConsole()
+
+    fireEvent.click(runButton()) // run 1 analyses the sample
+    await waitFor(() => expect(screen.getByText(/NARRATIVE-1/)).toBeInTheDocument())
+
+    setSource(TX_ORIGIN_CONTRACT)
+    fireEvent.click(runButton()) // run 2 analyses the edit
+    await waitFor(() => expect(screen.getByText(/NARRATIVE-2/)).toBeInTheDocument())
+
+    // Move back to the sample: its own analysis should surface, not the edit's.
+    fireEvent.click(screen.getByRole('button', { name: /^Sample ·/ }))
+    await waitFor(() => {
+      const panel = screen.getByRole('tabpanel', { name: /Run 1/ })
+      expect(within(panel).getByText(/NARRATIVE-1/)).toBeInTheDocument()
+    })
+    expect(screen.queryByText(/NARRATIVE-2/)).not.toBeInTheDocument()
+
+    // ...and forward again.
+    fireEvent.click(screen.getByRole('button', { name: /^Edit 1 ·/ }))
+    await waitFor(() => expect(screen.getByText(/NARRATIVE-2/)).toBeInTheDocument())
+  })
+
+  it('leaves the last run on screen — marked stale — for a version nothing has analysed', async () => {
+    stubStream('## Summary\nOnly analysis.')
+    renderConsole()
+    fireEvent.click(runButton())
+    await waitFor(() => expect(screen.getByText(/only analysis/i)).toBeInTheDocument())
+
+    setSource(TX_ORIGIN_CONTRACT) // never analysed
+    const panel = screen.getByRole('tabpanel', { name: /Run 1/ })
+    expect(within(panel).getByTitle(/editor has changed since this analysis ran/i)).toBeInTheDocument()
   })
 })

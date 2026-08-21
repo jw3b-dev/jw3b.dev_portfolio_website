@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fixesFor, applyFixAndVerify, FIXES } from '../auditFixes.js'
+import { fixesFor, applyFixAndVerify, gateFixes, FIXES } from '../auditFixes.js'
 import { auditSolidity, SAMPLE_CONTRACT } from '../auditHeuristics.js'
 
 /*
@@ -274,5 +274,54 @@ describe('auditFixes — offering rules', () => {
     const src = 'contract C {}'
     expect(fixesFor([{ id: 'reentrancy' }], src)).toEqual([])
     expect(fixesFor([{ id: 'floating-pragma' }], src)).toEqual([])
+  })
+})
+
+describe('auditFixes — fix ordering (owner: optional fixes unlock after the main ones)', () => {
+  const fixesOn = (src, opts) => gateFixes(screen(src), fixesFor(screen(src), src), opts)
+  const byRule = (list, id) => list.find((f) => f.findingId === id)
+
+  it('never locks a HIGH or MEDIUM fix — the serious ones are always available', () => {
+    const gated = fixesOn(SAMPLE_CONTRACT, { analysed: false })
+    expect(byRule(gated, 'reentrancy')).toMatchObject({ severity: 'high', locked: false })
+  })
+
+  it('locks the informational fix while a higher-severity finding still stands', () => {
+    // The sample has a HIGH reentrancy and a LOW floating pragma.
+    const pragma = byRule(fixesOn(SAMPLE_CONTRACT, { analysed: true }), 'floating-pragma')
+    expect(pragma).toMatchObject({ severity: 'low', locked: true })
+    expect(pragma.lockReason).toMatch(/higher-severity/i)
+  })
+
+  it('counts the outstanding findings correctly in the reason, singular and plural', () => {
+    const one = byRule(fixesOn(SAMPLE_CONTRACT, { analysed: true }), 'floating-pragma')
+    expect(one.lockReason).toMatch(/the 1 higher-severity finding /i)
+
+    const two = `pragma solidity ^0.8.20;
+contract V {
+  mapping(address => uint256) public balances;
+  function w() external { require(tx.origin == msg.sender); uint256 a = balances[msg.sender]; (bool ok,) = msg.sender.call{value: a}(""); require(ok); }
+  function z() external { balances[msg.sender] = 0; }
+}`
+    const reason = byRule(fixesOn(two, { analysed: true }), 'floating-pragma').lockReason
+    expect(reason).toMatch(/higher-severity findings/i)
+  })
+
+  it('still locks it once the serious findings are gone, until THIS version has been analysed', () => {
+    const clean = 'pragma solidity ^0.8.20;\ncontract Tidy { uint256 public t; function add(uint256 n) external { t += n; } }'
+    expect(screen(clean).every((f) => f.severity === 'low')).toBe(true)
+    const pragma = byRule(fixesOn(clean, { analysed: false }), 'floating-pragma')
+    expect(pragma.locked).toBe(true)
+    expect(pragma.lockReason).toMatch(/run an ai analysis on this version first/i)
+  })
+
+  it('unlocks it once the serious findings are gone AND the version has been analysed', () => {
+    const clean = 'pragma solidity ^0.8.20;\ncontract Tidy { uint256 public t; function add(uint256 n) external { t += n; } }'
+    expect(byRule(fixesOn(clean, { analysed: true }), 'floating-pragma')).toMatchObject({ locked: false, lockReason: null })
+  })
+
+  it('tolerates junk rather than throwing — it runs on live editor state', () => {
+    expect(gateFixes(null, null)).toEqual([])
+    expect(gateFixes([{}], [{ findingId: 'nope' }], { analysed: true })).toMatchObject([{ locked: false }])
   })
 })

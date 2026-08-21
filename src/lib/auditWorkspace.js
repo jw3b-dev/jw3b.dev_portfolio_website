@@ -43,12 +43,18 @@ export const VERSION_ORIGIN = Object.freeze({
 
 const version = (id, label, source, origin, meta = {}) => ({ id, label, source, origin, ...meta })
 
-/** A fresh workspace around the pasted source. */
-export function createWorkspace(source = '') {
+/**
+ * A fresh workspace around the starting source.
+ * `label` names v1. The console preloads a DEMO contract, and calling that "Original" told a
+ * visitor who pasted their own code that the sample was their original and their paste was merely
+ * an "edit" — so it passes "Sample" instead, and keeps "Original" for a source the visitor
+ * actually arrived with.
+ */
+export function createWorkspace(source = '', { label = ORIGINAL_LABEL } = {}) {
   const src = String(source || '')
   return {
     draft: src,
-    versions: [version('v1', ORIGINAL_LABEL, src, VERSION_ORIGIN.ORIGINAL)],
+    versions: [version('v1', label, src, VERSION_ORIGIN.ORIGINAL)],
     runs: [],
     // Which checkpoint the editor is sitting on. Distinct from "the newest one", because you can
     // be looking at an older version without that being a new event in the history.

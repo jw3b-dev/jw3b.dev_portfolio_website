@@ -51,6 +51,7 @@ export const AUTO_RUN_REASON = Object.freeze({
   PAUSED: 'paused',
   RUNNING: 'running',
   INVALID: 'invalid',
+  AWAITING_FIRST_RUN: 'awaiting-first-run',
   AWAITING_EDIT: 'awaiting-edit',
   RESTORED: 'restored',
   UNCHANGED: 'unchanged',
@@ -66,6 +67,8 @@ const EXPLAIN = {
   [AUTO_RUN_REASON.PAUSED]: 'Paused — nothing will run until you say so.',
   [AUTO_RUN_REASON.RUNNING]: 'An analysis is already streaming.',
   [AUTO_RUN_REASON.INVALID]: 'Nothing to analyse yet.',
+  [AUTO_RUN_REASON.AWAITING_FIRST_RUN]:
+    'Nothing to re-run yet — press Run AI analysis once, and edits after that will re-run it.',
   [AUTO_RUN_REASON.AWAITING_EDIT]: 'Armed — your next edit gets analysed once you stop typing.',
   [AUTO_RUN_REASON.RESTORED]:
     'Viewing an earlier version — looking back through your own history doesn’t spend an analysis. Press Run AI analysis for a fresh one.',
@@ -114,6 +117,11 @@ export function evaluateAutoRun({
   if (paused) return decide(AUTO_RUN_REASON.PAUSED)
   if (running) return decide(AUTO_RUN_REASON.RUNNING)
   if (!valid) return decide(AUTO_RUN_REASON.INVALID)
+
+  // ...and it is called "RE-run", which means there has to be something to re-run. The metered
+  // tier never spends its FIRST call on its own: one deliberate press establishes the baseline,
+  // and edits after that re-run against it.
+  if (!analysedSources.length) return decide(AUTO_RUN_REASON.AWAITING_FIRST_RUN)
 
   // The control is called "re-run on EDIT", and it means it. Putting an earlier version back is
   // navigation — you are reading your own history, not proposing new code — and it moves the

@@ -18,6 +18,7 @@ const ready = {
   valid: true,
   changeOrigin: CHANGE_ORIGIN.EDIT,
   draft: 'edited',
+  analysedSources: ['original'],
   lastAnalysedSource: 'original',
   fingerprint: 'reentrancy:9:high',
   lastFingerprint: '',
@@ -45,6 +46,7 @@ describe('autoRunPolicy', () => {
     expect(reasonOf({ paused: true })).toBe(AUTO_RUN_REASON.PAUSED)
     expect(reasonOf({ running: true })).toBe(AUTO_RUN_REASON.RUNNING)
     expect(reasonOf({ valid: false })).toBe(AUTO_RUN_REASON.INVALID)
+    expect(reasonOf({ analysedSources: [] })).toBe(AUTO_RUN_REASON.AWAITING_FIRST_RUN)
     expect(reasonOf({ changeOrigin: CHANGE_ORIGIN.INIT })).toBe(AUTO_RUN_REASON.AWAITING_EDIT)
     expect(reasonOf({ changeOrigin: CHANGE_ORIGIN.RESTORE })).toBe(AUTO_RUN_REASON.RESTORED)
     expect(reasonOf({ draft: 'original' })).toBe(AUTO_RUN_REASON.UNCHANGED)
@@ -67,8 +69,17 @@ describe('autoRunPolicy', () => {
     expect(reasonOf({ paused: true, fingerprint: 'x', lastFingerprint: 'x' })).toBe(AUTO_RUN_REASON.PAUSED)
   })
 
-  it('treats a first-ever analysis as a change worth making', () => {
-    expect(evaluateAutoRun({ ...ready, lastAnalysedSource: null, lastFingerprint: null }).run).toBe(true)
+  it('never spends the FIRST call on its own — "re-run" needs something to re-run', () => {
+    // Owner-reported: armed on a fresh page, an edit fired an analysis that had never been asked
+    // for. One deliberate press establishes the baseline; edits after that re-run against it.
+    const d = evaluateAutoRun({ ...ready, analysedSources: [], lastAnalysedSource: null, lastFingerprint: null })
+    expect(d.run).toBe(false)
+    expect(d.reason).toBe(AUTO_RUN_REASON.AWAITING_FIRST_RUN)
+    expect(d.explain).toMatch(/press run ai analysis once/i)
+  })
+
+  it('re-runs freely once a baseline exists', () => {
+    expect(evaluateAutoRun({ ...ready, analysedSources: ['original'], lastFingerprint: null }).run).toBe(true)
   })
 
   it('runs on an authored change — typing, or a fix that rewrote the source', () => {
