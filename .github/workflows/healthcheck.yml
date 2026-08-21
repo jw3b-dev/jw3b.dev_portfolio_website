@@ -1,8 +1,13 @@
-# Zero-cost ops health check (P4-04 · devops-engineer)
-# Pings the live surfaces on a schedule and opens/closes ONE GitHub issue on a state change,
-# so a silent outage surfaces as a notification instead of being discovered by a visitor.
-# Cost discipline: only liveness endpoints are hit (SPA document + the worker's cheap
-# /ctf/leaderboard GET) — never the PAID concierge/AI routes, which would spend tokens every run.
+# Scheduled production verification (P4-04, extended in P5 · devops-engineer)
+#
+# Two jobs:
+#   probe     — cheap liveness pings; opens/closes ONE GitHub issue on a state change, so a
+#               silent outage surfaces as a notification rather than a visitor discovering it.
+#               Deliberately hits NO paid AI route.
+#   live-e2e  — a real browser against the deployed site, including the concierge and audit
+#               streams. This DOES spend a few model calls per run; that is the price of
+#               knowing the AI surfaces actually answer in production rather than assuming it,
+#               and at a 6-hour cadence it is a handful of calls a day.
 name: Health check
 
 on:
@@ -16,6 +21,30 @@ permissions:
   issues: write
 
 jobs:
+  # Live end-to-end against the DEPLOYED site. The build gate runs the deterministic specs;
+  # these drive real third-party-backed services (the concierge, the audit stream), so a
+  # failure here means "production is degraded right now" rather than "this commit is bad".
+  live-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci || (sleep 15 && npm ci) || (sleep 45 && npm ci)
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: E2E against production
+        run: npm run e2e:prod
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: live-e2e-report
+          path: playwright-report/
+          retention-days: 7
+
   probe:
     runs-on: ubuntu-latest
     env:

@@ -72,11 +72,18 @@ export default defineConfig({
         'src/lib/claimsRegister.js',
         'src/lib/schedulerLink.js',
       ],
+      // RAISED in the P5 expansion. Branches 85 -> 92 and statements 90 -> 98 for the pure
+      // core, which the suite already clears — the old numbers had drifted well below actual
+      // and so were no longer holding any line.
+      //
+      // Worker modules are gated SEPARATELY (`npm run coverage:worker`), not pooled in here:
+      // averaging a 95% worker file into this set would silently lower the core's 100% line
+      // and let a regression through. Each scope is gated on its own merits.
       thresholds: {
         lines: 100,
         functions: 100,
-        branches: 85,
-        statements: 90,
+        branches: 92,
+        statements: 98,
       },
     },
   },

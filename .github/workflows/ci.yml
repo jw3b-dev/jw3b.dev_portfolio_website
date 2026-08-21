@@ -44,8 +44,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test + coverage gate
+      - name: Test + coverage gate (core)
         run: npm run test:coverage
+
+      # Gated separately from the core on purpose: averaging Worker files into the src/lib
+      # thresholds would silently lower that 100% line. Each scope stands on its own merits.
+      - name: Coverage gate (Worker)
+        run: npm run coverage:worker
 
       - name: Claims gate (blocks uncleared/forbidden claims — ADR-09)
         run: npm run claims-gate

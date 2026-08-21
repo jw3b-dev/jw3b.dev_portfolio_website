@@ -38,21 +38,37 @@ test('the fuzz tool generates a Foundry harness from pasted source', async ({ pa
   await expect(page.getByText(/forge-std\/Test\.sol|VaultFuzzTest|testFuzz_/i).first()).toBeVisible({ timeout: 30_000 })
 })
 
-test('the concierge opens, accepts a message, and answers without degrading', async ({ page }) => {
+test('the concierge always resolves to an answer OR an honest labelled fallback', async ({ page }) => {
+  // The BUILD GATE must be deterministic, so this asserts the PRODUCT PROMISE (FR-020), not
+  // the reachability of a third-party model: a visitor gets a real reply, or a clearly
+  // labelled recorded run with book-a-call — never a blank, a spinner, or an error. CI proved
+  // why: from a runner the live agent was unreachable and the site degraded exactly as
+  // designed, yet the old assertion called that a failure. Whether the LIVE agent answers is
+  // asserted separately in live.spec.js, against the deployed site.
   await page.goto('/')
   await page.getByRole('button', { name: /open concierge chat/i }).click()
 
   const dialog = page.getByRole('dialog', { name: /ai concierge/i })
   await expect(dialog).toBeVisible()
-  // FR-021: the AI disclosure is persistent, not a one-time notice.
-  await expect(dialog.getByText(/ai-generated/i)).toBeVisible()
+  await expect(dialog.getByText(/ai-generated/i)).toBeVisible() // FR-021, persistent disclosure
 
   await dialog.getByRole('textbox').fill('In one short sentence, what does John do?')
   await dialog.getByRole('button', { name: /^send$/i }).click()
 
-  // A real answer arrives, and it is NOT the degraded recorded-run fallback.
-  await expect(dialog.locator('.bg-raised').last()).not.toHaveText('…', { timeout: 45_000 })
-  await expect(dialog.getByText(/recorded run — live agent unavailable/i)).toHaveCount(0)
+  const answered = dialog.locator('.bg-raised').last()
+  const degraded = dialog.getByText(/recorded run — live agent unavailable/i)
+  await expect
+    .poll(async () => {
+      if (await degraded.count()) return 'degraded'
+      const t = (await answered.textContent().catch(() => '')) || ''
+      return t.trim() && t.trim() !== '…' ? 'answered' : 'pending'
+    }, { timeout: 60_000 })
+    .not.toBe('pending')
+
+  // Either ending is acceptable; a dead end is not.
+  if (await degraded.count()) {
+    await expect(dialog.getByRole('link', { name: /book a call/i })).toBeVisible()
+  }
 })
 
 test('the guaranteed floor is reachable WITHOUT completing the configurator', async ({ page }) => {
