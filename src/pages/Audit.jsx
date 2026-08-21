@@ -15,14 +15,48 @@ import { useSearchParams } from 'react-router-dom'
 import Seo from '../components/seo/Seo.jsx'
 import { FAILURES } from '../data/recorded-runs/failures/index.js'
 import AuditConsole from '../components/audit/AuditConsole.jsx'
+import { CONSOLE_SECTIONS, INSTANT_SCREEN_BRIDGE } from '../components/audit/consoleCopy.js'
 import FuzzTool from '../components/audit/FuzzTool.jsx'
 import TxExplainer from '../components/audit/TxExplainer.jsx'
 
 const TABS = [
-  { id: 'screen', label: 'Screen a contract', hint: 'Deterministic heuristics + AI analysis' },
+  { id: 'screen', label: 'Screen a contract', hint: 'Instant screen (free) + AI analysis (metered)' },
   { id: 'fuzz', label: 'Generate a fuzz harness', hint: 'Foundry property-test scaffold' },
   { id: 'tx', label: 'Explain a transaction', hint: 'Decode calldata, then narrate it' },
 ]
+
+/**
+ * The four steps, stated BEFORE the tool — so a first-time visitor learns the workflow without
+ * spending anything to discover it. Built from the console's own copy module, so this strip and
+ * the section headers below it cannot drift apart. Section 4 is otherwise invisible until a run
+ * exists, which meant the shape of the workflow could only be learned by paying for it.
+ */
+function HowItWorks() {
+  return (
+    <section aria-labelledby="how-it-works" className="mt-6 rounded-lg border border-hairline bg-panel p-4">
+      <h2 id="how-it-works" className="font-mono text-[11px] uppercase tracking-label text-content-muted">
+        How screening a contract works
+      </h2>
+      <ol className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {CONSOLE_SECTIONS.map((s) => (
+          <li key={s.n} className="border-t border-hairline pt-2">
+            <p className="font-mono text-[10px] uppercase tracking-label text-content-muted">
+              <span className="text-cyan">{s.n}</span> · {s.title}
+            </p>
+            <p className="mt-1 text-[12px] leading-snug text-content-secondary">{s.blurb}</p>
+          </li>
+        ))}
+      </ol>
+      {/* Cyan marks the metered tier everywhere on this page; saying it once here stops the
+          colour reading as decoration. */}
+      <p className="mt-3 border-t border-hairline pt-2 text-[11px] text-content-muted">
+        Steps 1 and 2 are free and run entirely in your browser. Only{' '}
+        <span className="text-cyan">step 3</span> spends anything — one model call per run, 10 per
+        session.
+      </p>
+    </section>
+  )
+}
 
 export default function Audit() {
   const [active, setActive] = useState('screen')
@@ -44,25 +78,29 @@ export default function Audit() {
     <section aria-labelledby="audit-title" className="mx-auto max-w-6xl px-4 py-10">
       <Seo
         title="AI Security Console"
-        description="Paste a Solidity contract for an instant deterministic heuristic screen and an AI-assisted analysis, generate a Foundry fuzz harness, or decode and explain a transaction — John Wellard's operable smart-contract auditor."
+        description="Paste a Solidity contract for a free instant pattern screen and an optional AI analysis, generate a Foundry fuzz harness, or decode and explain a transaction — John Wellard's operable smart-contract auditor."
       />
       <h1 id="audit-title" className="text-2xl font-semibold text-content-primary">
         AI security console
       </h1>
       <p className="mt-2 max-w-2xl text-sm text-content-secondary">
-        Three tools against the same discipline: reproduce the finding, don&rsquo;t assert it. The
-        heuristics run instantly in your browser and stay real even if the live model is offline.
+        Three tools against the same discipline: reproduce the finding, don&rsquo;t assert it.{' '}
+        {/* Said ONCE: the old name and the new name are the same section. After this the old term
+            is never used as a name again. */}
+        {INSTANT_SCREEN_BRIDGE} It keeps working when the live model is offline.
       </p>
 
       {replay && (
         <p className="mt-4 rounded-md border border-caution/40 bg-caution/5 p-3 text-sm text-content-secondary">
           <span className="font-mono text-[11px] uppercase tracking-label text-caution">Replaying a captured miss</span>
           <br />
-          Loaded the exact contract from “{replay.title}”. Run it: the pass returns{' '}
-          <span className="font-mono text-content-primary">no findings</span> on a contract anyone
-          can drain — which is precisely what a heuristic pre-screen cannot promise.
+          Loaded the exact contract from “{replay.title}”. Run it: the instant screen returns{' '}
+          <span className="font-mono text-content-primary">no pattern findings</span> on a contract
+          anyone can drain — which is precisely what a pattern pre-screen cannot promise.
         </p>
       )}
+
+      {active === 'screen' && <HowItWorks />}
 
       <div
         role="tablist"

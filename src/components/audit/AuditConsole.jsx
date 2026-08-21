@@ -20,6 +20,7 @@
  * of the source.
  */
 import RunTabs from './RunTabs.jsx'
+import { section } from './consoleCopy.js'
 import VersionDiff from './VersionDiff.jsx'
 import { Link } from 'react-router-dom'
 import { useAuditWorkspace } from '../../hooks/useAuditWorkspace.js'
@@ -57,7 +58,7 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
       {/* ═══ 1 · YOUR CONTRACT ══════════════════════════════════════════════ the source */}
       <section aria-labelledby="ac-src-title" className="flex flex-col">
         <p id="ac-src-title" className="font-mono text-[10px] uppercase tracking-label text-content-muted">
-          <span className="text-cyan">1</span> · Your contract
+          <span className="text-cyan">{section('1').n}</span> · {section('1').title}
         </p>
         {/* The LABEL is the accessible name and stays a short noun phrase; the instruction is
             separate descriptive text. Folding the sentence into the label would rename the field
@@ -66,7 +67,7 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
           Solidity source
         </label>
         <p id="audit-src-help" className="mt-0.5 mb-2 text-[11px] text-content-muted">
-          Paste or edit Solidity. Nothing leaves your browser until you ask for an AI analysis.
+          {section('1').cost}
         </p>
         <textarea
           id="audit-src"
@@ -124,8 +125,8 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
           <SectionHead
             n="2"
             id="ac-screen-title"
-            title="Instant screen"
-            cost="Deterministic pattern matching, in your browser as you type — no network, no cost."
+            title={section('2').title}
+            cost={section('2').cost}
           />
 
           {w.overCap && (
@@ -207,8 +208,8 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
           <SectionHead
             n="3"
             id="ac-ai-title"
-            title="AI analysis"
-            cost="One model call per run, metered at 10 per session — so it runs when you ask, not as you type."
+            title={section('3').title}
+            cost={section('3').cost}
             aside={
               <span className="font-mono text-[10px] uppercase tracking-label text-content-muted">
                 {w.runsLeft} of {w.runsUsed + w.runsLeft} AI analyses left this session

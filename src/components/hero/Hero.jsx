@@ -63,7 +63,7 @@ function VerdictChip({ reproduced }) {
         <path d="M2.5 6.5l2.5 2.5 4.5-5.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <span className="font-mono text-[11px] font-semibold uppercase tracking-label text-verified">
-        {reproduced ? 'Verified · Reproduced' : 'Heuristic pass'}
+        {reproduced ? 'Verified · Reproduced' : 'Instant screen'}
       </span>
     </motion.div>
   )
@@ -85,7 +85,10 @@ function Console() {
     return () => clearTimeout(t)
   }, [source])
 
-  const runLabel = edited ? 'Live heuristic · client-side' : 'Recorded run · reproduced on an Anvil mainnet fork'
+  // "live" is reserved for MODEL PROVENANCE on this site; the free tier is INSTANT (see
+  // src/components/audit/consoleCopy.js). "Live heuristic" collided with the run badges'
+  // "live model", teaching two meanings of one word on one screen.
+  const runLabel = edited ? 'Instant screen · in your browser' : 'Recorded run · reproduced on an Anvil mainnet fork'
 
   return (
     <div className="overflow-hidden rounded-lg border border-hairline bg-panel shadow-edge-cyan">
@@ -110,7 +113,7 @@ function Console() {
             spellCheck={false}
             onChange={(e) => setSource(e.target.value)}
             className="h-64 w-full resize-none bg-void px-3 py-3 font-mono text-[12.5px] leading-relaxed text-content-secondary outline-none focus:text-content-primary"
-            aria-label="Editable Solidity contract — edit to re-run the auditor"
+            aria-label="Editable Solidity contract — edit to re-run the instant screen"
           />
         </div>
 
@@ -148,7 +151,7 @@ function Console() {
                 ) : result.clean ? (
                   <p className="text-sm text-content-secondary">
                     No known patterns matched.{' '}
-                    <span className="text-content-muted">Heuristic pass — not a full audit.</span>
+                    <span className="text-content-muted">Instant screen — not a full audit.</span>
                   </p>
                 ) : (
                   <>
@@ -173,7 +176,7 @@ function Console() {
 
       {/* AI disclosure (amber) — compliance: heuristic output disclosed as such */}
       <p className="border-t border-hairline bg-raised px-3 py-1.5 font-mono text-[10px] text-caution/90">
-        Static heuristic analysis — a fast pre-screen, not a full audit or financial advice.
+        Deterministic pattern screen — a fast pre-screen, not a full audit or financial advice.
       </p>
     </div>
   )

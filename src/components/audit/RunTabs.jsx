@@ -15,6 +15,7 @@
  * quietly do nothing.
  */
 import { useMemo } from 'react'
+import { section } from './consoleCopy.js'
 import ResultTabs from './ResultTabs.jsx'
 import { auditSolidity, SEVERITY_META } from '../../lib/auditHeuristics.js'
 import { fixesFor } from '../../lib/auditFixes.js'
@@ -134,10 +135,10 @@ export default function RunTabs({ runs, selectedRun, onSelect, draft, onApplyFix
   return (
     <section aria-labelledby="run-history-title" className="rounded-lg border border-cyan/25 bg-panel p-4">
       <p className="font-mono text-[10px] uppercase tracking-label text-content-muted">
-        <span className="text-cyan">4</span> · AI analyses ({runs.length})
+        <span className="text-cyan">{section('4').n}</span> · {section('4').title} ({runs.length})
       </p>
       <h4 id="run-history-title" className="mt-0.5 text-[11px] text-content-muted">
-        Every analysis you&rsquo;ve run, each pinned to the version it read. Opening one costs nothing.
+        {section('4').cost}
       </h4>
 
       <div role="tablist" aria-label="AI analyses" onKeyDown={onKeyDown} className="mt-3 flex flex-wrap gap-1.5">

@@ -28,9 +28,11 @@ function OnSiteAiFlagship() {
           One AI system, demonstrating itself
         </h3>
         <p className="mt-2 text-sm text-content-secondary">
-          The concierge (bottom-right), this live <Link to="/audit" className="text-cyan underline">/audit</Link> console,
-          and the on-chain <Link to="/ctf" className="text-cyan underline">CTF</Link> are one system — paste a contract
-          below and it screens it in your browser, offline-safe.
+          The concierge (bottom-right), the <Link to="/audit" className="text-cyan underline">/audit</Link> console,
+          and the on-chain <Link to="/ctf" className="text-cyan underline">CTF</Link> are one system. Paste a contract
+          below: the instant screen matches known-bad patterns in your browser, free and offline-safe. The full
+          workspace — versions, AI analysis and per-run history — is on{' '}
+          <Link to="/audit" className="text-cyan underline">/audit</Link>.
         </p>
       </div>
       <AuditConsole />

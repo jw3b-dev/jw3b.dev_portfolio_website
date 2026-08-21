@@ -63,7 +63,7 @@ export default function KthulhuEmbed({ url = KTHULHU_URL, embed = isEnabled('kth
 
       <p className="text-sm text-content-secondary">
         An autonomous smart-contract auditor: it runs a multi-agent audit pass over a contract and returns findings with
-        reproductions. The on-site <span className="text-content-primary">/audit</span> console is a fast heuristic
+        reproductions. The on-site <span className="text-content-primary">/audit</span> console is a fast deterministic
         pre-screen; KTHULHU is the deeper autonomous system — live, with credit billing and a REST API + MCP.
       </p>
 
