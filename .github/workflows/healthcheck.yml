@@ -59,7 +59,7 @@ jobs:
           # name|url|mode — no AI spend (liveness endpoints only). Modes:
           #   <codes> — comma-separated acceptable HTTP codes (e.g. "200" or "200,403").
           #   alive   — must merely RESPOND: only a timeout/refused (000) or a 5xx is "down".
-          #             Workers use this because prod and preview run different code (the prod
+          #             Workers use this because prod historically ran different code from the
           #             worker predates some v2 routes), so a 404/405 still proves it's serving.
           #
           # WHY prod-site accepts 403: jw3b.dev sits behind the zone's Cloudflare bot/WAF layer,
@@ -68,7 +68,7 @@ jobs:
           # 200 from a residential IP; the *.workers.dev origin returns 200 from the runner).
           # A 403 therefore proves the edge is up and deciding, not that the site is down; a
           # 404/5xx/timeout still alarms, so a genuine outage or broken route is NOT masked.
-          # PRODUCTION ONLY. CI now deploys straight to the live site, so the -v2 preview
+          # PRODUCTION ONLY — and now the only thing there is. The -v2 preview
           # instances are no longer updated — monitoring them would alarm on staleness that
           # means nothing, which is the fastest way to teach everyone to ignore the alert.
           TARGETS=(

@@ -43,19 +43,33 @@ secret-scan). Then, from the owner's authenticated machine:
    `wrangler d1 migrations apply jw3b_analytics --config wrangler.toml` (add `--local` to rehearse first).
 5. `wrangler deploy --config wrangler.toml` (the `--config` is REQUIRED — see the config-discovery note above).
 
-### Preview deploy (isolated test URLs — `v2` branch)
-Pushing the `v2` branch runs the CI **preview** jobs (gated on `verify`), which deploy isolated
-instances — **never** production:
-- Worker → `portfolio-agent-v2` → `https://portfolio-agent-v2.agilegypsy.workers.dev`
-- SPA → `jw3b-dev-site-v2` → `https://jw3b-dev-site-v2.agilegypsy.workers.dev` (the test URL)
+### Deploying (there is exactly one target)
 
-One-time owner step (per-worker secrets don't carry from production):
+Pushing `v2` runs the full gate (verify → e2e → contracts) and then deploys **production**, in
+order: worker → SPA → post-deploy smoke against the deployed result. That workflow is the only
+path to the live site; there is no manual promotion step and no second environment.
+
+- Worker → `portfolio-agent` → `https://portfolio-agent.agilegypsy.workers.dev`
+- SPA → `jw3b-dev-site` → `https://jw3b.dev`
+
+**The `-v2` preview instances are gone** (worker deleted 2026-08-21). They existed to keep a test
+URL away from production and cost more than they saved: "is that fixed?" depended on which of two
+URLs you had open, and the preview drifted from production in ways nobody tracked. Both wrangler
+configs now NAME production, so a bare `wrangler deploy` cannot quietly create a second live site,
+and `src/__tests__/deployTargets.test.js` fails the build if a `-v2` target reappears.
+
+Verify a deploy from an ordinary connection (not a CI runner — the apex serves datacenter IPs a
+Cloudflare challenge, see `docs/OPS.md`):
 ```
-wrangler secret put ANTHROPIC_API_KEY  --name portfolio-agent-v2 --config workers/portfolio-agent/wrangler.toml
-wrangler secret put NEON_DATABASE_URL  --name portfolio-agent-v2 --config workers/portfolio-agent/wrangler.toml
+npm run e2e:prod        # the E2E suite against https://jw3b.dev
+curl -sSI https://jw3b.dev/ | grep -iE 'content-security-policy|x-served-by|strict-transport'
 ```
-The preview shares the production D1/KV/R2 bindings (fine for a test). Flagship embeds show their
-fallback on the `*.workers.dev` origin (the origin gate only fires the live iframe on `jw3b.dev`).
+
+Rolling back is a version pin, not a redeploy:
+```
+npx wrangler@4 deployments list --name jw3b-dev-site
+npx wrangler@4 rollback --name jw3b-dev-site --version-id <previous>
+```
 
 ## 2. Data seeding (re-seedable from the repo — this is the DR guarantee)
 

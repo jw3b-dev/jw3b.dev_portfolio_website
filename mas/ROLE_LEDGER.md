@@ -558,3 +558,34 @@ though it described it. Restoring a version now brings that version's own analys
 
 Gate: lint 0 errors · 94 files / 795 tests · coverage 100% lines+functions (lineDiff added to the
 gated set) · build 0-warn · 30/30 E2E · claims · secret-scan.
+
+**Preview route killed — one deploy target, and it is production (owner) — 2026-08-21.** Owner:
+*"kill the preview route completely there should only be the main now and one deploy route and that
+is production to stop confusion."*
+
+Found on inspection: CI already deployed only to production (`--name portfolio-agent` /
+`--name jw3b-dev-site`), but the preview had survived in three places that mattered.
+(1) **A live worker.** `jw3b-dev-site-v2.agilegypsy.workers.dev` was still answering **200** —
+a stale copy of the site on a public URL, months behind, with no pipeline keeping it honest.
+Deleted (`wrangler delete`); verified 404 across three checks 20s apart, production 200 throughout.
+`portfolio-agent-v2` was already gone (404).
+(2) **The config defaults.** Both wrangler configs were NAMED for the preview
+(`jw3b-dev-site-v2`, `portfolio-agent-v2`), with production reached only by an explicit `--name`
+override in CI — so a bare `wrangler deploy` from a checkout quietly created a second live site.
+A config default is not a comment; it is what happens when someone is in a hurry. Both now name
+production.
+(3) **The language.** CI's own steps were called "Deploy preview worker" / "Deploy preview SPA"
+while deploying production, and the header still claimed "PRODUCTION … is NEVER touched by CI".
+Reading the pipeline told you the opposite of what it did — exactly the confusion the owner was
+describing. Header, step names, the stale ALLOWED_ORIGINS-override note, RUNBOOK's preview section
+and the healthcheck comments all rewritten.
+
+Guard: `src/__tests__/deployTargets.test.js` (4 tests) fails the build if a `-v2` name returns to
+any deploy surface, if either config stops naming production, if the deploy jobs lose their
+branch/gate conditions, or if a `-v2` origin appears in the CORS allowlist. Prose may mention the
+retired preview; a NAME or `--name` flag may not.
+
+Also confirmed for the owner: **run #127** was the post-deploy smoke failure already diagnosed and
+fixed in #128 (an E2E route predicate matching any `workers.dev` `/audit`, which intercepted the
+page itself when the smoke ran against the deployed origin). #128 and #129 both green.
+Gate: lint 0 errors · 799 tests · build 0-warn · claims · secret-scan.

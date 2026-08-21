@@ -97,7 +97,15 @@ promoted by hand. Running two live copies of the same branch turned out to be it
 of confusion — "is that fixed?" depended on which URL you had open, and the preview drifted
 from prod every time a manual deploy landed between pushes.
 
-Now: a push to `v2` deploys **the real site**. The safety that makes that acceptable:
+**The preview instances are now gone entirely** (worker `jw3b-dev-site-v2` deleted 2026-08-21;
+`portfolio-agent-v2` was already retired). Leaving them deployed-but-unused was the worst of both
+worlds — a stale copy of the site still answering on a public URL, months behind, with no pipeline
+keeping it honest. Both wrangler configs now NAME production, so a bare `wrangler deploy` cannot
+recreate one by accident, and `src/__tests__/deployTargets.test.js` fails the build if a `-v2`
+target reappears in the deploy surface.
+
+Now: a push to `v2` deploys **the real site**, and it is the only site. The safety that makes that
+acceptable:
 
 - the deploy jobs are gated on `verify` **and** `e2e` **and** `contracts` — previously they
   were gated on `verify` alone, so a run with failing E2E still deployed (harmless against a

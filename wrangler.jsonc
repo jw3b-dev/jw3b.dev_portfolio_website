@@ -1,11 +1,14 @@
 {
-  // SPA (Workers Static Assets) deploy config — reused from the prior deployment.
-  // Production deploy: `wrangler deploy` → jw3b-dev-site (served on jw3b.dev + www).
-  // Preview deploy (CI on push to v2): `wrangler deploy --name jw3b-dev-site-v2` overrides
-  // ONLY the name → jw3b-dev-site-v2.agilegypsy.workers.dev, production untouched. Same
-  // assets/SPA settings either way.
+  // SPA (Workers Static Assets) deploy config.
+  //
+  // ONE deploy target, and it is production: `wrangler deploy` → jw3b-dev-site, served on
+  // jw3b.dev + www. CI runs it explicitly as
+  // `wrangler deploy --name jw3b-dev-site --config wrangler.jsonc`, and that workflow is the only
+  // path to the live site.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "jw3b-dev-site-v2", // v2-preview default — prod promotion passes --name jw3b-dev-site explicitly
+  // The isolated `-v2` preview instance was deleted 2026-08-21. Naming production HERE is the
+  // point: as a preview default, a bare `wrangler deploy` quietly created a second live site.
+  "name": "jw3b-dev-site",
   "main": "worker.js",
   "compatibility_date": "2025-05-05",
   "assets": {

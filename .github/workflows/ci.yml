@@ -2,11 +2,15 @@
 # Gate jobs:
 #   verify    — frontend/worker: lint → coverage → claims-gate → build → secret-leak scan.
 #   contracts — Foundry: forge fmt --check → forge test (unit + fuzz + invariant).
-# Preview deploy (push to v2 only, gated on verify):
-#   deploy-preview-backend  → wrangler deploy --name portfolio-agent-v2  (isolated test worker)
-#   deploy-preview-frontend → wrangler deploy --name jw3b-dev-site-v2     (isolated test SPA)
-# PRODUCTION (portfolio-agent / jw3b-dev-site on jw3b.dev) is NEVER touched by CI — the owner
-# deploys prod manually (docs/RUNBOOK.md). Reuses the existing GH CLOUDFLARE_API_TOKEN/ACCOUNT_ID.
+# Deploy (push to v2 only, gated on verify + e2e + contracts):
+#   deploy-backend  → wrangler deploy --name portfolio-agent   (PRODUCTION worker)
+#   deploy-frontend → wrangler deploy --name jw3b-dev-site     (PRODUCTION SPA, jw3b.dev)
+#   smoke           → the E2E suite against what was just deployed
+#
+# THERE IS EXACTLY ONE DEPLOY TARGET, AND IT IS PRODUCTION. The isolated `-v2` preview instances
+# are gone (worker deleted 2026-08-21). Two live URLs meant "is that fixed?" depended on which one
+# you had open, and the preview drifted from production in ways nobody tracked — the confusion
+# cost more than the isolation was worth.
 # ADR-09: the claims-gate BLOCKS any uncleared/forbidden claim in CI.
 name: ci
 
@@ -125,14 +129,9 @@ jobs:
         working-directory: contracts
         run: forge test -vv
 
-  # ── PREVIEW deploy (push to v2 only) — isolated -v2 instances, production untouched ──────────
-  # Reuses the existing wrangler configs (only the worker NAME is overridden via --name) and the
-  # existing GH secrets. One-time owner step before the first preview works: set the preview
-  # worker's runtime secrets —
-  #   wrangler secret put ANTHROPIC_API_KEY --name portfolio-agent-v2
-  #   wrangler secret put NEON_DATABASE_URL --name portfolio-agent-v2
-  # (worker secrets are per-worker; they persist across preview redeploys). PRODUCTION deploys
-  # stay owner-manual (docs/RUNBOOK.md).
+  # ── PRODUCTION deploy (push to v2 only) ──────────────────────────────────────────────────────
+  # Gated on verify + e2e + contracts, then smoke-tested against the deployed result. The `--name`
+  # flags are explicit and match the wrangler configs; there is no other target to point them at.
   deploy-backend:
     name: Deploy — Worker (portfolio-agent)
     runs-on: ubuntu-latest
@@ -152,7 +151,7 @@ jobs:
         # were turning healthy commits red. A flaky gate trains people to ignore the gate.
         run: npm ci || (sleep 15 && npm ci) || (sleep 45 && npm ci)
         working-directory: workers/portfolio-agent
-      - name: Deploy preview worker
+      - name: Deploy the production worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -161,8 +160,6 @@ jobs:
           workingDirectory: workers/portfolio-agent
           # --config is REQUIRED: wrangler v4 walks up and would otherwise pick the root
           # wrangler.jsonc (the SPA) instead of this worker's wrangler.toml.
-          # --var ALLOWED_ORIGINS: the preview worker must allow the preview SPA origin (CORS),
-          # which production's allowlist doesn't include — override it for the preview ONLY.
           command: deploy --name portfolio-agent --config wrangler.toml
 
   deploy-frontend:
@@ -188,7 +185,7 @@ jobs:
       # overrides here, so what CI ships is exactly what the repo says it ships.
       - name: Build
         run: npm run build
-      - name: Deploy preview SPA
+      - name: Deploy the production SPA
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -202,7 +199,8 @@ jobs:
           wranglerVersion: '4.123.0'
           command: deploy --name jw3b-dev-site --config wrangler.jsonc
 
-  # PRODUCTION (portfolio-agent / jw3b-dev-site) is deployed by the owner manually
+  # (Historical note: production used to be an owner-manual step behind a preview. Both the manual
+  #  step and the preview are gone — this workflow is the only path to the live site.)
   # (`wrangler deploy`, no --name). Contract deploys are owner-provisioned too.
   # See docs/RUNBOOK.md for the release + DR procedure.
 
