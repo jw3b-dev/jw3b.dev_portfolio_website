@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import ClaimGraphWalk from '../../components/thesis/ClaimGraphWalk.jsx'
 import Seo from '../../components/seo/Seo.jsx'
 
 /*
@@ -42,6 +43,7 @@ export default function SystemsAreGraphs() {
           That is why the surfaces here are consoles, not slideshows — the graph is the source of
           truth, and the work is traversing it in front of you.
         </p>
+        <ClaimGraphWalk />
       </section>
 
       <section className="mt-10">
