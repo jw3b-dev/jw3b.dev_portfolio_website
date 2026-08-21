@@ -119,3 +119,7 @@ credited. The CTF vault is *intentionally* vulnerable; that's the challenge, not
 Code is [MIT](LICENSE). Written content, branding, and John's personal record are not — see the
 license note. Reach him at **john@agilegypsy.com** or via
 [agilegypsy.com](https://agilegypsy.com).
+
+---
+
+<p align="center"><em>Stay Weird</em> 👽</p>
