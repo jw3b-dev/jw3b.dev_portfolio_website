@@ -379,3 +379,46 @@ now assert the RELATIONSHIP (edit → result follows, and the old finding CLEARS
 `/work`, in jsdom and in a real browser. Guards proven by reintroducing the bug: 5 unit + 2 E2E fail,
 and the old tests stayed green through it. Gate: lint 0 errors · 90 files / 680 tests · build 0-warn ·
 22/22 E2E.
+
+**P5-EXTRA — the iterative audit workspace (owner-specified, MAS design track) — 2026-08-21.**
+Owner asked for: live heuristics on edit → the AI audit re-runs after an edit-idle delay or on
+demand, pausable → per-run result tabs keeping the exact source each analysed → "apply the
+recommended fixes" editing the source → revert to any version. Run as a design track first
+(**solutions-architect** → `mas/architecture_design/06_audit_workspace_adr.md`, ADR-P5-02), then
+built role by role.
+
+**The design decision that mattered.** The literal request — re-run 3s after typing stops — is
+unaffordable: `/audit` runs `claude-opus-4-8` behind `BUDGETS.audit = 10` per IP, so a person
+editing for one minute exhausts the budget and spends the rest of their visit on the recorded
+fallback. The feature would degrade the thing it was added to improve. So auto-rerun is a **gated
+policy, off by default**: the FREE deterministic screen decides when the EXPENSIVE model is worth
+spending — if the heuristic fingerprint (`id:line:severity`) is unchanged, no call is made, and
+the UI SAYS why it declined. Renaming a variable doesn't buy an Opus call; introducing a
+reentrancy does. The automatic policy also stops one run short of the cap so a deliberate press
+of Run always has a run in hand.
+
+**The second decision: fixes are rule-derived, never model-derived.** Nothing parses the AI prose
+into a patch. Each detector expresses its own documented remediation as a pure function
+(`auditFixes.js`), and — the property worth having — the console applies it and then **re-screens
+the result**, reporting whether the finding actually cleared. A fix that fails to clear its own
+finding is shown as exactly that. The site's thesis (*reproduce, don't assert*) pointed at itself.
+A fix that can't be expressed safely for a given source isn't offered at all (a compound pragma
+range has no single right pin; a balance write whose RHS is computed after the call can't hoist).
+
+Delivered — **domain-engine**: `auditWorkspace.js` (draft / append-only checkpoints / append-only
+runs) + `autoRunPolicy.js` (gate + a reason for every decline); **audit-heuristics-engineer**:
+`auditFixes.js` (3 remediations, each proven against `auditSolidity` + negative "must not offer"
+cases); **full-stack-integrator**: `auditStream.js` (transport, never throws) + `useAuditWorkspace.js`,
+replacing `useAuditStream.js`; **frontend-engineer**: rebuilt `AuditConsole.jsx` + `RunTabs.jsx`;
+**qa-tester**: 22 console tests + 2 E2E journeys × both routes; **compliance-officer**: found and
+routed two real gaps — the auto-run cost rationale and the `rule-derived` fix label existed only in
+code comments, not on the page. Both now render and are asserted.
+
+**Two bugs the tests caught, not the author.** (1) The E2E found that applying a fix while the
+draft had unsaved edits discarded them — "Original" was the demo sample, so undo couldn't reach
+the visitor's own pasted contract. Fixed by making the pin-before-replace rule uniform across
+run-start, apply-fix and restore. (2) The old E2E fixture named its mapping `b` while the
+reentrancy detector matches `balances[...]`, so it produced no finding and passed anyway on a
+heading assertion. Gate: lint 0 errors · 94 files / 759 tests · coverage 100% lines+functions
+(3 new pure modules at 100%, aggregate branches 95.2 → 96.0) · build 0-warn · 26/26 E2E · claims ·
+secret-scan.

@@ -73,6 +73,11 @@ export default defineConfig({
         'src/lib/schedulerLink.js',
         'src/lib/agentStatus.js',
         'src/lib/markdownSections.js',
+        // The iterative audit workspace (ADR-P5-02). The whole edit → screen → fix → re-screen →
+        // run → restore loop is pure, so it is gated here rather than left to component tests.
+        'src/lib/auditWorkspace.js',
+        'src/lib/autoRunPolicy.js',
+        'src/lib/auditFixes.js',
       ],
       // RAISED in the P5 expansion. Branches 85 -> 92 and statements 90 -> 98 for the pure
       // core, which the suite already clears — the old numbers had drifted well below actual

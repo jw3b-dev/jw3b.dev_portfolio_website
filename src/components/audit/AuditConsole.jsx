@@ -1,164 +1,213 @@
 /*
- * jw3b.dev v2 — AI security console (P1-08 · FR-011/FR-014)  ·  full-stack-integrator
- * Operable audit console: edit Solidity → the deterministic severity table re-screens AS YOU
- * TYPE (real, offline-safe) → a streamed model narrative with protocol tags stripped. Shows the
- * AI-assisted-first-pass disclaimer with every finding set (FR-014). Semantic tokens only; the
- * heuristic pass is labelled a heuristic pass — "REPRODUCED" is reserved for labelled recorded
- * runs (radical honesty).
+ * jw3b.dev v2 — the iterative audit console (P1-08 · FR-011/FR-014, ADR-P5-02)  ·  frontend-engineer
  *
- * The findings are DERIVED from the source, never stored. Before, `auditSolidity` ran inside the
- * click handler and its output was frozen into state, so the panel kept describing whatever was
- * in the box when you last pressed the button — the page promised an instant in-browser screen
- * and then ignored every edit. A pure function of the source belongs in a `useMemo`, not in
- * `useState`; that single change is the fix.
+ * The loop, not a single shot: edit → the deterministic screen follows every keystroke → apply a
+ * rule-derived fix → the screen re-runs and says whether the finding actually cleared → analyse →
+ * that run keeps its own tab and the exact source it analysed → go back to any checkpoint.
  *
- * The model narrative still needs the button (it costs a request), which makes it the one result
- * that can outlive its input — so it is explicitly marked stale when the source moves on.
+ * Everything decidable lives in pure modules (auditWorkspace / autoRunPolicy / auditFixes /
+ * auditHeuristics); this file renders them. Nothing derived is stored here — the console shipped
+ * once with its findings frozen into state, which is exactly why editing did nothing.
+ *
+ * The auto-rerun toggle is OFF by default and says why: the analysis runs Opus against a per-IP
+ * budget of 10, so a timer that fires on every pause would spend a visitor's whole session in a
+ * minute of typing. The free heuristic screen decides when the expensive one is worth spending
+ * (ADR-P5-02 §2), and when it declines it SAYS SO — silence would read as agreement.
  */
-import { useMemo, useState } from 'react'
-import ResultTabs from './ResultTabs.jsx'
+import RunTabs from './RunTabs.jsx'
 import { Link } from 'react-router-dom'
-import { useAuditStream } from '../../hooks/useAuditStream.js'
-import { SEVERITY_META, SAMPLE_CONTRACT, auditSolidity } from '../../lib/auditHeuristics.js'
+import { useAuditWorkspace } from '../../hooks/useAuditWorkspace.js'
+import { SEVERITY_META } from '../../lib/auditHeuristics.js'
 import { AUDIT_DISCLAIMER, SOURCE_CAP } from '../../lib/auditClient.js'
+import { VERSION_ORIGIN } from '../../lib/auditWorkspace.js'
 
-export default function AuditConsole({ initialSource } = {}) {
-  const [source, setSource] = useState(initialSource || SAMPLE_CONTRACT)
-  const { narrative, analysedSource, running, error, degraded, run } = useAuditStream()
+const chipBase =
+  'rounded-md border px-2 py-1 font-mono text-[10px] uppercase tracking-label motion-safe:transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan'
 
-  // The live heuristic pass. Pure + sub-millisecond on a contract-sized string, so it runs on
-  // every keystroke with no debounce — a timer here would only add lag and test flakiness.
-  // Past the cap we skip it rather than re-scanning a huge paste per keystroke; the run gate
-  // rejects that source anyway, and the note below says so instead of silently showing nothing.
-  const overCap = source.length > SOURCE_CAP
-  const screen = useMemo(() => (overCap ? null : auditSolidity(source)), [source, overCap])
-  const findings = screen?.findings ?? []
-
-  // The narrative describes `analysedSource`; once the editor diverges it is a stale artifact.
-  const narrativeStale = Boolean(narrative) && analysedSource !== null && analysedSource !== source
+export default function AuditConsole({ initialSource, idleMs } = {}) {
+  const w = useAuditWorkspace({ initialSource, idleMs })
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      {/* Editor */}
+      {/* ---------------------------------------------------------------- editor + controls */}
       <div className="flex flex-col">
         <label htmlFor="audit-src" className="mb-2 text-sm font-medium text-content-secondary">
           Solidity source
         </label>
         <textarea
           id="audit-src"
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
+          value={w.draft}
+          onChange={(e) => w.setDraft(e.target.value)}
           spellCheck={false}
           className="h-80 w-full resize-y rounded-lg border border-hairline bg-void p-3 font-mono text-xs text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
         />
+
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <button
             type="button"
-            onClick={() => run(source)}
-            disabled={running}
-            className="rounded-lg border border-cyan/40 bg-cyan/10 px-4 py-2 text-sm font-semibold text-cyan disabled:opacity-40 motion-safe:transition-colors"
+            onClick={w.run}
+            disabled={w.running}
+            className="rounded-lg border border-cyan/40 bg-cyan/10 px-4 py-2 text-sm font-semibold text-cyan disabled:opacity-40 motion-safe:transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
           >
-            {running ? 'Analysing…' : narrativeStale ? 'Re-run AI analysis' : 'Run AI analysis'}
+            {w.running ? 'Analysing…' : 'Run AI analysis'}
           </button>
-          <span className="text-xs text-content-muted">Heuristics re-run as you type — no request needed.</span>
-          {error && <span className="text-sm text-failed">{error}</span>}
+
+          <label className="flex items-center gap-1.5 text-xs text-content-secondary">
+            <input
+              type="checkbox"
+              checked={w.autoRun}
+              onChange={(e) => w.setAutoRun(e.target.checked)}
+              className="h-3.5 w-3.5 accent-cyan"
+            />
+            Re-run on edit
+          </label>
+
+          {w.autoRun && (
+            <button
+              type="button"
+              onClick={() => w.setPaused(!w.paused)}
+              aria-pressed={w.paused}
+              className={
+                chipBase +
+                (w.paused ? ' border-caution/50 text-caution' : ' border-hairline text-content-muted hover:text-content-secondary')
+              }
+            >
+              {w.paused ? 'Paused' : 'Pause'}
+            </button>
+          )}
+
+          <span className="font-mono text-[10px] uppercase tracking-label text-content-muted">
+            {w.runsLeft} of {w.runsUsed + w.runsLeft} analyses left
+          </span>
+        </div>
+
+        {/* ADR-P5-02 §5.5 — the toggle states its COST and why the default is off. Putting that
+            reasoning only in a code comment leaves a visitor with a switch and no reason to think
+            twice about flipping it. */}
+        <p className="mt-2 text-xs text-content-muted">
+          Each analysis is one model call against a 10-per-session budget — which is why re-run-on-edit
+          is off by default, and why it skips edits the heuristic screen can&rsquo;t see.
+        </p>
+        {/* Why the automatic policy is or isn't about to run. Never silent — a control that
+            quietly declines reads as "the analysis agrees with your edit". */}
+        <p className="mt-1 text-xs text-content-muted">{w.autoStatus.explain}</p>
+
+        {w.error && <p className="mt-2 text-sm text-failed">{w.error}</p>}
+
+        {/* -------------------------------------------------------------- checkpoints */}
+        <div className="mt-4 border-t border-hairline pt-3">
+          <p className="font-mono text-[10px] uppercase tracking-label text-content-muted">Versions — click to restore</p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {w.versions.map((v, i) => {
+              const isCurrent = i === w.versions.length - 1
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => w.restoreVersion(v.id)}
+                  title={v.origin === VERSION_ORIGIN.ORIGINAL ? 'The contract you started with' : v.label}
+                  className={
+                    chipBase +
+                    ' max-w-[12rem] truncate ' +
+                    (isCurrent ? 'border-cyan/50 bg-cyan/10 text-cyan' : 'border-hairline text-content-muted hover:text-content-secondary')
+                  }
+                >
+                  {v.label}
+                </button>
+              )
+            })}
+          </div>
+          <p className="mt-1.5 text-[11px] text-content-muted">
+            Kept in this tab only — nothing is stored on your device or ours. A reload starts clean.
+          </p>
         </div>
       </div>
 
-      {/* Results */}
+      {/* ---------------------------------------------------------------- results */}
       <div className="flex flex-col rounded-lg border border-hairline bg-panel p-4">
         <div className="flex items-baseline justify-between gap-2">
           <h3 className="text-sm font-semibold text-content-primary">Findings</h3>
           <span className="text-xs uppercase tracking-wide text-content-muted">Heuristic pass · live</span>
         </div>
 
-        {overCap && (
+        {w.overCap && (
           <p className="mt-3 text-sm text-caution">
             Source exceeds {SOURCE_CAP.toLocaleString()} characters — trim it to screen it here.
           </p>
         )}
-        {/* Deliberately not the run gate's wording ("Paste a Solidity contract to analyse."):
-            two near-identical sentences on one screen read as a stutter, and the reader can't
-            tell which one is the error. This states what the panel knows; that one states why
-            the request was refused. */}
-        {screen?.empty && <p className="mt-3 text-sm text-content-secondary">Nothing to screen — the editor is empty.</p>}
+        {w.screen?.empty && <p className="mt-3 text-sm text-content-secondary">Nothing to screen — the editor is empty.</p>}
+
+        {/* The re-screen verdict. The console applies a change and then reports what the detector
+            says about the RESULT; it never claims the fix worked. */}
+        {w.lastFix && (
+          <p
+            className={
+              'mt-3 rounded-md border p-2 text-xs ' +
+              (w.lastFix.cleared ? 'border-verified/40 bg-verified/5 text-verified' : 'border-caution/40 bg-caution/5 text-caution')
+            }
+          >
+            {w.lastFix.cleared
+              ? `Applied the rule-derived fix “${w.lastFix.label}” — re-screened, and the finding is gone. That clears one pattern; it is not an audit.`
+              : `Applied the rule-derived fix “${w.lastFix.label}” — but the re-screen still flags it. Shown as-is rather than claimed as fixed.`}
+          </p>
+        )}
 
         <ul className="mt-3 space-y-3">
-          {findings.map((f) => {
+          {w.findings.map((f) => {
             const meta = SEVERITY_META[f.severity]
+            const fix = w.fixes.find((x) => x.findingId === f.id)
             return (
               <li key={`${f.id}-${f.line}`} className="border-l-2 border-hairline pl-3">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className={`h-2 w-2 rounded-full ${meta.dot}`} aria-hidden="true" />
                   <span className={`text-xs font-bold ${meta.tone}`}>{meta.label}</span>
                   <span className="text-xs text-content-muted">line {f.line}</span>
+                  {fix && (
+                    <button
+                      type="button"
+                      onClick={() => w.applyFix(fix)}
+                      title={`Rule-derived fix — ${fix.description}`}
+                      className="rounded border border-cyan/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-label text-cyan hover:bg-cyan/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+                    >
+                      Apply fix
+                    </button>
+                  )}
                 </div>
                 <p className="mt-1 text-sm font-medium text-content-primary">{f.title}</p>
                 <p className="mt-0.5 text-xs text-content-secondary">{f.detail}</p>
+                {fix && (
+                  <p className="mt-0.5 text-[11px] text-content-muted">
+                    Rule-derived fix · {fix.description}
+                  </p>
+                )}
               </li>
             )
           })}
-          {screen && !screen.empty && findings.length === 0 && (
+          {w.screen && !w.screen.empty && w.findings.length === 0 && (
             <li className="text-sm text-content-secondary">No common-pattern issues in this first-pass screen.</li>
           )}
         </ul>
 
-        {narrative && (
-          <div className="mt-4 border-t border-hairline pt-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-content-muted">Analysis</h4>
-              {/* Same rule as the concierge: say whether THIS output came from the live model
-                  or the bundled fallback. Labelling only the failure case teaches nothing
-                  about the rest, and leaves the reader guessing on every good run. */}
-              <span
-                title={
-                  degraded
-                    ? 'Bundled fallback — the live model was unavailable'
-                    : 'Generated by the live model just now'
-                }
-                className={
-                  'font-mono text-[10px] uppercase tracking-label ' +
-                  (degraded ? 'text-caution' : 'text-verified')
-                }
-              >
-                {running ? 'streaming…' : degraded ? 'recorded' : 'live'}
-              </span>
-              {narrativeStale && (
-                <span
-                  title="The contract has been edited since this analysis ran"
-                  className="font-mono text-[10px] uppercase tracking-label text-caution"
-                >
-                  stale
-                </span>
-              )}
-            </div>
-            {narrativeStale && (
-              <p className="mt-2 rounded-md border border-caution/40 bg-caution/5 p-2 text-xs text-caution">
-                You&rsquo;ve edited the contract since this ran — it describes the earlier version. The
-                findings above are live; re-run to update this.
-              </p>
-            )}
-            {/* Was a single preformatted block: the model's markdown rendered RAW (literal ##
-                and backticks) and streamed down the page, so finding "the fix" meant scrolling
-                past everything. ResultTabs splits it on its own headings and renders each part
-                properly, following the newest section while it streams. */}
-            <div className={'mt-2 ' + (narrativeStale ? 'opacity-60' : '')}>
-              <ResultTabs source={narrative} streaming={running} label="Analysis sections" />
-            </div>
-          </div>
+        {w.findings.length > 0 && (
+          <p className="mt-4 border-t border-hairline pt-3 text-xs text-content-muted">{AUDIT_DISCLAIMER}</p>
         )}
 
-        {degraded && (
-          <p className="mt-4 border-t border-hairline pt-3 text-xs text-caution">
-            Live narrative unavailable — the heuristic findings above are real.{' '}
+        <RunTabs
+          runs={w.runs}
+          selectedRun={w.selectedRun}
+          onSelect={w.selectRun}
+          draft={w.draft}
+          onApplyFix={w.applyFix}
+          onRestore={w.restoreVersion}
+        />
+
+        {w.runs.some((r) => r.degraded) && (
+          <p className="mt-3 text-xs text-caution">
+            A run fell back to a recorded narrative — the heuristic findings are real regardless.{' '}
             <Link to="/hire-me" className="text-cyan underline">
               Book a call
             </Link>
           </p>
-        )}
-
-        {(findings.length > 0 || narrative) && (
-          <p className="mt-4 border-t border-hairline pt-3 text-xs text-content-muted">{AUDIT_DISCLAIMER}</p>
         )}
       </div>
     </div>

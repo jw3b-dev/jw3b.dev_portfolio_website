@@ -51,6 +51,50 @@ for (const route of ['/audit', '/work']) {
     await expect(page.getByText('Reentrancy — external call before state update')).toHaveCount(0)
     await expect(page.getByText(/no common-pattern issues/i)).toBeVisible()
   })
+
+  /*
+   * The iterative loop (ADR-P5-02), driven the way a person drives it: apply the offered fix,
+   * watch the free screen re-run on the result, then go back. No model call anywhere in here —
+   * the whole loop is client-side, which is exactly why it can be a build gate.
+   */
+  test(`apply a fix, re-screen, and restore the original (${route})`, async ({ page }) => {
+    await page.goto(route)
+    const box = page.locator('#audit-src')
+    await expect(box).toBeVisible()
+    await box.fill(REENTRANT)
+
+    const reentrancy = page.getByText('Reentrancy — external call before state update')
+    await expect(reentrancy).toBeVisible({ timeout: 10_000 })
+
+    // The fix is offered against the finding it remediates.
+    const applyFix = page.getByRole('button', { name: /apply fix/i }).first()
+    await expect(applyFix).toBeVisible()
+    await applyFix.click()
+
+    // It edited the source, and the console reports the RE-SCREEN — not a claim that it worked.
+    await expect(page.getByText(/re-screened, and the finding is gone/i)).toBeVisible()
+    await expect(page.getByText(/it is not an audit/i)).toBeVisible()
+    await expect(reentrancy).toHaveCount(0)
+    await expect(box).toHaveValue(/balances\[msg\.sender\] = 0;[\s\S]*\.call\{value/)
+
+    // The pre-fix text was pinned on the way past, so undoing the fix returns YOUR contract —
+    // not the sample the page happened to ship with.
+    await expect(page.getByRole('button', { name: /^Fix · / })).toBeVisible()
+    await page.getByRole('button', { name: 'Edited' }).click()
+    await expect(box).toHaveValue(REENTRANT)
+    await expect(reentrancy).toBeVisible()
+
+    // ...and the contract the page loaded with is still reachable behind it.
+    await page.getByRole('button', { name: 'Original' }).click()
+    await expect(box).toHaveValue(/contract Vault/)
+  })
+
+  test(`auto re-run is off by default and says so (${route})`, async ({ page }) => {
+    await page.goto(route)
+    await expect(page.getByRole('checkbox', { name: /re-run on edit/i })).not.toBeChecked()
+    await expect(page.getByText(/auto re-run is off/i)).toBeVisible()
+    await expect(page.getByText(/10 of 10 analyses left/i)).toBeVisible()
+  })
 }
 
 test('the fuzz tool regenerates the harness as the source is edited', async ({ page }) => {
