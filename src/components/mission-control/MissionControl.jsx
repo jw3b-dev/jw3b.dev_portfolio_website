@@ -163,6 +163,28 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
           Four steps to an honest scope and an indicative price. No wallet required — booking a
           call is always the floor.
         </p>
+
+        {/* That sentence promises the floor is always available, but until now the ONLY way to
+            reach it was to answer four questions first — the promise was true of the design and
+            false of the surface. With 207 concierge conversations and zero engagement requests,
+            that friction is not theoretical. This is the escape hatch for someone who just
+            wants to talk; the configurator remains the default path. */}
+        {step < STEPS.length - 1 && (
+          <p className="mt-3 text-sm text-content-muted">
+            Rather skip the scoping?{' '}
+            <button
+              type="button"
+              onClick={() => {
+                go(STEPS.length - 1) // go() clears booking, so set it AFTER
+                setBooking(true)
+                onBook({ objective, engagement, assessment, tierId: null })
+              }}
+              className="font-mono text-[12px] uppercase tracking-label text-cyan underline hover:text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+            >
+              Book a call →
+            </button>
+          </p>
+        )}
       </header>
 
       <div className="mt-6">

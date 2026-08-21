@@ -22,7 +22,14 @@ export default defineConfig({
     // (setupFiles, include globs, coverage include-list) then resolves exactly as before.
     root: resolve(__dirname, '..'),
     setupFiles: ['./src/setupTests.js'],
-    include: ['src/**/*.{test,spec}.{js,jsx}'],
+    include: ['src/**/*.{test,spec}.{js,jsx}', 'workers/**/*.{test,spec}.js'],
+    // The Worker is server-side code: it needs node, not jsdom. Everything under src/ keeps
+    // the DOM. Before this, the Worker had ZERO tests — and the audio MIME-type bug, the
+    // concierge degrade path and the fail-open rate limiter all lived there.
+    environmentMatchGlobs: [
+      ['workers/**', 'node'],
+      ['src/**', 'jsdom'],
+    ],
     // Multi-step jsdom interaction tests (e.g. the Mission Control wizard walk) can exceed
     // the 5s default when the suite runs wide under coverage — parallel-load starvation, not
     // a code fault (they pass in isolation). A real assertion still fails fast; this only
@@ -58,6 +65,12 @@ export default defineConfig({
         'src/lib/xmtpFlow.js',
         'src/lib/voiceSession.js',
         'src/lib/micTurn.js',
+        // Added in the P5 coverage expansion. auditHeuristics is the SECURITY DETECTOR the
+        // /audit console runs — it was never gated; claimsRegister is the gate between a
+        // provable number and a typed one, and had no test file at all.
+        'src/lib/auditHeuristics.js',
+        'src/lib/claimsRegister.js',
+        'src/lib/schedulerLink.js',
       ],
       thresholds: {
         lines: 100,
