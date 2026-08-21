@@ -43,6 +43,31 @@ for (const vp of VIEWPORTS) {
   })
 }
 
+test('the concierge launcher stays pinned to the bottom-right, on every viewport', async ({ page }) => {
+  // Regression: adding `relative` alongside `fixed` for the status dot let `relative` win in
+  // Tailwind's output, dropping the button into normal flow at the TOP-LEFT. The existing
+  // overlap test passed happily — a launcher that has fled the corner overlaps nothing.
+  for (const vp of VIEWPORTS) {
+    await page.setViewportSize({ width: vp.width, height: vp.height })
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await page.waitForTimeout(800)
+
+    const btn = page.locator('button[aria-label="Open concierge chat"]')
+    const box = await btn.boundingBox()
+    expect(box, `launcher missing at ${vp.name}`).toBeTruthy()
+    expect(await btn.evaluate((el) => getComputedStyle(el).position), `position at ${vp.name}`).toBe('fixed')
+    // Bottom-right quadrant of the viewport.
+    expect(box.x, `x at ${vp.name}`).toBeGreaterThan(vp.width / 2)
+    expect(box.y, `y at ${vp.name}`).toBeGreaterThan(vp.height / 2)
+
+    // And it must STAY there when the page scrolls — that is what `fixed` buys.
+    await page.evaluate(() => window.scrollTo(0, 600))
+    await page.waitForTimeout(300)
+    const after = await btn.boundingBox()
+    expect(Math.abs(after.y - box.y), `launcher moved on scroll at ${vp.name}`).toBeLessThan(2)
+  }
+})
+
 test('the page never scrolls horizontally (mobile)', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/', { waitUntil: 'networkidle' })
