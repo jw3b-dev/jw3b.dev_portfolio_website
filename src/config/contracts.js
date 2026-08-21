@@ -9,21 +9,28 @@ import MilestoneEscrowAbi from './abis/MilestoneEscrow.json'
 import AttackerAbi from './abis/Attacker.json'
 import { ATTACKER_BYTECODE } from './abis/Attacker.bytecode.js'
 
-// Base mainnet USDC (6-decimal) — the settlement token for escrow payments (BR-06).
+// USDC (6-decimal) — the settlement token for escrow payments (BR-06), per chain.
 export const USDC_ADDRESS = {
-  8453: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base mainnet
+  8453: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base mainnet (real USDC)
+  84532: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', // Base Sepolia — Circle TEST USDC
 }
 
-// MilestoneEscrow — owner-deployed to Base at deal-close. `address: null` until then.
+// MilestoneEscrow — DEPLOYED 2026-08-21 to Base Sepolia (P4-01 close-out). This is the v2
+// contract: the prior v1-era deployment was ABI-incompatible (2/10 selectors) and is NOT used.
+// TESTNET by design: the Base mainnet wallet is unfunded, and a portfolio proof-surface should
+// not route a real client's money through a demo. The chainId alone drives the honest badge —
+// `fundsPolicy(84532)` → TESTNET + "no real funds are ever at risk here" (no hardcoded label).
+// MAINNET SWAP is two lines: set `address` to a Base-deployed escrow and `chainId` to 8453.
 export const ESCROW = Object.freeze({
-  address: null, // ← replace with the deployed 0x… address (owner-provisioned)
-  chainId: 8453, // Base mainnet (real USDC)
+  address: '0xe44A38129A69B94CbdAFe80C71e5A113E46E87F8',
+  chainId: 84532, // Base Sepolia — TESTNET (see above)
   abi: MilestoneEscrowAbi,
 })
 
-// The escrow payee — John's business wallet (a PUBLIC address; safe in client config). Null
-// until provisioned; the rail degrades to book-a-call while it or ESCROW.address is missing.
-export const PROVIDER_WALLET = null // ← replace with John's receiving 0x… address
+// The escrow payee/arbiter — John's business wallet (a PUBLIC address; safe in client config),
+// set as the contract `owner` at deploy. The rail degrades to book-a-call if this or
+// ESCROW.address is missing.
+export const PROVIDER_WALLET = '0xC6016E351c144CEDb1034E93e64C78d63cc2435F'
 
 // Unlock Protocol locks (P2-05). Keyed by tier/offer id → the deployed lock. Empty until
 // John deploys real locks; an offer with no real lock is HIDDEN → book-a-call (FR-034).

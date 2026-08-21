@@ -1,0 +1,38 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "deployedAt": "2026-08-21",
+  "deployer": "0xeAba6e69827062Df0CaFFC792435D6FB6786e81a",
+  "note": "v2 deployments. TESTNET ONLY — no real funds. The v1-era MilestoneEscrow at 0xF75ea6Ba560b8aC3314a8196cb74fDF99672B543 is ABI-INCOMPATIBLE with the v2 rebuild (2/10 selectors) and is deliberately NOT referenced by the app.",
+  "testTokens": {
+    "USDC": {
+      "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "decimals": 6,
+      "note": "Circle test USDC on Base Sepolia"
+    }
+  },
+  "contracts": {
+    "MilestoneEscrow": {
+      "address": "0xe44A38129A69B94CbdAFe80C71e5A113E46E87F8",
+      "txHash": "0xad5e3a3d38b59b868dfbd7fe60a6f99d444ff6ae3c31e1c04e12558cda9971c1",
+      "purpose": "v2 milestone escrow — TESTNET demo of the simulate→write→wait rail.",
+      "constructorArgs": {
+        "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        "initialOwner": "0xC6016E351c144CEDb1034E93e64C78d63cc2435F"
+      },
+      "abiVerified": "10/10 selectors present in runtime bytecode (viem check, 2026-08-21)",
+      "explorer": "https://sepolia.basescan.org/address/0xe44A38129A69B94CbdAFe80C71e5A113E46E87F8"
+    },
+    "ReentrantVault": {
+      "address": "0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240",
+      "purpose": "CTF honeypot — reentrancy playground. Reused from the v1 era: deposit()/withdraw() selectors match the v2 attacker, and the Worker verifies drains via raw eth_getBalance.",
+      "baitToppedUp": {
+        "date": "2026-08-21",
+        "txHash": "0x8099ada7cbf301b3ba4dc4e48e0a61829a5bffef5f6253ad4e6c31b63c400b40",
+        "balanceAfterWei": "120000000000000",
+        "note": "0.00012 ETH — survives roughly six solves before the UI's honest vault-empty state takes over."
+      },
+      "explorer": "https://sepolia.basescan.org/address/0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240"
+    }
+  }
+}

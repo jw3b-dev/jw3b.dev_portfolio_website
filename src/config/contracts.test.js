@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isRealAddress, escrowProvisioned, ESCROW, PROVIDER_WALLET, unlockLockFor, unlockProvisioned } from './contracts.js'
+import { isRealAddress, escrowProvisioned, ESCROW, PROVIDER_WALLET, USDC_ADDRESS, unlockLockFor, unlockProvisioned } from './contracts.js'
 
 describe('contracts config — provisioning gate (P2-04 / FR-032)', () => {
   it('isRealAddress accepts a real 40-hex address', () => {
@@ -13,11 +13,18 @@ describe('contracts config — provisioning gate (P2-04 / FR-032)', () => {
     expect(isRealAddress(123)).toBe(false)
   })
 
-  it('escrow is NOT provisioned until a real address is set (degrade-to-floor default)', () => {
-    // Ships unprovisioned by design — the rail degrades to book-a-call until John deploys.
-    expect(ESCROW.address).toBeNull()
-    expect(PROVIDER_WALLET).toBeNull()
-    expect(escrowProvisioned()).toBe(false)
+  it('escrow IS provisioned (deployed 2026-08-21) and points at a real address + payee', () => {
+    expect(isRealAddress(ESCROW.address)).toBe(true)
+    expect(isRealAddress(PROVIDER_WALLET)).toBe(true)
+    expect(escrowProvisioned()).toBe(true)
+  })
+
+  it('escrow is wired to a TESTNET chain with its matching USDC — honesty is structural', () => {
+    // The deployed escrow is Base Sepolia; the UI badge derives from this chainId alone
+    // (fundsPolicy → TESTNET), so no surface can label it "mainnet" by accident. A mainnet
+    // swap must change BOTH the address and the chainId, and this test is the tripwire.
+    expect(ESCROW.chainId).toBe(84532)
+    expect(isRealAddress(USDC_ADDRESS[ESCROW.chainId])).toBe(true)
   })
 
   it('Unlock is NOT provisioned until a real lock is set (offer hides → floor)', () => {

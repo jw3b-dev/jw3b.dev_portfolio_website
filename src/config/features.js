@@ -18,9 +18,16 @@
 // terminal action (BR-11) — it has no OFF state and is listed here only for completeness.
 export const FEATURE_DEFAULTS = Object.freeze({
   bookACall: true, // the floor — always available, wallet/chain/Worker-independent
-  escrow: false, // P2 · on-chain USDC escrow — needs a deployed escrow address (OD-03)
+  escrow: false, // P2 · on-chain USDC escrow. The contract IS deployed (Base Sepolia, 2026-08-21)
+  //                and wired in contracts.js, but the rail stays OFF in production ON PURPOSE:
+  //                it is a TESTNET escrow, and routing a real client's engagement through a
+  //                demo would be dishonest. The hire flow keeps the book-a-call floor until a
+  //                MAINNET escrow is funded. Preview builds light it via VITE_FEATURE_ESCROW.
   unlock: false, // P2 · Unlock Protocol paywall — needs real lock addresses (OD-03)
-  ctf: false, // P2 · live on-chain Capture-the-Vault — needs CTF_VAULT_ADDRESS
+  ctf: true, // P2 · live on-chain Capture-the-Vault. LIVE: the Base Sepolia vault is deployed and
+  //            its bait was topped up to 0.00012 ETH (2026-08-21) so the challenge survives
+  //            repeated solves; testnet-labelled throughout, and the UI degrades to an honest
+  //            vault-empty / recorded-solve state when drained.
   xmtp: false, // P3 · @xmtp/browser-sdk E2E messaging migration
   voiceLive: true, // P3 · hands-free real-time voice concierge (on-device Whisper WebGPU→WASM +
   //                   Claude + Aura TTS; watchdogged server-STT floor). ON by OWNER DECISION
