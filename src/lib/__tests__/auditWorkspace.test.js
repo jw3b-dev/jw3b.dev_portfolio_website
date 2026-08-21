@@ -51,7 +51,7 @@ describe('auditWorkspace — checkpoints', () => {
     expect(ws.versions).toHaveLength(2)
     expect(currentVersion(ws)).toMatchObject({
       id: 'v2',
-      label: 'Fix · Upper',
+      label: 'Fix · rule-a',
       origin: VERSION_ORIGIN.FIX,
       fixId: 'f-upper',
       findingId: 'rule-a',
@@ -67,7 +67,7 @@ describe('auditWorkspace — checkpoints', () => {
     ws = applyFix(ws, upper)
 
     expect(ws.versions.map((v) => v.source)).toEqual(['the page default', 'my pasted contract', 'MY PASTED CONTRACT'])
-    expect(ws.versions[1]).toMatchObject({ label: 'Edited', origin: VERSION_ORIGIN.EDIT })
+    expect(ws.versions[1]).toMatchObject({ label: 'Edit 1', origin: VERSION_ORIGIN.EDIT })
     expect(restoreVersion(ws, 'v2').draft).toBe('my pasted contract')
   })
 
@@ -94,15 +94,40 @@ describe('auditWorkspace — checkpoints', () => {
 })
 
 describe('auditWorkspace — restore', () => {
-  it('is additive: going back is itself something you can go back from', () => {
+  it('creates NOTHING — browsing the history must not rewrite it', () => {
+    // Reported together: the chip list grew every time you merely looked at something, labels
+    // nested into `Restored · Fix · …` and truncated identically, and the chip that highlighted
+    // was the new one instead of the one you clicked. Moving between checkpoints is navigation.
     let ws = createWorkspace('original')
     ws = applyFix(ws, upper)
-    ws = restoreVersion(ws, 'v1')
+    const before = ws.versions.length
 
+    ws = restoreVersion(ws, 'v1')
     expect(ws.draft).toBe('original')
-    expect(ws.versions).toHaveLength(3) // v1 original, v2 fix, v3 restore — nothing truncated
-    expect(currentVersion(ws)).toMatchObject({ origin: VERSION_ORIGIN.RESTORE, fromVersionId: 'v1', label: `Restored · ${ORIGINAL_LABEL}` })
+    expect(ws.versions).toHaveLength(before) // no new entry
+    expect(ws.currentVersionId).toBe('v1') // ...and the one you clicked is the current one
     expect(findVersion(ws, 'v2').source).toBe('ORIGINAL') // the fix is still reachable
+
+    // Round-tripping ten times leaves the list exactly as it was.
+    for (let i = 0; i < 10; i++) ws = restoreVersion(ws, i % 2 ? 'v1' : 'v2')
+    expect(ws.versions).toHaveLength(before)
+  })
+
+  it('never produces a nested label like `Restored · Fix · …`', () => {
+    let ws = createWorkspace('x')
+    ws = applyFix(ws, upper)
+    ws = restoreVersion(ws, 'v1')
+    ws = restoreVersion(ws, 'v2')
+    expect(ws.versions.map((v) => v.label)).toEqual([ORIGINAL_LABEL, 'Fix · rule-a'])
+  })
+
+  it('numbers pinned edits so two chips are never both just "Edited"', () => {
+    let ws = createWorkspace('a')
+    ws = setDraft(ws, 'b')
+    ws = restoreVersion(ws, 'v1') // pins 'b' as Edit 1
+    ws = setDraft(ws, 'c')
+    ws = restoreVersion(ws, 'v1') // pins 'c' as Edit 2
+    expect(ws.versions.map((v) => v.label)).toEqual([ORIGINAL_LABEL, 'Edit 1', 'Edit 2'])
   })
 
   it('restores an edited draft back to Original — the owner-requested undo', () => {
@@ -118,15 +143,15 @@ describe('auditWorkspace — restore', () => {
     expect(restoreVersion(ws, 'v1')).toBe(ws)
   })
 
-  it('records exactly ONE checkpoint when the pin already lands on the restore target', () => {
+  it('pins unsaved work on the way past, then lands on the target', () => {
     let ws = createWorkspace('x')
     ws = applyFix(ws, upper) // v2 = 'X'
-    ws = setDraft(ws, 'x') // hand-typed back to v1's text, but the newest version is still 'X'
+    ws = setDraft(ws, 'unsaved') // dirty relative to v2
     ws = restoreVersion(ws, 'v1')
 
-    // The pin captured 'x'; adding a "Restored" entry holding the same text would be noise.
-    expect(ws.versions).toHaveLength(3)
-    expect(currentVersion(ws)).toMatchObject({ source: 'x', origin: VERSION_ORIGIN.EDIT })
+    expect(ws.draft).toBe('x')
+    expect(ws.currentVersionId).toBe('v1')
+    expect(findVersion(ws, 'v3')).toMatchObject({ source: 'unsaved', origin: VERSION_ORIGIN.EDIT })
   })
 })
 
@@ -137,7 +162,7 @@ describe('auditWorkspace — runs', () => {
     const [next, run] = startRun(ws)
 
     expect(next.versions).toHaveLength(2)
-    expect(currentVersion(next)).toMatchObject({ label: 'Edited', origin: VERSION_ORIGIN.EDIT })
+    expect(currentVersion(next)).toMatchObject({ label: 'Edit 1', origin: VERSION_ORIGIN.EDIT })
     expect(run).toMatchObject({ id: 'r1', seq: 1, versionId: 'v2', source: 'edited source', status: RUN_STATUS.STREAMING, degraded: false })
     expect(next.runs).toHaveLength(1)
   })

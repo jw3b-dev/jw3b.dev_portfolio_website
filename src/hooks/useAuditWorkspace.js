@@ -35,6 +35,7 @@ import {
   AUTO_RUN_IDLE_MS,
   AUTO_RUN_REASON,
   AUDIT_BUDGET,
+  CHANGE_ORIGIN,
 } from '../lib/autoRunPolicy.js'
 import { streamAuditNarrative } from '../lib/auditStream.js'
 
@@ -53,6 +54,9 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
   const [selectedRunId, setSelectedRunId] = useState(null)
   const [autoStatus, setAutoStatus] = useState(() => idle(AUTO_RUN_REASON.DISABLED))
   const [lastFix, setLastFix] = useState(null) // { label, cleared, findingId } — the re-screen result
+  // WHY the draft last moved. The text alone can't distinguish someone typing from someone
+  // clicking back through their own checkpoints, and only one of those is worth a model call.
+  const [changeOrigin, setChangeOrigin] = useState(CHANGE_ORIGIN.INIT)
 
   const timer = useRef(null)
   // The stream callbacks close over state that has moved on by the time a frame arrives, so the
@@ -76,6 +80,8 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
 
   // Kept as primitives so the idle effect below re-arms on a new ANALYSIS, not on every streamed
   // frame (each chunk replaces the run object, which would otherwise churn the timer).
+  // Every source that already has a run — so an exact repeat is answered from its tab, never re-bought.
+  const analysedSources = useMemo(() => ws.runs.map((r) => r.source), [ws.runs])
   const lastRunSource = lastRun ? lastRun.source : null
   const lastRunFingerprint = useMemo(
     () => (lastRunSource === null ? null : heuristicFingerprint(auditSolidity(lastRunSource).findings)),
@@ -115,6 +121,7 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
   const setDraft = useCallback((text) => {
     setError(null)
     setLastFix(null)
+    setChangeOrigin(CHANGE_ORIGIN.EDIT)
     setWs((prev) => setDraftPure(prev, text))
   }, [])
 
@@ -125,6 +132,7 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
    */
   const applyFix = useCallback((fix) => {
     const verdict = applyFixAndVerify(fix, wsRef.current.draft)
+    setChangeOrigin(CHANGE_ORIGIN.FIX)
     setWs((prev) => applyFixPure(prev, fix))
     setLastFix({ label: fix?.label || 'Fix', findingId: fix?.findingId, cleared: verdict.cleared, changed: verdict.changed })
   }, [])
@@ -132,7 +140,20 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
   const restoreVersion = useCallback((versionId) => {
     setError(null)
     setLastFix(null)
+    // Navigation, not authorship — this is what stops "compare my last three attempts" from
+    // quietly costing three analyses.
+    setChangeOrigin(CHANGE_ORIGIN.RESTORE)
     setWs((prev) => restorePure(prev, versionId))
+  }, [])
+
+  /**
+   * Arming the toggle is not itself an edit. Without this reset, switching it on would immediately
+   * analyse whatever you had already typed before deciding to arm it — a surprise call, and the
+   * opposite of what a control named "re-run on edit" promises.
+   */
+  const enableAutoRun = useCallback((next) => {
+    if (next) setChangeOrigin(CHANGE_ORIGIN.INIT)
+    setAutoRun(next)
   }, [])
 
   // ---- the idle timer: the only place a clock enters the loop ---------------------------------
@@ -156,6 +177,8 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
       running,
       valid: validateAuditSource(ws.draft).ok,
       draft: ws.draft,
+      changeOrigin,
+      analysedSources,
       lastAnalysedSource: lastRunSource,
       fingerprint,
       lastFingerprint: lastRunFingerprint,
@@ -174,7 +197,7 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
     }, idleMs)
     return () => clearTimeout(timer.current)
     // `run` is stable per fetchImpl; the draft/fingerprint/run-count are what re-arm the timer.
-  }, [autoRun, paused, running, ws.draft, fingerprint, lastRunSource, lastRunFingerprint, runsUsed, idleMs, run])
+  }, [autoRun, paused, running, ws.draft, changeOrigin, analysedSources, fingerprint, lastRunSource, lastRunFingerprint, runsUsed, idleMs, run])
 
   useEffect(() => () => clearTimeout(timer.current), [])
 
@@ -182,6 +205,7 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
     // state
     draft: ws.draft,
     versions: ws.versions,
+    currentVersionId: ws.currentVersionId,
     runs: ws.runs,
     selectedRun,
     selectedRunId: selectedRun?.id ?? null,
@@ -203,7 +227,7 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
     restoreVersion,
     selectRun: setSelectedRunId,
     run,
-    setAutoRun,
+    setAutoRun: enableAutoRun,
     setPaused,
   }
 }

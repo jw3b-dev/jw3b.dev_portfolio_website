@@ -205,7 +205,7 @@ describe('AuditConsole — per-run tabs (ADR-P5-02 §5)', () => {
     expect(screen.getByText(/Analyses \(2\)/)).toBeInTheDocument()
     // Run 1 analysed the Original; run 2 analysed the edit that followed.
     expect(screen.getByRole('tab', { name: /Run 1 · Original/ })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /Run 2 · Edited/ })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /Run 2 · Edit 1/ })).toBeInTheDocument()
   })
 
   it('labels each run with ITS OWN provenance and carries the disclaimer per run', async () => {
@@ -271,14 +271,88 @@ describe('AuditConsole — gated auto-rerun (ADR-P5-02 §2)', () => {
     expect(screen.getByText(/10 of 10 analyses left/i)).toBeInTheDocument()
   })
 
-  it('runs itself once the editor goes idle', async () => {
+  it('runs itself once the editor goes idle after an EDIT', async () => {
     stubStream('## Summary\nAuto-run analysis.')
     renderConsole({ idleMs: 10 })
     fireEvent.click(screen.getByRole('checkbox', { name: /re-run on edit/i }))
+    // Arming it is not an edit — the control says "on edit" and behaves that way.
+    expect(screen.getByText(/armed — your next edit/i)).toBeInTheDocument()
+    setSource(TX_ORIGIN_CONTRACT)
 
     await waitFor(() => expect(screen.getByText(/auto-run analysis/i)).toBeInTheDocument())
     expect(screen.getByRole('tab', { name: /Run 1/ })).toBeInTheDocument()
     expect(screen.getByText(/9 of 10 analyses left/i)).toBeInTheDocument()
+  })
+
+  it('does NOT spend an analysis when you look back at an older version', async () => {
+    // Owner-reported: with re-run-on-edit enabled, clicking a checkpoint to compare it fired a
+    // fresh Opus call every time. A restore moves the draft exactly as typing does, so only the
+    // ORIGIN of the change can tell reading from writing.
+    const fetchMock = vi.fn(async () => sseResponse([frame('## Summary\nrun'), 'data: [DONE]\n\n']))
+    vi.stubGlobal('fetch', fetchMock)
+    renderConsole({ idleMs: 10 })
+
+    // Arm FIRST — switching the toggle on must not retroactively analyse what you typed before
+    // deciding to arm it.
+    fireEvent.click(screen.getByRole('checkbox', { name: /re-run on edit/i }))
+    setSource(TX_ORIGIN_CONTRACT)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Original' }))
+    await waitFor(() => expect(screen.getByText(/looking back through your own history/i)).toBeInTheDocument())
+    await new Promise((r) => setTimeout(r, 60)) // well past the idle window
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('does NOT re-buy an analysis for a source that already has a run tab', async () => {
+    const fetchMock = vi.fn(async () => sseResponse([frame('## Summary\nrun'), 'data: [DONE]\n\n']))
+    vi.stubGlobal('fetch', fetchMock)
+    renderConsole({ idleMs: 10 })
+
+    const original = editor().value
+    fireEvent.click(runButton())
+    await waitFor(() => expect(screen.getByRole('tab', { name: /Run 1/ })).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /re-run on edit/i }))
+    setSource(TX_ORIGIN_CONTRACT)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+
+    // Type the analysed source back in by hand: an authored edit, but to text already covered.
+    setSource(original)
+    await waitFor(() => expect(screen.getByText(/already has an analysis/i)).toBeInTheDocument())
+    await new Promise((r) => setTimeout(r, 60))
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('never fires on its own while the box is unchecked — edit, fix, or restore', async () => {
+    // Owner-reported. The auto-run path is the only thing that may spend a call without a press,
+    // so this walks every action that moves the draft and asserts the network stays silent.
+    const fetchMock = vi.fn(async () => sseResponse([frame('nope'), 'data: [DONE]\n\n']))
+    vi.stubGlobal('fetch', fetchMock)
+    renderConsole({ idleMs: 5 })
+    expect(screen.getByRole('checkbox', { name: /re-run on edit/i })).not.toBeChecked()
+
+    setSource(TX_ORIGIN_CONTRACT)
+    fireEvent.click(screen.getAllByRole('button', { name: /apply fix/i })[0])
+    fireEvent.click(screen.getByRole('button', { name: 'Original' }))
+    fireEvent.click(screen.getAllByRole('button', { name: /apply fix/i })[0])
+    await new Promise((r) => setTimeout(r, 120)) // many idle windows
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(screen.getByText(/10 of 10 analyses left/i)).toBeInTheDocument()
+  })
+
+  it('stops an already-armed run when the box is unchecked mid-countdown', async () => {
+    const fetchMock = vi.fn(async () => sseResponse([frame('nope'), 'data: [DONE]\n\n']))
+    vi.stubGlobal('fetch', fetchMock)
+    renderConsole({ idleMs: 400 })
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /re-run on edit/i }))
+    setSource(TX_ORIGIN_CONTRACT) // countdown starts
+    fireEvent.click(screen.getByRole('checkbox', { name: /re-run on edit/i })) // ...and is called off
+
+    await new Promise((r) => setTimeout(r, 600)) // past when it would have fired
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('runs nothing while paused, and says that is why', async () => {

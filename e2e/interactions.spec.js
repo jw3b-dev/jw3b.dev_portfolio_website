@@ -80,7 +80,7 @@ for (const route of ['/audit', '/work']) {
     // The pre-fix text was pinned on the way past, so undoing the fix returns YOUR contract —
     // not the sample the page happened to ship with.
     await expect(page.getByRole('button', { name: /^Fix · / })).toBeVisible()
-    await page.getByRole('button', { name: 'Edited' }).click()
+    await page.getByRole('button', { name: 'Edit 1' }).click()
     await expect(box).toHaveValue(REENTRANT)
     await expect(reentrancy).toBeVisible()
 
@@ -93,6 +93,26 @@ for (const route of ['/audit', '/work']) {
     await page.goto(route)
     await expect(page.getByRole('checkbox', { name: /re-run on edit/i })).not.toBeChecked()
     await expect(page.getByText(/auto re-run is off/i)).toBeVisible()
+    await expect(page.getByText(/10 of 10 analyses left/i)).toBeVisible()
+  })
+
+  /*
+   * Owner-reported: with re-run-on-edit armed, clicking a checkpoint to compare it fired a fresh
+   * model call. Asserted here WITHOUT letting a real request leave the browser — the budget
+   * counter is the tell, because it only moves when a run actually starts.
+   */
+  test(`looking back at an older version spends no analysis (${route})`, async ({ page }) => {
+    await page.goto(route)
+    const box = page.locator('#audit-src')
+    await box.fill(REENTRANT)
+    await page.getByRole('checkbox', { name: /re-run on edit/i }).check()
+
+    // Armed, but nothing has been authored since — the control means what it says.
+    await expect(page.getByText(/armed — your next edit/i)).toBeVisible()
+
+    await page.getByRole('button', { name: 'Original' }).click()
+    await expect(page.getByText(/looking back through your own history/i)).toBeVisible()
+    await page.waitForTimeout(1500)
     await expect(page.getByText(/10 of 10 analyses left/i)).toBeVisible()
   })
 }

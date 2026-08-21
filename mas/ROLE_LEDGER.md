@@ -467,3 +467,44 @@ debounce needed, and adding one would only introduce lag and test flakiness.
 
 Gate after remediation: lint 0 errors · 94 files / 762 tests · coverage 100% lines+functions ·
 build 0-warn · 26/26 E2E · claims · secret-scan.
+
+**Three owner reports, one root cause (auto-rerun treated navigation as authorship) — 2026-08-21.**
+Reported in quick succession while testing the workspace live: (1) "checking an older version with
+rerun on edit causes a rerun"; (2) "the versions buttons get mixed up and lost when clicking older
+versions"; (3) "rerun seems to be going even with the box unchecked … heuristics too and seems to
+be counting as audits". All three were the same defect wearing different clothes.
+
+**Reproduced on the deployed build at ZERO cost**, by intercepting `/audit` in-page so the trigger
+could be counted without paying for a model call: arming the toggle after an earlier edit spent one
+immediately (10 → 9), and then merely clicking "Original" to look at it spent another (9 → 8). With
+the box unchecked, a separate trace showed 0 network calls and the counter unmoved — so report (3)
+was the *arming* fire, which lands the instant you tick the box and therefore reads as "it ran on
+its own". "Heuristics counting as audits" is the same event seen from the other side: typing
+visibly re-runs the free screen, an audit follows ~4s later, and the two look coupled.
+
+**Root cause.** The idle effect keyed on `ws.draft` changing and could not see WHY it changed. A
+restore moves the draft byte-for-byte the way typing does, so nothing downstream could tell reading
+from writing. Fix (domain-engine): `CHANGE_ORIGIN` — only `EDIT` and `FIX` are authorship; `RESTORE`
+and `INIT` never trigger, each with its own visitor-facing reason. Plus an `ALREADY_ANALYSED` gate,
+so a source that already has a run tab is never bought twice (reachable by editing and undoing
+back). Plus arming resets the origin, so switching the toggle on no longer retroactively analyses
+what you typed before deciding to arm it.
+
+**Report (2) had a second cause worth separating.** `restoreVersion` was *additive* — it appended a
+`Restored · <label>` checkpoint on the theory that going back should itself be undoable. In use that
+was wrong three ways at once: the list grew every time you merely LOOKED at something, labels nested
+into `Restored · Fix · Apply checks-effects-interactions` and truncated to visually identical chips,
+and the chip that highlighted afterwards was the new one rather than the one you clicked — so the
+bar appeared to shuffle and the version you wanted got lost among copies of itself. Live capture
+after four clicks: `ORIGINAL · EDITED · FIX · PIN THE COMPILER VERSION · RESTORED · ORIGINAL ·
+FIX · APPLY CHECKS-EFFECTS-INTERACTIONS`. Now restore is **navigation and creates nothing**: the
+workspace tracks `currentVersionId`, the clicked chip is the one highlighted, and the only thing a
+restore can create is a pin for UNSAVED edits (the one way it could lose work). Edit pins are
+numbered (`Edit 1`, `Edit 2`) and fix chips are keyed by rule (`Fix · reentrancy`) so no two chips
+read alike.
+
+Guards added: policy tests for authored-vs-navigation and already-analysed; console tests for
+"never fires while unchecked across edit/fix/restore" and "an armed countdown is called off when
+you untick"; E2E on both routes for "looking back at an older version spends no analysis". Gate:
+lint 0 errors · 94 files / 772 tests · coverage 100% lines+functions · build 0-warn · 28/28 E2E ·
+claims · secret-scan.

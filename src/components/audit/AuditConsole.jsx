@@ -98,8 +98,10 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
         <div className="mt-4 border-t border-hairline pt-3">
           <p className="font-mono text-[10px] uppercase tracking-label text-content-muted">Versions — click to restore</p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {w.versions.map((v, i) => {
-              const isCurrent = i === w.versions.length - 1
+            {w.versions.map((v) => {
+              // Highlight the checkpoint the editor is ON — not the newest one. Clicking an older
+              // version used to light up a different chip, which is what made the bar look shuffled.
+              const isCurrent = v.id === w.currentVersionId
               return (
                 <button
                   key={v.id}

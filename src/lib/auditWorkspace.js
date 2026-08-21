@@ -9,8 +9,10 @@
  * they have genuinely different lifetimes (ADR-P5-02 §4):
  *
  *   draft      the live editor text. Changes per keystroke, and is NEVER versioned per keystroke.
- *   versions[] checkpoints. v1 = "Original" and is permanent. Created ONLY when something
- *              meaningful happens: a fix is applied, a version is restored, or a run starts.
+ *   versions[] checkpoints. v1 = "Original" and is permanent. Created ONLY when the source is
+ *              AUTHORED into a new state: a fix is applied, or unsaved edits are pinned by a run
+ *              or by navigating away. Moving BETWEEN existing checkpoints creates nothing —
+ *              browsing your history must not rewrite it.
  *   runs[]     one per AI analysis, each pinning the exact source it analysed.
  *
  * Why keystrokes don't create versions: a thousand-entry list is not a history anyone can use.
@@ -37,7 +39,6 @@ export const VERSION_ORIGIN = Object.freeze({
   ORIGINAL: 'original',
   EDIT: 'edit',
   FIX: 'fix',
-  RESTORE: 'restore',
 })
 
 const version = (id, label, source, origin, meta = {}) => ({ id, label, source, origin, ...meta })
@@ -49,17 +50,20 @@ export function createWorkspace(source = '') {
     draft: src,
     versions: [version('v1', ORIGINAL_LABEL, src, VERSION_ORIGIN.ORIGINAL)],
     runs: [],
+    // Which checkpoint the editor is sitting on. Distinct from "the newest one", because you can
+    // be looking at an older version without that being a new event in the history.
+    currentVersionId: 'v1',
     nextVersion: 2,
     nextRun: 1,
   }
 }
 
-/** The most recent checkpoint (never undefined — v1 cannot be removed). */
+/** The checkpoint the editor is currently on (never undefined — v1 cannot be removed). */
 export function currentVersion(ws) {
-  return ws.versions[ws.versions.length - 1]
+  return findVersion(ws, ws.currentVersionId) || ws.versions[0]
 }
 
-/** True when the draft has moved away from the newest checkpoint (there is something to pin). */
+/** True when the draft has unsaved edits relative to the checkpoint it sits on. */
 export function isDirty(ws) {
   return ws.draft !== currentVersion(ws).source
 }
@@ -77,13 +81,14 @@ export function setDraft(ws, text) {
   return { ...ws, draft: String(text ?? '') }
 }
 
-/** Append a checkpoint carrying `source`, and move the draft onto it. */
+/** Append a checkpoint carrying `source`, move the draft onto it, and make it the current one. */
 function checkpoint(ws, label, source, origin, meta) {
   const id = `v${ws.nextVersion}`
   return {
     ...ws,
     draft: source,
     versions: [...ws.versions, version(id, label, source, origin, meta)],
+    currentVersionId: id,
     nextVersion: ws.nextVersion + 1,
   }
 }
@@ -97,7 +102,10 @@ function checkpoint(ws, label, source, origin, meta) {
  * on, not just the thing the page shipped with.
  */
 function pinDraft(ws) {
-  return isDirty(ws) ? checkpoint(ws, 'Edited', ws.draft, VERSION_ORIGIN.EDIT) : ws
+  if (!isDirty(ws)) return ws
+  // Number them. Two chips both reading "Edited" are two chips you cannot choose between.
+  const n = ws.versions.filter((v) => v.origin === VERSION_ORIGIN.EDIT).length + 1
+  return checkpoint(ws, `Edit ${n}`, ws.draft, VERSION_ORIGIN.EDIT)
 }
 
 /**
@@ -112,31 +120,37 @@ export function applyFix(ws, fix) {
   // identical to the one before it is noise in the history.
   if (typeof next !== 'string' || next === ws.draft) return ws
   const pinned = pinDraft(ws)
-  return checkpoint(pinned, `Fix · ${fix.label}`, next, VERSION_ORIGIN.FIX, { fixId: fix.id, findingId: fix.findingId })
+  return checkpoint(pinned, `Fix · ${fix.findingId || fix.label}`, next, VERSION_ORIGIN.FIX, { fixId: fix.id, findingId: fix.findingId })
 }
 
 /**
- * Restore a previous version. ADDITIVE: it appends a new checkpoint carrying the old source
- * rather than truncating history, so going back is itself something you can go back from.
+ * Move the editor onto an existing checkpoint. This is NAVIGATION, and it deliberately creates
+ * NOTHING.
+ *
+ * It used to append a `Restored · <label>` checkpoint every time, on the theory that going back
+ * should itself be undoable. In use that was wrong in three ways at once, all reported together:
+ * the list grew every time you merely LOOKED at something, the labels nested into
+ * `Restored · Fix · …` and truncated to visually identical chips, and the entry that highlighted
+ * afterwards was the new one rather than the one you clicked — so the buttons appeared to shuffle
+ * and the version you wanted got lost among copies of itself. Browsing your history must not
+ * rewrite it.
+ *
+ * The one thing it does create is a pin for UNSAVED edits, because navigating away from work you
+ * have not checkpointed is the only way this could lose something.
  */
 export function restoreVersion(ws, versionId) {
   const target = findVersion(ws, versionId)
   if (!target) return ws
-  if (ws.draft === target.source && !isDirty(ws)) return ws // already exactly there
-  // Same rule as applyFix: unsaved edits are pinned before the draft is replaced, so "go back"
-  // can never be the thing that loses your work.
+  if (!isDirty(ws) && ws.currentVersionId === target.id) return ws // already exactly there
   const pinned = pinDraft(ws)
-  // If pinning already landed on the target's text, stop — two consecutive checkpoints holding
-  // identical source is exactly the history noise this module exists to avoid.
-  if (pinned.draft === target.source) return pinned
-  return checkpoint(pinned, `Restored · ${target.label}`, target.source, VERSION_ORIGIN.RESTORE, { fromVersionId: target.id })
+  return { ...pinned, draft: target.source, currentVersionId: target.id }
 }
 
 /**
  * Begin an AI run over the current draft.
- * Pins the draft first: if the draft has drifted from the newest checkpoint, that edit becomes a
- * checkpoint ("Edited") so the run has a named version to point at. If it hasn't drifted, the
- * existing checkpoint is reused rather than duplicated.
+ * Pins the draft first: unsaved edits become a numbered "Edit n" checkpoint so the run has a
+ * named version to point at. An unchanged draft reuses its current checkpoint rather than
+ * duplicating it.
  * @returns {[workspace, run]}
  */
 export function startRun(ws) {

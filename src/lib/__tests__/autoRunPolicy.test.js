@@ -6,6 +6,7 @@ import {
   AUTO_RUN_IDLE_MS,
   AUTO_RUN_RESERVE,
   AUDIT_BUDGET,
+  CHANGE_ORIGIN,
 } from '../autoRunPolicy.js'
 import { BUDGETS } from '../../../workers/portfolio-agent/src/rateLimit.js'
 
@@ -15,6 +16,7 @@ const ready = {
   paused: false,
   running: false,
   valid: true,
+  changeOrigin: CHANGE_ORIGIN.EDIT,
   draft: 'edited',
   lastAnalysedSource: 'original',
   fingerprint: 'reentrancy:9:high',
@@ -43,7 +45,10 @@ describe('autoRunPolicy', () => {
     expect(reasonOf({ paused: true })).toBe(AUTO_RUN_REASON.PAUSED)
     expect(reasonOf({ running: true })).toBe(AUTO_RUN_REASON.RUNNING)
     expect(reasonOf({ valid: false })).toBe(AUTO_RUN_REASON.INVALID)
+    expect(reasonOf({ changeOrigin: CHANGE_ORIGIN.INIT })).toBe(AUTO_RUN_REASON.AWAITING_EDIT)
+    expect(reasonOf({ changeOrigin: CHANGE_ORIGIN.RESTORE })).toBe(AUTO_RUN_REASON.RESTORED)
     expect(reasonOf({ draft: 'original' })).toBe(AUTO_RUN_REASON.UNCHANGED)
+    expect(reasonOf({ analysedSources: ['a', 'edited'] })).toBe(AUTO_RUN_REASON.ALREADY_ANALYSED)
     expect(reasonOf({ fingerprint: 'same', lastFingerprint: 'same' })).toBe(AUTO_RUN_REASON.NO_VISIBLE_CHANGE)
     expect(reasonOf({ runsUsed: AUDIT_BUDGET - AUTO_RUN_RESERVE })).toBe(AUTO_RUN_REASON.BUDGET)
     expect(reasonOf({ idleMs: AUTO_RUN_IDLE_MS - 1 })).toBe(AUTO_RUN_REASON.IDLE_WAIT)
@@ -64,6 +69,36 @@ describe('autoRunPolicy', () => {
 
   it('treats a first-ever analysis as a change worth making', () => {
     expect(evaluateAutoRun({ ...ready, lastAnalysedSource: null, lastFingerprint: null }).run).toBe(true)
+  })
+
+  it('runs on an authored change — typing, or a fix that rewrote the source', () => {
+    for (const origin of [CHANGE_ORIGIN.EDIT, CHANGE_ORIGIN.FIX]) {
+      expect(evaluateAutoRun({ ...ready, changeOrigin: origin }).run).toBe(true)
+    }
+  })
+
+  it('never runs on NAVIGATION — restoring a version is reading, not writing', () => {
+    // The owner-reported bug: clicking back through your own checkpoints to compare them spent a
+    // model call each time. A restore moves the draft exactly as typing does, so nothing
+    // downstream could tell them apart — only the origin can.
+    const d = evaluateAutoRun({ ...ready, changeOrigin: CHANGE_ORIGIN.RESTORE })
+    expect(d.run).toBe(false)
+    expect(d.reason).toBe(AUTO_RUN_REASON.RESTORED)
+    expect(d.explain).toMatch(/earlier version/i)
+  })
+
+  it('never runs before the first edit — the control is called "re-run on edit"', () => {
+    const d = evaluateAutoRun({ ...ready, changeOrigin: CHANGE_ORIGIN.INIT })
+    expect(d.run).toBe(false)
+    expect(d.reason).toBe(AUTO_RUN_REASON.AWAITING_EDIT)
+  })
+
+  it('refuses to buy the same analysis twice, and points at the tab that has it', () => {
+    // Reachable by editing and then undoing back to a source that already has a run.
+    const d = evaluateAutoRun({ ...ready, analysedSources: ['something else', 'edited'] })
+    expect(d.run).toBe(false)
+    expect(d.reason).toBe(AUTO_RUN_REASON.ALREADY_ANALYSED)
+    expect(d.explain).toMatch(/run tab/i)
   })
 
   it('will not spend the last run — the manual button keeps one in hand', () => {

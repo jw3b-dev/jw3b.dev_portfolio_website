@@ -30,13 +30,31 @@ export const AUDIT_BUDGET = 10
  */
 export const AUTO_RUN_RESERVE = 1
 
+/**
+ * WHY the draft last changed. The policy cannot tell authorship from navigation by looking at the
+ * text alone, and the difference decides whether an expensive call is warranted: typing is a
+ * proposal to analyse, clicking back through your own history is reading.
+ */
+export const CHANGE_ORIGIN = Object.freeze({
+  INIT: 'init', // first paint — nothing has been authored yet
+  EDIT: 'edit', // the visitor typed
+  FIX: 'fix', // a rule-derived fix rewrote the source
+  RESTORE: 'restore', // an earlier version was put back — navigation
+})
+
+/** Origins that represent NEW code worth analysing. The others are looking, not writing. */
+const AUTHORING = new Set([CHANGE_ORIGIN.EDIT, CHANGE_ORIGIN.FIX])
+
 export const AUTO_RUN_REASON = Object.freeze({
   READY: 'ready',
   DISABLED: 'disabled',
   PAUSED: 'paused',
   RUNNING: 'running',
   INVALID: 'invalid',
+  AWAITING_EDIT: 'awaiting-edit',
+  RESTORED: 'restored',
   UNCHANGED: 'unchanged',
+  ALREADY_ANALYSED: 'already-analysed',
   NO_VISIBLE_CHANGE: 'no-visible-change',
   BUDGET: 'budget',
   IDLE_WAIT: 'idle-wait',
@@ -48,7 +66,11 @@ const EXPLAIN = {
   [AUTO_RUN_REASON.PAUSED]: 'Paused — nothing will run until you say so.',
   [AUTO_RUN_REASON.RUNNING]: 'An analysis is already streaming.',
   [AUTO_RUN_REASON.INVALID]: 'Nothing to analyse yet.',
+  [AUTO_RUN_REASON.AWAITING_EDIT]: 'Armed — your next edit gets analysed once you stop typing.',
+  [AUTO_RUN_REASON.RESTORED]:
+    'Viewing an earlier version — looking back through your own history doesn’t spend an analysis. Press Run AI analysis for a fresh one.',
   [AUTO_RUN_REASON.UNCHANGED]: 'No edits since the last analysis.',
+  [AUTO_RUN_REASON.ALREADY_ANALYSED]: 'This exact source already has an analysis — open its run tab rather than paying for it twice.',
   [AUTO_RUN_REASON.NO_VISIBLE_CHANGE]:
     'Edited, but the heuristic screen is unchanged — not spending a model call on it. Run it manually if you want one anyway.',
   [AUTO_RUN_REASON.BUDGET]: 'Auto re-run has used its share of this session — the manual button still works.',
@@ -75,6 +97,8 @@ export function evaluateAutoRun({
   running = false,
   valid = true,
   draft = '',
+  changeOrigin = CHANGE_ORIGIN.INIT,
+  analysedSources = [],
   lastAnalysedSource = null,
   fingerprint = '',
   lastFingerprint = null,
@@ -91,8 +115,20 @@ export function evaluateAutoRun({
   if (running) return decide(AUTO_RUN_REASON.RUNNING)
   if (!valid) return decide(AUTO_RUN_REASON.INVALID)
 
-  // Never analysed yet? Then any valid draft is a change worth analysing.
+  // The control is called "re-run on EDIT", and it means it. Putting an earlier version back is
+  // navigation — you are reading your own history, not proposing new code — and it moves the
+  // draft exactly as typing does, so nothing downstream could tell the difference. Without this
+  // gate, clicking through your own checkpoints to compare them silently spent the budget.
+  if (!AUTHORING.has(changeOrigin)) {
+    return decide(changeOrigin === CHANGE_ORIGIN.RESTORE ? AUTO_RUN_REASON.RESTORED : AUTO_RUN_REASON.AWAITING_EDIT)
+  }
+
   if (lastAnalysedSource !== null && draft === lastAnalysedSource) return decide(AUTO_RUN_REASON.UNCHANGED)
+
+  // Any source that has ALREADY been analysed is already on screen in its own run tab. Paying a
+  // second time to be told the same thing is the clearest waste there is — and it happens easily,
+  // by editing and then undoing back.
+  if (analysedSources.includes(draft)) return decide(AUTO_RUN_REASON.ALREADY_ANALYSED)
 
   // The gate that makes this affordable: the free screen decides for the expensive one.
   if (lastFingerprint !== null && fingerprint === lastFingerprint) return decide(AUTO_RUN_REASON.NO_VISIBLE_CHANGE)
