@@ -35,7 +35,7 @@ register is complete over the walked surface, not a sample.
 | 14 | Home "What failed" prose + KthulhuEmbed still name "heuristic pass/pre-screen" as UI terms | P3 | 4 | W3 |
 | 15 | Fuzz output renders **literal ``` fences as text**; no Copy, no Download, no run instructions | P1 | 5 | W3 |
 | 16 | Tx-explainer untriable: bare hash field, no examples, no statement of what it returns | P2 | 5 | W3 |
-| 17 | `src/data/vuln-corpus` ships in the bundle, **used by no UI** | P2 | 5 | W3 |
+| 17 | ~~`src/data/vuln-corpus` ships in the bundle, used by no UI~~ **RETRACTED — the finding was wrong.** It is imported by `workers/portfolio-agent/src/auditRag.js` as the offline seed/reference for the Neon RAG corpus, and it is **not** in the client bundle (verified by grepping `dist/assets`). Nothing to fix. Recorded rather than deleted: an audit that quietly drops its own mistakes is not an audit. | — | — | n/a |
 | 18 | Console produces no takeaway: no report export, no finding→line link, no hire CTA from findings | P2 | 5 | W3 |
 | 19 | /ctf pre-wallet = **42-line login wall**: no brief/source/address/leaderboard/recorded solve — while `/ctf/leaderboard` + the recorded-solve artifact both exist unused | P1 | 5 | W4 |
 | 20 | /messages: stub promoted in primary nav; "← Back to the console" links to **home** | P2 | 2 | W4 |

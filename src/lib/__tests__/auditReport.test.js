@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildAuditReport, reportFilename } from '../auditReport.js'
+import { buildAuditReport, reportFilename, lineRange } from '../auditReport.js'
 import { AUDIT_DISCLAIMER } from '../auditClient.js'
 import { auditSolidity, SAMPLE_CONTRACT } from '../auditHeuristics.js'
 
@@ -122,5 +122,38 @@ describe('reportFilename', () => {
 
   it('falls back sensibly when there is no contract or no date', () => {
     expect(reportFilename('', '')).toBe('contract-screening-report.md')
+  })
+})
+
+/*
+ * W3 — a finding's line number becomes navigation (PRODUCT_AUDIT #18).
+ *
+ * The line was printed and nothing more, so the reader had to count lines by eye in their own
+ * contract. Clamping rather than throwing matters here: a detector can report a line past the end
+ * of a source that has since been edited down, and a stale finding must not crash the editor.
+ */
+describe('lineRange — select the line a finding points at', () => {
+  const src = 'alpha\nbravo\ncharlie'
+
+  it('returns the exact character span of a 1-based line', () => {
+    expect(src.slice(...Object.values(lineRange(src, 1)))).toBe('alpha')
+    expect(src.slice(...Object.values(lineRange(src, 2)))).toBe('bravo')
+    expect(src.slice(...Object.values(lineRange(src, 3)))).toBe('charlie')
+  })
+
+  it('clamps a stale line number instead of throwing', () => {
+    expect(src.slice(...Object.values(lineRange(src, 999)))).toBe('charlie')
+    expect(src.slice(...Object.values(lineRange(src, 0)))).toBe('alpha')
+    expect(src.slice(...Object.values(lineRange(src, -5)))).toBe('alpha')
+  })
+
+  it('handles empty and non-string sources without throwing', () => {
+    expect(lineRange('', 1)).toEqual({ start: 0, end: 0 })
+    expect(lineRange(null, 3)).toEqual({ start: 0, end: 0 })
+    expect(lineRange(undefined, 1)).toEqual({ start: 0, end: 0 })
+  })
+
+  it('handles a non-numeric line as line 1', () => {
+    expect(src.slice(...Object.values(lineRange(src, 'x')))).toBe('alpha')
   })
 })

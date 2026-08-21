@@ -108,3 +108,23 @@ export function reportFilename(source = '', generatedAt = '') {
   const day = (String(generatedAt).match(/^(\d{4}-\d{2}-\d{2})/) || [])[1] || 'report'
   return `${contract}-screening-${day}.md`
 }
+
+/**
+ * Character range of a 1-based line, for selecting it in a textarea.
+ *
+ * Findings carry a line number, and until now that number was only ever printed — the reader had
+ * to count lines by eye in their own contract to find what was being talked about. Selecting the
+ * line turns the finding into navigation.
+ *
+ * Clamps rather than throwing: a detector reporting a line past the end of an edited source is a
+ * stale finding, not a crash.
+ *
+ * @returns {{start:number, end:number}}
+ */
+export function lineRange(source, line) {
+  const lines = String(source == null ? '' : source).split('\n')
+  const idx = Math.min(Math.max(Math.trunc(Number(line) || 1), 1), lines.length) - 1
+  let start = 0
+  for (let i = 0; i < idx; i++) start += lines[i].length + 1
+  return { start, end: start + lines[idx].length }
+}

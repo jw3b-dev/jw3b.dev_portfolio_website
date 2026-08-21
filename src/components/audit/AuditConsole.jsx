@@ -21,7 +21,7 @@
  */
 import RunTabs from './RunTabs.jsx'
 import { section } from './consoleCopy.js'
-import { buildAuditReport, reportFilename } from '../../lib/auditReport.js'
+import { buildAuditReport, reportFilename, lineRange } from '../../lib/auditReport.js'
 import VersionDiff from './VersionDiff.jsx'
 import { Link } from 'react-router-dom'
 import { useAuditWorkspace } from '../../hooks/useAuditWorkspace.js'
@@ -61,6 +61,22 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
    * is built by a pure function so the honesty rules travel with the file: verbatim disclaimer,
    * per-run live/recorded provenance, and "no patterns matched" never rendered as "safe".
    */
+  /*
+   * A finding's line number used to be printed and nothing more — the reader had to count lines
+   * by eye in their own contract to find what was being described. Clicking it now selects that
+   * line in the editor, which turns the finding into navigation.
+   */
+  const jumpToLine = (line) => {
+    const el = document.getElementById('audit-src')
+    if (!el) return
+    const { start, end } = lineRange(w.draft, line)
+    el.focus()
+    el.setSelectionRange(start, end)
+    // Put the selected line near the top of the scroll box rather than wherever it happened to be.
+    const lineHeight = el.scrollHeight / Math.max(1, w.draft.split('\n').length)
+    el.scrollTop = Math.max(0, (Math.trunc(Number(line) || 1) - 2) * lineHeight)
+  }
+
   const exportReport = () => {
     const generatedAt = new Date().toISOString()
     const md = buildAuditReport({
@@ -200,7 +216,14 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`h-2 w-2 rounded-full ${meta.dot}`} aria-hidden="true" />
                     <span className={`text-xs font-bold ${meta.tone}`}>{meta.label}</span>
-                    <span className="text-xs text-content-muted">line {f.line}</span>
+                    <button
+                      type="button"
+                      onClick={() => jumpToLine(f.line)}
+                      title={`Select line ${f.line} in the editor`}
+                      className="text-xs text-content-muted underline decoration-dotted underline-offset-2 motion-safe:transition-colors hover:text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+                    >
+                      line {f.line}
+                    </button>
                     {fix && (
                       <button
                         type="button"
