@@ -103,10 +103,12 @@ for (const route of ['/audit', '/work']) {
    * tell, because it only moves when a run actually starts.
    */
   test(`browsing versions never spends an analysis (${route})`, async ({ page }) => {
-    // Match the WORKER endpoint only — a bare '**/audit' glob also matches the SPA route itself,
-    // which serves the stub as the page document and leaves you with no editor to type into.
+    // Match the AGENT worker only. Two traps here, both hit for real: a bare '**/audit' glob also
+    // matches the SPA route, and `host.includes('workers.dev')` matches the SPA too whenever the
+    // suite runs against the deployed *.workers.dev origin (which the post-deploy smoke does) —
+    // either way the stub is served as the page document and there is no editor left to type into.
     await page.route(
-      (url) => url.pathname === '/audit' && url.host.includes('workers.dev'),
+      (url) => url.pathname === '/audit' && url.hostname.startsWith('portfolio-agent'),
       (r) =>
         r.fulfill({ status: 200, contentType: 'text/event-stream', body: 'data: {"response":"## Summary\\nstubbed"}\n\ndata: [DONE]\n\n' }),
     )
