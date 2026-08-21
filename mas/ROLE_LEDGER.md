@@ -338,3 +338,18 @@ TTS audio/mpeg, rate-limit 10→429, /ctf live+testnet-labelled, TTFB 48ms. Defa
 (jw3b.dev 403s datacenter IPs via Cloudflare bot protection — real users/Googlebot get 200),
 opened alert #3, was fixed to a comma-separated accept-list (404/5xx still alarm), re-ran green
 and AUTO-CLOSED the alert. Gate 77 files/538 tests. Open: mainnet escrow, Unlock locks, `main`.
+
+**P5 SCOPING (lead-architect · MAS Phase 4) — 2026-08-21.** P5 entered and scoped from stubs
+into 7 dependency-ordered tasks + P5-GATE. Grounded in a live D1 measurement taken BEFORE
+scoping — conversations 207 · audit_runs 3 · engagement_requests 0 · ctf_solves 0 — i.e. the
+funnel has traffic at the top and nothing at the bottom. Two causes found, not assumed:
+(1) `/book-a-call` returns `scheduler_url` from an UNSET `env.SCHEDULER_URL`, and no UI reads
+the field — the "guaranteed terminal action" captures a contact and stops; (2) nothing measures
+the steps between engaging and enquiring. Order is by conversion impact, not stub order.
+**ADR-P5-01 recorded:** funnel analytics must be server-side AGGREGATE counters in D1 (no
+cookie, no visitor id, no third party) — the alternatives (third-party analytics; consented
+per-session tracking) would break the cookieless posture that makes the consent banner
+unnecessary per COMPLIANCE_RESEARCH Q2, and the consented option would add friction to the very
+funnel being optimised. Executable now: P5-01 (wiring + both states), P5-02, P5-04, and P5-05's
+pure policy layer. Owner-gated: scheduler URL (one var), mainnet funding (P5-05 activation,
+P5-07), product read APIs (P5-06).

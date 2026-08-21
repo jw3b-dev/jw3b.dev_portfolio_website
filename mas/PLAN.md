@@ -564,8 +564,102 @@ ZK proof-of-reputation, Push) are P5 stubs, not P4.
 
 ### P4-GATE — qa + security + auditor + performance re-run over the P4 surface.
 
-## P5 — Conversion & Productization (STUBS — scope on entry)
-P5-01 tools→products (meter /audit suite behind the P2 rails) · P5-02 concierge closes
-(calendar + triage) · P5-03 content engine cadence · P5-04 ecosystem cross-links (live
-KTHULHU/Kointel data through the claims gate) · P5-05 analytics-driven iteration ·
-P5-06 old-roadmap on-chain continuation (EAS · 4337 paymaster · ZK proof-of-reputation · Push).
+## P5 — Conversion & Productization (scoped 2026-08-21 · lead-architect, MAS Phase 4)
+
+**Grounding measurement, taken from live D1 before scoping** — conversations **207**,
+audit_runs **3**, engagement_requests **0**, ctf_solves **0**. The site attracts and engages
+but does not convert: there is traffic at the top of the funnel and nothing at the bottom.
+Two concrete causes were found rather than assumed:
+
+1. `POST /book-a-call` returns `scheduler_url` from `env.SCHEDULER_URL`, **which is unset** —
+   and no UI reads the field anyway. The "guaranteed terminal action" captures a contact and
+   then stops. Nobody can actually book.
+2. Nothing measures the steps between "opened the concierge" and "asked to hire", so the rest
+   of the drop-off is invisible.
+
+P5 is therefore ordered by conversion impact, not by the original stub order.
+
+### ADR-P5-01 — conversion analytics must not break the cookieless posture
+`docs/COMPLIANCE_RESEARCH.md` Q2 established that jw3b.dev needs **no consent banner** only
+because it sets no cookies and no tracking storage. Any funnel instrumentation must preserve
+that. Alternatives considered:
+- **(a) Third-party analytics** (Plausible/GA): a processor outside the EEA decision, a CSP
+  `connect-src` change, and a privacy-notice rewrite. Rejected — high cost, changes the
+  compliance story for a metric John can get for free.
+- **(b) Server-side AGGREGATE counters in D1** — increment a per-surface, per-day counter in
+  the Worker. No cookie, no device storage, no per-visitor identifier, no PII. **CHOSEN.**
+  Sufficient to locate drop-off, keeps the `consent` flag OFF and the banner unnecessary.
+- **(c) Per-session tracking with a consent banner**: would force the banner live, adding
+  friction to the exact funnel being optimised. Rejected as self-defeating.
+**Constraint this places on P5-02:** counters only, never a visitor identifier, and the
+existing ~10-minute IP purge stays untouched.
+
+### P5-01 — Close the booking loop (the terminal action must actually terminate)
+- **role:** full-stack-integrator · **implements:** FR-036 completion (BR-11 floor)
+- **files:** `src/components/mission-control/BookACall.jsx`, `workers/portfolio-agent/src/routes/engagement.js`, `workers/portfolio-agent/wrangler.toml`
+- **work:** surface `scheduler_url` in the confirmation state as the next step; keep the
+  current "John will be in touch" copy as the honest fallback when it is null, so the flow
+  never regresses to a dead end. Wire `SCHEDULER_URL` as a Worker var.
+- **verification:** with the var set, the confirmation renders a working booking link; with it
+  unset, the existing floor copy renders and no broken/empty affordance appears. Both tested.
+- **status:** **executable now** (wiring + both states + tests). **Owner-gated:** the actual
+  scheduler URL (Cal.com / Calendly / other) — one `wrangler` var once John picks one.
+
+### P5-02 — Funnel instrumentation (cookieless, aggregate)
+- **role:** backend-specialist + domain-engine · **implements:** ADR-P5-01
+- **files:** `workers/portfolio-agent/migrations/0003_funnel_counters.sql`, `workers/portfolio-agent/src/funnel.js`, route call-sites, `docs/OPS.md`
+- **work:** a `funnel_counters(day, surface, event, count)` table and a pure increment helper;
+  events limited to `surface_view`, `tool_run`, `cta_click`, `request_submit`. Fails open
+  exactly like the rate limiter — instrumentation must never break a request.
+- **verification:** pure counter logic unit-tested; counters increment on the live preview;
+  no cookie/storage written (asserted); claims + secret gates green; OPS digest query added.
+- **status:** **executable now.**
+
+### P5-03 — A concierge that closes
+- **role:** full-stack-integrator + domain-engine · **implements:** FR-019 extension
+- **files:** `src/lib/conciergeClient.js`, `workers/portfolio-agent/src/knowledge.js`, `src/components/chat/ChatWidget.jsx`
+- **work:** the hire-routing tool-call (P2-17) currently opens Mission Control. Extend the
+  contract so a clear hiring intent can offer the booking action inline, one tap, without
+  leaving the conversation.
+- **verification:** tool-call contract stays drift-guarded across client and Worker; the new
+  action degrades to the existing Mission Control route when booking is unprovisioned.
+- **deps:** P5-01 · **status:** executable once P5-01 lands.
+
+### P5-04 — Content pipeline (so publishing is a file, not a component)
+- **role:** frontend-engineer · **implements:** FR-055 continuation
+- **files:** `src/content/notes/*.md`, `src/pages/notes/`, `src/lib/notes.js`, sitemap
+- **work:** the two thesis pages are hand-built components. Generalise to the markdown pattern
+  already used by `privacy.md`/`terms.md`, so a new piece is a markdown file that
+  automatically gains a route, SEO/JSON-LD, and a sitemap entry (the drift-guard test extends
+  to cover it).
+- **verification:** adding a markdown file produces a live, SEO-complete route with no
+  component edit; sitemap drift-guard passes.
+- **status:** **executable now** (the pipeline). John supplies the writing.
+
+### P5-05 — Metered tools (productization)
+- **role:** app-ui-engineer + web3-blockchain · **implements:** FR-032 extension
+- **files:** `src/lib/meteringPolicy.js` (pure), `src/components/audit/*`
+- **work:** define free-tier limits and the paid-tier unlock as a **pure, fully-tested policy
+  module** now; wire it to the existing Unlock/escrow rails behind their flags.
+- **status:** **policy layer executable now; activation BLOCKED** on mainnet funding (Unlock
+  locks / mainnet escrow). Do not light the paid path against a testnet contract.
+
+### P5-06 — Live ecosystem data (KTHULHU / Kointel through the claims gate)
+- **role:** portfolio-evidence + frontend-engineer · **implements:** FR-004 deepening
+- **work:** specify a read-only JSON contract those products can expose, and a renderer that
+  routes every figure through the claims register, degrading to today's static card when the
+  endpoint is absent.
+- **status:** **BLOCKED** — needs a read endpoint from KTHULHU/Kointel. Contract can be
+  specified now; no unsourced figure may render regardless.
+
+### P5-07 — On-chain roadmap continuation (EAS · ERC-4337 paymaster · ZK reputation · Push)
+- **role:** smart-contract-engineer + web3-blockchain
+- **status:** **BLOCKED** on mainnet funding, same root cause as P5-05. Entry criterion: a
+  funded Base mainnet wallet. Carried from the pre-v2 roadmap; unchanged in intent.
+
+### P5-GATE — qa · security · codebase-auditor · compliance · performance
+Compliance gets an explicit extra check this phase: **the site must still set zero cookies and
+zero tracking storage**, or ADR-P5-01 has been violated and the consent banner must go live.
+
+**Critical path:** `P5-01 → P5-02 → P5-03 → P5-04 → P5-GATE`, with P5-05/06/07 entering only
+as their provisioning lands.
