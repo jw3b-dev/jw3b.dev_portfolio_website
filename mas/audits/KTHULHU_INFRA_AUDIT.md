@@ -1,14 +1,21 @@
 # KTHULHU — full infrastructure and pipeline audit
 
-**codebase-auditor · 2026-08-21 · read from the source, not from marketing copy**
+**codebase-auditor · 2026-08-21 · read from the source AND verified against the live Cloudflare API**
+
+> **Revision 2.** The first pass read `wrangler.toml` and inferred the cloud tier from it. That was
+> not an audit, it was a reading — and it was wrong in three places, because `kthulhu-api`'s config
+> describes one of SIX deployed workers. This revision enumerates the account through the
+> Cloudflare API. Everything in §1 and §3 marked ✎ is a correction to revision 1.
 
 **Why this exists.** jw3b.dev calls KTHULHU an "operable flagship" and shows a 13-stage pipeline
 on `/work` that I invented from a label list. It is a plausible pipeline; it is not KTHULHU's.
 Before the site describes the system it must describe the real one, and before it publishes a
 number it must know which tier produced it. Every claim below is cited to a file.
 
-Three corrections I made to my own understanding while writing this are recorded inline, because
-each was wrong in a way that would have shipped a false statement.
+Five corrections to my own understanding are recorded inline, because each was wrong in a way that
+would have shipped a false statement. The two largest came from verifying against the live API
+instead of the repo: the cloud tier is six workers in a different account, and the job queue has no
+consumer.
 
 ---
 
@@ -18,18 +25,42 @@ The system is not "a Worker plus a GPU". It is three tiers with different trust 
 
 | Tier | What runs there | Evidence |
 |---|---|---|
-| **Cloudflare edge** | API, orchestration, the Overmind Durable Object, kill-gate LLM votes, consolidation, review gate, report generation, query embedding | `wrangler.toml`, `workers/api/` |
+| **Cloudflare edge** | SIX workers: public API, a separate orchestrator ticking every minute, a nightly retention worker, two scrapers; two Workflows; a Durable Object per audit; kill-gate votes, consolidation, review gate, reports, query embedding | live Cloudflare API + `workers/api/` |
 | **The box** (self-hosted) | Every heavy tool job, in rootless-Podman containers; the corpus embedding service; Neo4j; self-hosted CI runners | `box/` |
 | **GitHub Actions** | The dispatch mechanism *today* — the Worker triggers workflows that execute **on the box's own runners** | `.github/workflows/`, `box/runners/README.md` |
 
-### Cloudflare bindings (`wrangler.toml`)
+### ✎ Cloudflare — SIX workers in a SEPARATE account
 
-- Worker `kthulhu-api`, routed to `api.kthulhu.co`
-- **Durable Object** `KTHULHU_OVERMIND` — one per audit, its realtime identity
-- **D1** `kthulhu-overmind` — Overmind state + task queue + `signal_log` + `audit_steps`
-- **KV** `KTHULHU_KV`, **R2** `kthulhu-storage` (reports, FV evidence)
-- **Workers AI** (`AI` binding) + AI Gateway
-- **Neon Postgres/pgvector** — via connection string, not a binding
+KTHULHU lives in Cloudflare account `971a9330143ed6b1a59183c35fb803eb`, **not** the agilegypsy
+account that hosts jw3b.dev. That is why an MCP enumeration of the agilegypsy account showed no
+`kthulhu-api` and no `kthulhu-overmind` — the entire cloud tier was invisible from there.
+
+| Worker | Cron | Role |
+|---|---|---|
+| `kthulhu-api` | — | the public API (`api.kthulhu.co`) |
+| **`kthulhu-overmind`** | **`* * * * *`** | the orchestrator — ticks every minute |
+| `kthulhu-retention` | `0 3 * * *` | nightly retention / reconciler |
+| `kthulhu-scrapers` | `0 0,6,12,18 * * *` | Solodit harvest (the 6-hourly incremental) |
+| `kthulhu-scraper` | `0 */6 * * *` | older scraper, same cadence |
+| `graft-web` | — | a different product sharing the account |
+
+**The orchestrator is its own worker, not a module of the API.** `kthulhu-overmind` holds a
+`service` binding to `API`, both Workflows, the queue producer, and every per-tool routing flag.
+
+**✎ Cloudflare Workflows are in use** — I reported none because the repo search only found test
+files: `OvermindWorkflow` and `GithubIngestWorkflow` are bound to `kthulhu-overmind`. That is
+durable execution, which materially changes the orchestration story.
+
+**Stores:** D1 `kthulhu-overmind` (+ `-dev`), KV `KTHULHU_KV` (+ dev/preview), R2
+`kthulhu-storage`, Neon via `NEON_DATABASE_URL`, Workers AI + AI Gateway. `graft-db`,
+`GRAFT_KV` and `graft-storage` belong to the other product.
+
+**Model/provider credentials bound:** `CLAUDE_CODE_OAUTH_TOKEN`, `GOOGLE_AI_API_KEY`,
+`VOYAGE_API_KEY`, `NIM_API_KEY` — more providers than the embedding audit implied.
+
+**Per-tool routing flags on the orchestrator** — the canary mechanism, deployed:
+`LEDGER_PULL_{DISCOVERY,ENSEMBLE,FUZZ,FV,PDF,SCENARIO,STATIC}`, `FV_BOX_GEN`,
+`STATIC_ADJ_ON_BOX`, `SCOPE_GATE_ENABLED`, `SHADOW_DISPATCH`.
 
 ### The box (`box/`) — a platform, not a machine
 
@@ -101,12 +132,36 @@ otherwise                        → 'complete'          (report deliverable)
 (`rust-tools.yml` and others) which execute on the box's self-hosted runners; results return via a
 `TOOLS_WEBHOOK_KEY`-authenticated callback.
 
-**Built but not live: Cloudflare Queues.** `lib/engine/dispatch/queue.ts` implements
-`enqueueToolJob` = INSERT `tool_jobs` + `TOOL_QUEUE.send`, explicitly to replace "the five
-workflow_dispatch fetches" and to avoid spending scarce external subrequests. It is **inert**:
-gated behind `SHADOW_DISPATCH='true'` AND a bound `TOOL_QUEUE`, and **no queue binding exists in
-`wrangler.toml`** (verified: zero matches). A per-tool canary is designed so one tool can cut over
-without kicking Medusa/anvil's 90-minute jobs onto an unproven path.
+### ✎ Cloudflare Queues — deployed, produced-to, and CONSUMED BY NOTHING
+
+Revision 1 said Queues was "built but inert, no binding exists". That was wrong: I had only read
+`kthulhu-api`'s config, and the binding lives on the orchestrator.
+
+Verified against the API:
+
+```
+queue     kthulhu-tool-jobs   (created 2026-07-13)
+producers 1  → kthulhu-overmind          [TOOL_QUEUE binding present]
+consumers 0
+retention 86400s (24h)
+```
+
+**One producer, zero consumers.** Nothing — no push consumer worker, no HTTP pull consumer — takes
+messages off this queue. Anything enqueued sits for 24 hours and is discarded.
+
+So the Queues cutover is **half-deployed**: the producer side is live on the orchestrator, with
+`SHADOW_DISPATCH` and per-tool `LEDGER_PULL_*` canaries in place, while the consumer side does not
+exist. Real work still reaches the box through GitHub Actions.
+
+Two readings, and both are worth checking:
+
+- If `SHADOW_DISPATCH` is **on**, the orchestrator is enqueuing shadow jobs for comparison — but
+  the comparison cannot happen, because nothing reads them.
+- If it is **off**, the queue has been idle since 2026-07-13 and the enqueue path is untested in
+  production.
+
+Either way the box's dispatcher must be reached another way today, which matches the GHA path
+below.
 
 ### Job deadlines (`DEADLINE_MS`) — where the wall-clock goes
 
