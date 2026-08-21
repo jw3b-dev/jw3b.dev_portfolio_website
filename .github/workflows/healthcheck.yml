@@ -26,37 +26,45 @@ jobs:
         id: probe
         run: |
           set -uo pipefail
+          UA='Mozilla/5.0 (compatible; jw3b-healthcheck/1.0; +https://jw3b.dev)'
           # name|url|mode — no AI spend (liveness endpoints only). Modes:
-          #   200   — must return HTTP 200 (the SPA document; the homepage is expected up).
-          #   alive — must merely RESPOND (any 2xx/3xx/4xx); only a timeout/refused (000) or a
-          #           5xx is "down". Workers use this: prod and preview run different code (the
-          #           prod worker predates the v2 routes), so a 404/405 still proves it's serving.
+          #   <codes> — comma-separated acceptable HTTP codes (e.g. "200" or "200,403").
+          #   alive   — must merely RESPOND: only a timeout/refused (000) or a 5xx is "down".
+          #             Workers use this because prod and preview run different code (the prod
+          #             worker predates some v2 routes), so a 404/405 still proves it's serving.
+          #
+          # WHY prod-site accepts 403: jw3b.dev sits behind the zone's Cloudflare bot/WAF layer,
+          # which 403s datacenter IPs — including GitHub Actions runners — while real users and
+          # verified crawlers get 200 (confirmed 2026-08-21: every UA, incl. Googlebot, returns
+          # 200 from a residential IP; the *.workers.dev origin returns 200 from the runner).
+          # A 403 therefore proves the edge is up and deciding, not that the site is down; a
+          # 404/5xx/timeout still alarms, so a genuine outage or broken route is NOT masked.
           TARGETS=(
-            "prod-site|https://jw3b.dev/|200"
+            "prod-site|https://jw3b.dev/|200,403"
             "prod-worker|https://portfolio-agent.agilegypsy.workers.dev/|alive"
             "preview-site|https://jw3b-dev-site-v2.agilegypsy.workers.dev/|200"
             "preview-worker|https://portfolio-agent-v2.agilegypsy.workers.dev/ctf/leaderboard|200"
           )
+          accepts() { case ",$1," in *",$2,"*) return 0;; *) return 1;; esac; }
           FAILURES=""
           for t in "${TARGETS[@]}"; do
             name="${t%%|*}"; rest="${t#*|}"; url="${rest%|*}"; mode="${rest##*|}"
             code=""
             # 3 attempts with backoff so a single transient blip doesn't false-alarm.
             for attempt in 1 2 3; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$url" || echo "000")
-              if [ "$mode" = "200" ]; then
-                [ "$code" = "200" ] && break
-              else
-                # alive: anything that isn't a connection failure or a 5xx is a pass.
+              code=$(curl -s -o /dev/null -A "$UA" -w '%{http_code}' --max-time 20 "$url" || echo "000")
+              if [ "$mode" = "alive" ]; then
                 { [ "$code" != "000" ] && [ "$code" -lt 500 ]; } && break
+              else
+                accepts "$mode" "$code" && break
               fi
               sleep $((attempt * 5))
             done
             down=""
-            if [ "$mode" = "200" ]; then
-              [ "$code" != "200" ] && down=1
-            else
+            if [ "$mode" = "alive" ]; then
               { [ "$code" = "000" ] || [ "$code" -ge 500 ]; } && down=1
+            else
+              accepts "$mode" "$code" || down=1
             fi
             if [ -n "$down" ]; then
               echo "DOWN  $name ($url) → HTTP $code"
