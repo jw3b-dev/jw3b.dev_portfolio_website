@@ -360,7 +360,13 @@ const PERSONA_GUARD =
 export async function handleConcierge(req, env, ctx, body, extraHeaders = {}) {
   const messages = toAnthropicMessages(body.messages)
   const conversationId = safeConversationId(body.conversationId, crypto.randomUUID())
-  const system = PERSONA_GUARD + (conciergeSystemPrompt || CONCIERGE_SYSTEM_FALLBACK) + TOOL_REGISTRY_PROMPT + AUDIO_PROMPT // persona guard + KB (P1-03) + tools (P2-17) + voice
+  // persona guard + claims KB (P1-03) + what the site actually is (W2) + tools (P2-17) + voice
+  const system =
+    PERSONA_GUARD +
+    (conciergeSystemPrompt || CONCIERGE_SYSTEM_FALLBACK) +
+    SITE_GUIDE_PROMPT +
+    TOOL_REGISTRY_PROMPT +
+    AUDIO_PROMPT
 
   const waitUntil = (p) => ctx && typeof ctx.waitUntil === 'function' && ctx.waitUntil(p)
 
