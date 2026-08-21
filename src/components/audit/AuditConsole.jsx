@@ -6,6 +6,7 @@
  * labelled a heuristic pass — "REPRODUCED" is reserved for labelled recorded runs (radical honesty).
  */
 import { useState } from 'react'
+import ResultTabs from './ResultTabs.jsx'
 import { Link } from 'react-router-dom'
 import { useAuditStream } from '../../hooks/useAuditStream.js'
 import { SEVERITY_META, SAMPLE_CONTRACT } from '../../lib/auditHeuristics.js'
@@ -75,7 +76,13 @@ export default function AuditConsole({ initialSource } = {}) {
         {narrative && (
           <div className="mt-4 border-t border-hairline pt-3">
             <h4 className="text-xs font-semibold uppercase tracking-wide text-content-muted">Analysis</h4>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-content-secondary">{narrative}</p>
+            {/* Was a single preformatted block: the model's markdown rendered RAW (literal ##
+                and backticks) and streamed down the page, so finding "the fix" meant scrolling
+                past everything. ResultTabs splits it on its own headings and renders each part
+                properly, following the newest section while it streams. */}
+            <div className="mt-2">
+              <ResultTabs source={narrative} streaming={running} label="Analysis sections" />
+            </div>
           </div>
         )}
 

@@ -5,7 +5,7 @@
  * fallthrough / empty stream it degrades to the labelled Tier-2 bundled run + a book-a-call
  * offer — never a blank error (FR-020). Streaming state drives the typing indicator + input lock.
  */
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { AGENT_CHAT_URL, AGENT_HEALTH_URL } from '../config/worker.js'
 import { AGENT_STATUS, statusFromHealth, statusFromExchange } from '../lib/agentStatus.js'
 import { parseSseLine } from '../lib/tagProtocol.js'
@@ -22,19 +22,23 @@ export function usePortfolioAgent() {
   const provenRef = useRef(false) // once an exchange has spoken, stop letting probes overwrite it
   const historyRef = useRef([])
 
-  useEffect(() => {
-    let cancelled = false
+  // LAZY on purpose. This used to run on mount — but the widget mounts on every route while
+  // the status is only ever visible inside the OPEN panel, so it fired a request per page view
+  // and, from any origin outside the Worker's CORS allowlist (local dev, CI preview), logged a
+  // console error on every page. Probing when the panel opens costs nothing until someone
+  // engages, and still answers "is it up?" before they ask anything.
+  const probedRef = useRef(false)
+  const checkStatus = useCallback(() => {
+    if (probedRef.current || provenRef.current) return // once per session; an exchange outranks it
+    probedRef.current = true
     setStatus(AGENT_STATUS.CHECKING)
     fetch(AGENT_HEALTH_URL, { method: 'GET' })
       .then((r) => (r.ok ? r.json() : null))
-      .catch(() => null)
+      .catch(() => null) // a blocked/failed probe IS the offline signal
       .then((body) => {
-        if (cancelled || provenRef.current) return
+        if (provenRef.current) return
         setStatus(statusFromHealth(body))
       })
-    return () => {
-      cancelled = true
-    }
   }, [])
 
   const commit = useCallback((updater) => {
@@ -124,5 +128,5 @@ export function usePortfolioAgent() {
     [streaming, commit, patchLast],
   )
 
-  return { messages, streaming, status, send, toolCall, clearToolCall: () => setToolCall(null) }
+  return { messages, streaming, status, checkStatus, send, toolCall, clearToolCall: () => setToolCall(null) }
 }

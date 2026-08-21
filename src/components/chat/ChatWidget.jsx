@@ -19,7 +19,7 @@ import { stripMarkdown } from '../../lib/micTurn.js'
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
-  const { messages, streaming, status, send, toolCall, clearToolCall } = usePortfolioAgent()
+  const { messages, streaming, status, checkStatus, send, toolCall, clearToolCall } = usePortfolioAgent()
   const { recording, voiceOn, canRecord, startRecording, stopRecording, speak, toggleVoice, unlockAudio } = useVoice()
   const live = useLiveVoice() // P3 live-voice (flag-gated; on-device Whisper + Claude + Aura)
   const [draft, setDraft] = useState('')
@@ -62,7 +62,12 @@ export default function ChatWidget() {
       {/* Launcher */}
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          setOpen((o) => {
+            if (!o) checkStatus() // probe only when the panel is actually opened
+            return !o
+          })
+        }}
         aria-expanded={open}
         aria-label={open ? 'Close concierge chat' : 'Open concierge chat'}
         className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-cyan/40 bg-panel text-cyan shadow-lg motion-safe:transition-transform motion-safe:hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
