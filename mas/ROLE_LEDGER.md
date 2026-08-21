@@ -323,3 +323,18 @@ unverified (YAML valid, probe logic proven). Remaining P4: P4-GATE.
 CSP/headers intact, liveness-only healthcheck) · auditor (every P4 change task-mapped, owner items
 in DEFERRED.md) · performance (LCP 0.66s, CLS 0.1047→0.00, transformers off boot). **★ P4 COMPLETE.**
 P4-01 CTF-activated (escrow/Unlock owner-gated) · P4-02 perf · P4-03 SEO · P4-04 ops · P4-GATE ✓.
+
+**CLOSE-OUT 2026-08-21 (owner-approved: promote + testnet escrow + vault top-up).**
+On-chain (web3-blockchain/smart-contract-engineer): v2 MilestoneEscrow DEPLOYED to Base Sepolia
+`0xe44A38129A69B94CbdAFe80C71e5A113E46E87F8` (10/10 ABI selectors verified vs the old 2/10),
+owner=John's wallet, Circle test USDC; CTF vault bait 0.00002→0.00012 ETH. Wired with chainId
+84532 so the TESTNET badge is structural; `escrow` flag stays OFF in prod on purpose (a testnet
+escrow must never take a real engagement) — guarded by a new test. `ctf` flag ON.
+Promotion (devops): v2 worker→`portfolio-agent`, v2 SPA→`jw3b-dev-site`. **jw3b.dev is v2.**
+Smoke-verified: CSP now on `/` (v1 gap CLOSED), apex+www, Claude streaming, CORS allow/deny,
+TTS audio/mpeg, rate-limit 10→429, /ctf live+testnet-labelled, TTFB 48ms. Default branch → `v2`
+(unrelated histories make a main merge impossible; force-replace is the owner's call).
+**Health check now REGISTERED and PROVEN end-to-end**: first run caught a real false-positive
+(jw3b.dev 403s datacenter IPs via Cloudflare bot protection — real users/Googlebot get 200),
+opened alert #3, was fixed to a comma-separated accept-list (404/5xx still alarm), re-ran green
+and AUTO-CLOSED the alert. Gate 77 files/538 tests. Open: mainnet escrow, Unlock locks, `main`.

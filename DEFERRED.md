@@ -15,14 +15,19 @@ hard-broken states), and flipping it live later is provisioning + a flag — no 
 - **With this deferral the P-series build scope is complete** (P3-08 GA sweep passed; P3-09
   closed by the OD-04 ratification).
 
-## Production promotion — held by owner (John, 2026-08-18: "not yet")
+## Production promotion — ✅ DONE (John approved, 2026-08-21)
 
-v2 remains on the preview URLs (`jw3b-dev-site-v2` / `portfolio-agent-v2`); production jw3b.dev
-serves v1 until John gives the explicit go. Promotion note: deploy the v2 build to
-`--name jw3b-dev-site` and v2 worker code to `--name portfolio-agent` (defaults are the -v2
-names on purpose), apply worker migrations against prod bindings, smoke-test, keep
-`wrangler rollback` one command away. `voiceLive` ships ON at promotion (owner decision,
-2026-08-18).
+**jw3b.dev now serves v2.** Worker `portfolio-agent` + SPA `jw3b-dev-site` both deployed from
+v2 (2026-08-21) and smoke-verified live: CSP/security headers on `/` (closes the old v1 header
+gap), apex+www 200, real Claude streaming, CORS allow/deny, TTS `audio/mpeg`, rate limiter
+10→429, `/ctf` live + testnet-labelled, TTFB ~48 ms. `voiceLive` ON. GitHub default branch moved
+to `v2` (v2 and main have UNRELATED histories — a merge is not possible without a force-replace,
+which is the owner's call; changing the default branch achieved the goal and registered the
+health check, which now runs green).
+
+Rollback (one command each, still valid):
+`wrangler rollback --name jw3b-dev-site --version-id 721bcb92-d253-47f6-8758-91a28408af2b`
+`wrangler rollback --name portfolio-agent --version-id c2411c4f-3886-406c-a69d-f6c2e3d28de9`
 
 ## P4-01 findings (2026-08-18) — testnet rails activation
 
@@ -44,3 +49,19 @@ Dispositions:
   address into `ESCROW.address` + `PROVIDER_WALLET` in `src/config/contracts.js`, flip `escrow` ON.
   Decision needed: mainnet USDC (real money) vs a testnet-USDC demo.
 - **Unlock**: still needs real deployed lock addresses → `UNLOCK_LOCKS` + `retainer.json`.
+
+## Still open (owner input required)
+
+1. **Mainnet escrow** — the Base mainnet wallet holds 0 ETH, so no mainnet contract can be
+   deployed or funded. The v2 escrow is live on Base Sepolia and fully wired; swapping to
+   mainnet = fund the wallet, run `DeployEscrow` against Base, then set `ESCROW.address` +
+   `chainId: 8453` in `src/config/contracts.js` and flip the `escrow` flag. A test guards the
+   chainId so the TESTNET badge can never silently claim mainnet.
+2. **Unlock locks** — still need real lock addresses (`UNLOCK_LOCKS` + `retainer.json`); also
+   blocked on mainnet gas. The P3-04 terms gate is already wired in front of both paid rails.
+3. **`main` branch** — carries unrelated v1 history and a stale `deploy.yml` targeting the
+   deleted Pages project `jw3b-dev-portfolio`. Options: leave as an archive (current state),
+   or force-replace with v2. Owner's call; nothing depends on it now that `v2` is the default.
+4. **Cloudflare bot protection on the `jw3b.dev` zone** 403s datacenter IPs. Harmless for real
+   users and verified crawlers (every UA incl. Googlebot returns 200 from a residential IP),
+   but worth a Search Console check after the new sitemap is submitted.
