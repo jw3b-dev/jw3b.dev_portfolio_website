@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import ClaimsGateDemo from '../../components/thesis/ClaimsGateDemo.jsx'
 import Seo from '../../components/seo/Seo.jsx'
 
 /*
@@ -44,6 +45,9 @@ export default function ZeroTrustValidator() {
           real, checkable source, and an unbacked claim fails the pipeline. The portfolio holds itself to
           the standard it sells.
         </p>
+        {/* The proof sits INSIDE the claim's own section. A page that asserts enforcement and
+            then makes you scroll to find the evidence is still asking for trust. */}
+        <ClaimsGateDemo />
       </section>
 
       <section className="mt-10">
