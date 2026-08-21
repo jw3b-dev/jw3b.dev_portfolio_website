@@ -65,3 +65,27 @@ Dispositions:
 4. **Cloudflare bot protection on the `jw3b.dev` zone** 403s datacenter IPs. Harmless for real
    users and verified crawlers (every UA incl. Googlebot returns 200 from a residential IP),
    but worth a Search Console check after the new sitemap is submitted.
+
+## Cloudflare zone settings conflicting with our CSP (found by the P5 E2E layer)
+
+The zone injects an inline bot-detection script (`window.__CF$cv$params` →
+`/cdn-cgi/challenge-platform/…`) into every HTML response. Our `script-src` has no
+`'unsafe-inline'`, so the browser blocks it and logs a CSP violation on **every page load**.
+
+Consequences: Cloudflare's JavaScript Detections do not actually run on jw3b.dev (the WAF and
+IP-reputation rules still do — this is also why datacenter IPs get 403s), and the console is
+noisy for anyone who opens devtools on the site.
+
+**Do NOT fix this by adding `'unsafe-inline'` to `script-src`.** That would neuter the CSP the
+site advertises, to silence a warning about a script we neither wrote nor need. The real fixes,
+in order of preference, are all zone-side and owner-only:
+
+1. Turn **JavaScript Detections** off for the zone (Security → Bots) if the WAF rules suffice.
+2. Or enable Cloudflare's **CSP nonce/hash integration** so the injected script is signed.
+3. Or accept it: the script is blocked, the site is unharmed, and the E2E suite filters this
+   specific noise while still failing on any error we actually own.
+
+Same investigation also observed `googletagmanager`/`cloudflareinsights` requests attributed to
+the page. Neither appears in our build or the served HTML — they originate from the flagship
+iframes' own origins. Worth confirming during any future consent review, since the site's
+"no consent banner required" position depends on **jw3b.dev itself** setting no tracking storage.
