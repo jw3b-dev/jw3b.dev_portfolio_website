@@ -58,3 +58,16 @@ privacy notice; DSAR/erasure runbook in `docs/COMPLIANCE.md`.
 Worker: `npx wrangler@4 rollback --name jw3b-dev-site --version-id <prev>` (SPA) /
 `--name portfolio-agent` (agent). List versions: `wrangler deployments list --name <worker>`.
 Full promotion + rollback notes: `docs/DEFERRED.md`.
+
+## Why the post-deploy smoke targets `*.workers.dev`, not `jw3b.dev`
+
+The apex sits behind the zone's Cloudflare bot protection, which serves **datacenter IPs — every
+GitHub runner — a managed-challenge page instead of the site**. The first production-deploying
+run proved it: the smoke reported Cloudflare's own CSP
+(`script-src 'nonce-…' 'unsafe-eval' https://challenges.cloudflare.com`) rather than ours,
+because it never reached our worker at all.
+
+So CI smokes `https://jw3b-dev-site.agilegypsy.workers.dev` — the SAME deployed worker and the
+same code, reached without the zone layer in the way. The scheduled health check still probes
+the apex (accepting 403 as "the edge is up and deciding"), so between them both layers are
+covered. Running `npm run e2e:prod` from an ordinary connection tests the apex end to end.

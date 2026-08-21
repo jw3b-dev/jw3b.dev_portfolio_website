@@ -38,7 +38,7 @@ AI_GATEWAY = "jw3b-portfolio-agent"           # Cloudflare AI Gateway slug (ADR-
                                               # Per-model rate/spend CEILING is set gateway-side in the
                                               # AI Gateway dashboard (owner) — the outer limit above the
                                               # per-IP D1 rate-limit in rateLimit.js (P1-01 defense-in-depth).
-ALLOWED_ORIGINS = "https://jw3b.dev,https://www.jw3b.dev" # CORS allowlist (NFR-04); dev origin gated by DEV_ORIGIN secret
+ALLOWED_ORIGINS = "https://jw3b.dev,https://www.jw3b.dev,https://jw3b-dev-site.agilegypsy.workers.dev" # CORS allowlist (NFR-04); dev origin gated by DEV_ORIGIN secret
 CTF_VAULT_ADDRESS = "0x4f72efbe94677E9bd5a3a1741b137e9Ea203C240" # Base Sepolia ReentrantVault (live, matches src/config/contracts.js)
 CTF_RPC_URL = "https://sepolia.base.org"        # public Base Sepolia RPC (no key); override with a dedicated endpoint if rate-limited
 

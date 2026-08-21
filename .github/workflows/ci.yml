@@ -226,8 +226,16 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Wait for the deploy to propagate
         run: sleep 20
-      - name: E2E against jw3b.dev
-        run: npm run e2e:prod
+      # Targets the SPA's *.workers.dev hostname, NOT jw3b.dev — same deployed worker, same
+      # code. The apex sits behind the zone's Cloudflare bot protection, which serves datacenter
+      # IPs (every GitHub runner) a managed-challenge page instead of the site: the first run of
+      # this job proved it by reporting Cloudflare's own CSP rather than ours. The workers.dev
+      # origin bypasses the zone layer, so this verifies what we just shipped; the scheduled
+      # health check still covers the apex from the edge's point of view.
+      - name: E2E against the deployed site
+        run: npx playwright test
+        env:
+          E2E_BASE_URL: https://jw3b-dev-site.agilegypsy.workers.dev
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
