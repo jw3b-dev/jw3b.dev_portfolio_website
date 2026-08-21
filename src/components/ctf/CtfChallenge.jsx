@@ -10,6 +10,8 @@ import { useEffect } from 'react'
 import { useCtf } from '../../hooks/useCtf.js'
 import { CTF_LABEL } from '../../lib/ctfFlow.js'
 import ConnectButton from '../wallet/ConnectButton.jsx'
+import SwitchChainButton from '../wallet/SwitchChainButton.jsx'
+import { CTF } from '../../config/contracts.js'
 
 // FR-024 — the honest testnet banner shown on every CTF surface.
 function TestnetBanner() {
@@ -54,12 +56,7 @@ export default function CtfChallenge() {
           </div>
         )}
 
-        {phase === 'wrong-chain' && (
-          <div className="space-y-3">
-            <p className="text-sm text-caution">Switch your wallet to Base Sepolia — no real funds, testnet only.</p>
-            <ConnectButton />
-          </div>
-        )}
+        {phase === 'wrong-chain' && <SwitchChainButton chainId={CTF.chainId} />}
 
         {phase === 'vault-empty' && (
           <p className="text-sm text-content-secondary">The vault has no bounty to drain right now. Check back shortly.</p>

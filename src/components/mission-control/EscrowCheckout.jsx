@@ -8,9 +8,10 @@
  * Semantic tokens only. Screen + wiring only — the contract + its ABI belong upstream.
  */
 import { useEffect } from 'react'
-import { PROVIDER_WALLET } from '../../config/contracts.js'
+import { PROVIDER_WALLET, ESCROW } from '../../config/contracts.js'
 import { useEscrow } from '../../hooks/useEscrow.js'
 import ConnectButton from '../wallet/ConnectButton.jsx'
+import SwitchChainButton from '../wallet/SwitchChainButton.jsx'
 import BookACall from './BookACall.jsx'
 
 // Honest network chip — TESTNET amber, MAINNET cyan, anything else red (BR-09).
@@ -77,12 +78,7 @@ export default function EscrowCheckout({ selection, loadout, onBack = () => {} }
         </div>
       )}
 
-      {phase === 'wrong-chain' && (
-        <div className="space-y-3">
-          <p className="text-sm text-caution">Switch your wallet to Base to continue.</p>
-          <ConnectButton />
-        </div>
-      )}
+      {phase === 'wrong-chain' && <SwitchChainButton chainId={ESCROW.chainId} />}
 
       {phase === 'simulating' && (
         <p role="status" aria-live="polite" className="text-sm text-content-secondary">
