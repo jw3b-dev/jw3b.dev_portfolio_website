@@ -305,14 +305,17 @@ export function shapeSeverity(rows) {
 /**
  * `GET /kb/stats` — how much audit work exists, and its severity shape. No rows, ever.
  */
-export async function handleKbStats(req, env, ctx, _params, { neonClient } = {}) {
+export async function handleKbStats(req, env, ctx, params, { neonClient } = {}) {
+  // KV is eventually consistent, so a deleted key can still serve for a while — which made a
+  // freshly deployed field look absent rather than stale. `?fresh=1` skips the read.
+  const skipCache = String(params?.fresh ?? '') === '1'
   const empty = (reason) => ({
     status: 200,
     body: { audits: null, findings: null, severity: {}, auditStatus: {}, degraded: true, reason },
   })
   if (!env?.NEON_DATABASE_URL) return empty('stats are not provisioned')
 
-  if (env.KV) {
+  if (env.KV && !skipCache) {
     try {
       const hit = await env.KV.get('kb:stats', 'json')
       if (hit) return { status: 200, body: { ...hit, cached: true } }
@@ -324,8 +327,10 @@ export async function handleKbStats(req, env, ctx, _params, { neonClient } = {})
   try {
     const sql = neonClient || (await defaultNeonClient(env))
     // Three fixed aggregate statements. No interpolation, no parameters, no selectable columns.
-    const [auditRows, findingRows, sevRows, statusRows, deliveredRows, deliveredSevRows, confirmedRows] =
-      await Promise.all([
+    const [
+      auditRows, findingRows, sevRows, statusRows, deliveredRows, deliveredSevRows, confirmedRows,
+      fvRows, dispositionRows, rejectionRows,
+    ] = await Promise.all([
       sql`SELECT count(*)::int AS n FROM audit_submissions`,
       sql`SELECT count(*)::int AS n FROM findings`,
       sql`SELECT severity, count(*)::int AS n FROM findings GROUP BY severity`,
@@ -354,6 +359,32 @@ export async function handleKbStats(req, env, ctx, _params, { neonClient } = {})
       sql`SELECT count(*)::int AS n FROM findings f
           JOIN audit_submissions a ON a.id = f.submission_id
           WHERE a.status IN ('complete', 'awaiting_review') AND f.confirmed_by IS NOT NULL`,
+      /*
+       * Formal-verification verdicts: not_attempted | proven | refuted | inconclusive.
+       * `proven` means the exploit REPRODUCED — a Foundry proof exists. `refuted` means the
+       * pipeline generated the finding and then disproved it by failing to reproduce it, which
+       * is the system catching its own false positive. These are categorically different from an
+       * unverified automated finding, and only `proven` is "reproduce, don't assert".
+       */
+      sql`SELECT fv_verdict, count(*)::int AS n FROM findings f
+          JOIN audit_submissions a ON a.id = f.submission_id
+          WHERE a.status IN ('complete', 'awaiting_review')
+          GROUP BY fv_verdict`,
+      /*
+       * The self-policing record. `disposition` is kept|dropped_fp — the engine's own consolidation
+       * verdict — and `rejection_stage` names WHICH mechanism disqualified a candidate:
+       * kill_gate | consolidation | fv | human. Together they say how many findings the pipeline
+       * generated and then threw away itself, which is a far more interesting number than the
+       * raw candidate count: it is the system demonstrating it does not just assert.
+       */
+      sql`SELECT disposition, count(*)::int AS n FROM findings f
+          JOIN audit_submissions a ON a.id = f.submission_id
+          WHERE a.status IN ('complete', 'awaiting_review')
+          GROUP BY disposition`,
+      sql`SELECT rejection_stage, count(*)::int AS n FROM findings f
+          JOIN audit_submissions a ON a.id = f.submission_id
+          WHERE a.status IN ('complete', 'awaiting_review')
+          GROUP BY rejection_stage`,
     ])
     const body = {
       audits: Number(auditRows?.[0]?.n ?? 0),
@@ -368,6 +399,9 @@ export async function handleKbStats(req, env, ctx, _params, { neonClient } = {})
       // Severity shape of REAL work only — a chart drawn from failed runs describes an error rate.
       deliveredSeverity: shapeSeverity(deliveredSevRows),
       confirmedFindings: Number(confirmedRows?.[0]?.n ?? 0),
+      fvVerdicts: shapeSeverity((fvRows || []).map((r) => ({ severity: r.fv_verdict ?? 'not_recorded', n: r.n }))),
+      disposition: shapeSeverity((dispositionRows || []).map((r) => ({ severity: r.disposition ?? 'not_recorded', n: r.n }))),
+      rejectionStage: shapeSeverity((rejectionRows || []).map((r) => ({ severity: r.rejection_stage ?? 'not_rejected', n: r.n }))),
       degraded: false,
     }
     if (env.KV) {

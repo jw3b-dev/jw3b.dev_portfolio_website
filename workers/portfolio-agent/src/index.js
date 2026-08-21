@@ -122,7 +122,7 @@ export default {
       // Aggregate audit volume + severity shape. COUNTS ONLY — the underlying tables hold client
       // work, and this route selects no column that could identify a client or a contract.
       if (pathname === '/kb/stats' && method === 'GET') {
-        const out = await handleKbStats(req, env, ctx, null)
+        const out = await handleKbStats(req, env, ctx, Object.fromEntries(url.searchParams))
         return json(out.body, req, env, out.status)
       }
       // ── Status ──────────────────────────────────────────────────────────────────────────
