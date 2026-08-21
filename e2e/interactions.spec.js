@@ -5,37 +5,69 @@
  */
 import { test, expect } from '@playwright/test'
 
-test('the audit console screens a contract end to end', async ({ page }) => {
-  await page.goto('/audit')
-  const box = page.locator('textarea').first()
-  await expect(box).toBeVisible()
-  await box.fill(`// SPDX-License-Identifier: MIT
+// NOTE: the mapping must be named `balances` — the reentrancy detector looks for a balance write
+// after the value-bearing call. The version of this fixture that shipped called it `b`, so it
+// triggered NO finding at all, and the test passed anyway because it only asserted that the
+// "Findings" heading was visible — which is true of an empty panel. Assert the finding itself.
+const REENTRANT = `// SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 contract T {
-  mapping(address => uint256) public b;
+  mapping(address => uint256) public balances;
   function withdraw() external {
-    uint256 a = b[msg.sender];
+    uint256 a = balances[msg.sender];
     (bool ok,) = msg.sender.call{value: a}("");
     require(ok);
-    b[msg.sender] = 0;
+    balances[msg.sender] = 0;
   }
-}`)
-  await page.getByRole('button', { name: /run analysis/i }).click()
+}`
 
-  // The deterministic heuristics run in-browser and must produce a verdict with no network.
-  await expect(page.getByText(/findings/i).first()).toBeVisible({ timeout: 20_000 })
-  // The honesty disclaimer travels with every result set — non-negotiable (BR-10).
-  await expect(page.getByText(/not a substitute for a full manual audit/i).first()).toBeVisible({ timeout: 20_000 })
-})
+const CLEAN = `// SPDX-License-Identifier: MIT
+pragma solidity 0.8.20;
+contract Safe {
+  uint256 public total;
+  function add(uint256 n) external { total += n; }
+}`
 
-test('the fuzz tool generates a Foundry harness from pasted source', async ({ page }) => {
+/*
+ * The console is mounted on BOTH routes (the /work flagship strip embeds it), and it shipped
+ * broken on both: the heuristics were computed in the click handler and frozen into state, so
+ * editing the contract changed nothing on screen. The old test here clicked "run" first and then
+ * asserted — which passes whether or not the result tracks the input. So: no clicks at all.
+ */
+for (const route of ['/audit', '/work']) {
+  test(`the audit console re-screens as the contract is edited (${route})`, async ({ page }) => {
+    await page.goto(route)
+    const box = page.locator('#audit-src')
+    await expect(box).toBeVisible()
+
+    await box.fill(REENTRANT)
+    // No button press anywhere in this test — the deterministic pass must simply follow the box.
+    await expect(page.getByText('Reentrancy — external call before state update')).toBeVisible({ timeout: 10_000 })
+    // The honesty disclaimer travels with every result set — non-negotiable (BR-10).
+    await expect(page.getByText(/not a substitute for a full manual audit/i).first()).toBeVisible()
+
+    await box.fill(CLEAN)
+    // The finding must CLEAR too: a panel that only ever adds is just as stale as a frozen one.
+    await expect(page.getByText('Reentrancy — external call before state update')).toHaveCount(0)
+    await expect(page.getByText(/no common-pattern issues/i)).toBeVisible()
+  })
+}
+
+test('the fuzz tool regenerates the harness as the source is edited', async ({ page }) => {
   await page.goto('/audit')
   await page.getByRole('tab', { name: /fuzz harness/i }).click()
-  const box = page.locator('textarea').first()
+  const box = page.locator('#fuzz-src')
   await expect(box).toBeVisible()
+
   await box.fill('contract Vault { function deposit() external payable {} }')
-  await page.getByRole('button', { name: /generate harness/i }).click()
-  await expect(page.getByText(/forge-std\/Test\.sol|VaultFuzzTest|testFuzz_/i).first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText(/VaultFuzzTest/).first()).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText(/testFuzz_deposit/).first()).toBeVisible()
+
+  // Rename the contract: the scaffold must follow, not keep targeting the old one.
+  await box.fill('contract Router { function swap(uint256 amountIn) external {} }')
+  await expect(page.getByText(/RouterFuzzTest/).first()).toBeVisible()
+  await expect(page.getByText(/testFuzz_swap/).first()).toBeVisible()
+  await expect(page.getByText(/VaultFuzzTest/)).toHaveCount(0)
 })
 
 test('the concierge always resolves to an answer OR an honest labelled fallback', async ({ page }) => {

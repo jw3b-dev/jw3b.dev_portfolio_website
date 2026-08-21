@@ -353,3 +353,29 @@ unnecessary per COMPLIANCE_RESEARCH Q2, and the consented option would add frict
 funnel being optimised. Executable now: P5-01 (wiring + both states), P5-02, P5-04, and P5-05's
 pure policy layer. Owner-gated: scheduler URL (one var), mainnet funding (P5-05 activation,
 P5-07), product read APIs (P5-06).
+
+**Instant-result-on-edit fix (John caught it live on /work and /audit) — 2026-08-21.** Editing the
+contract in the security console changed nothing: findings stayed frozen on whatever was in the box
+when you last pressed the button. Root cause (full-stack-integrator, the editor↔engine seam):
+`auditSolidity()` — a PURE function of the source — was called inside the click handler and its
+output stored in `useAuditStream`'s state. Derived data held as state can only be as fresh as the
+last event that wrote it, so the page promised an instant in-browser screen and then ignored every
+keystroke. Fix: derive it (`useMemo` on `source`) and delete the state. Same defect, same fix in
+FuzzTool (audit-heuristics-engineer): the harness was generated into state by a "Generate harness"
+button, so a rename left a scaffold targeting the previous contract — the generator is pure,
+deterministic and offline, so there was nothing for the button to trigger; it now follows the source
+and the button is gone. The model narrative genuinely does need a button (it costs a request), which
+makes it the one result that can outlive its input: the hook now reports `analysedSource` and the UI
+marks the narrative **stale** with a re-run prompt the moment the source diverges — an analysis that
+silently describes code no longer on screen is worse than no analysis. Same staleness marker added to
+TxExplainer (`explainedHash`).
+
+**Why the suite missed it — the assertion shape, not the coverage.** Every existing test clicked the
+button FIRST and then asserted the output, which passes whether or not the result tracks the input;
+nothing ever typed and then looked. Worse, the E2E fixture's mapping was named `b` while the
+reentrancy detector matches `balances[...]`, so it produced NO finding — and the test passed anyway
+because it only asserted the "Findings" *heading* was visible, which is true of an empty panel. Both
+now assert the RELATIONSHIP (edit → result follows, and the old finding CLEARS), across `/audit` and
+`/work`, in jsdom and in a real browser. Guards proven by reintroducing the bug: 5 unit + 2 E2E fail,
+and the old tests stayed green through it. Gate: lint 0 errors · 90 files / 680 tests · build 0-warn ·
+22/22 E2E.

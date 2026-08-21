@@ -10,7 +10,12 @@ import { useTxExplain } from '../../hooks/useTxExplain.js'
 
 export default function TxExplainer() {
   const [hash, setHash] = useState('')
-  const { decoded, narrative, running, error, explain } = useTxExplain()
+  const { decoded, narrative, explainedHash, running, error, explain } = useTxExplain()
+
+  // Unlike the Solidity tools, a hash can't be screened live — it takes an RPC round-trip and a
+  // half-typed hash means nothing. So the results stay button-driven, and instead we say plainly
+  // when they stop belonging to what's in the box.
+  const stale = Boolean(explainedHash) && explainedHash !== hash
 
   return (
     <section aria-labelledby="tx-title" className="rounded-lg border border-hairline bg-panel p-5">
@@ -42,6 +47,13 @@ export default function TxExplainer() {
       </div>
 
       {error && <p className="mt-3 text-sm text-failed">{error}</p>}
+
+      {stale && (decoded || narrative) && (
+        <p className="mt-3 rounded-md border border-caution/40 bg-caution/5 p-2 text-xs text-caution">
+          The hash has changed since this ran — the results below describe{' '}
+          <span className="font-mono">{explainedHash.slice(0, 10)}…</span>. Press Explain to update them.
+        </p>
+      )}
 
       {decoded && (
         <div className="mt-4 rounded-md border border-hairline bg-void p-3">

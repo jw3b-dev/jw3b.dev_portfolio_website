@@ -17,6 +17,7 @@ export function useTxExplain() {
   const client = usePublicClient()
   const [decoded, setDecoded] = useState(null)
   const [narrative, setNarrative] = useState('')
+  const [explainedHash, setExplainedHash] = useState(null)
   const [running, setRunning] = useState(false)
   const [error, setError] = useState(null)
 
@@ -29,6 +30,9 @@ export function useTxExplain() {
         setError('Enter a valid transaction hash (0x… 64 hex).')
         return
       }
+      // Pin the hash these results belong to: a decode shown under a DIFFERENT hash in the
+      // box is a result describing something the reader is no longer looking at.
+      setExplainedHash(txHash)
       setRunning(true)
 
       // 1) Client-side decode via the public RPC — the offline-safe floor (no Worker needed).
@@ -82,5 +86,5 @@ export function useTxExplain() {
     [client],
   )
 
-  return { decoded, narrative, running, error, explain }
+  return { decoded, narrative, explainedHash, running, error, explain }
 }
