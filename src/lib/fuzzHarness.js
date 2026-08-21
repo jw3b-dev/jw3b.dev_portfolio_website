@@ -93,3 +93,25 @@ ${code}
 \`\`\`
 `
 }
+
+/**
+ * Split the generated Markdown into its prose framing and the Solidity itself.
+ *
+ * `buildFuzzHarness` returns MARKDOWN, because the Worker's /fuzz route streams it to a markdown
+ * renderer — that output format is a shared contract and does not change. The /audit tool,
+ * though, rendered that same string inside a <pre>, so visitors saw the literal ``` fences as
+ * text and had no way to copy or save the harness: a code generator whose output you cannot use.
+ * Splitting here keeps the contract intact and lets the tool present code as code.
+ *
+ * @returns {{prose: string, code: string, filename: string}}
+ */
+export function splitHarness(markdown) {
+  const text = String(markdown == null ? '' : markdown)
+  const fence = /```(?:solidity)?\n([\s\S]*?)```/
+  const m = text.match(fence)
+  const code = m ? m[1].trimEnd() : ''
+  const prose = text.replace(fence, '').replace(/\n{3,}/g, '\n\n').trim()
+  // Foundry convention: tests are <Name>.t.sol, so the download lands where forge expects it.
+  const contract = (code.match(/contract\s+(\w+)\s/) || [])[1] || 'Fuzz'
+  return { prose, code, filename: `${contract}.t.sol` }
+}

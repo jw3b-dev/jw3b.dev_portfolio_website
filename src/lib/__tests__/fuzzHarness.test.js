@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseContractName, extractFunctions, buildFuzzHarness } from '../fuzzHarness.js'
+import { parseContractName, extractFunctions, buildFuzzHarness, splitHarness } from '../fuzzHarness.js'
 
 const SRC = `pragma solidity ^0.8.20;
 contract Vault {
@@ -43,5 +43,45 @@ describe('fuzzHarness — deterministic Foundry harness generator (FR-009)', () 
     const h = buildFuzzHarness('contract Empty {}')
     expect(h).toContain('contract EmptyFuzzTest is Test')
     expect(h).toContain('testFuzz_invariant')
+  })
+})
+
+/*
+ * W3 — the harness must be USABLE, not just displayed (PRODUCT_AUDIT #15).
+ *
+ * buildFuzzHarness returns Markdown because the Worker's /fuzz route streams it to a markdown
+ * renderer. The /audit tool rendered that same string inside a <pre>, so visitors read the
+ * literal ``` fences as text and had no way to copy or save the result — a code generator whose
+ * output you cannot use. splitHarness lets the tool present code as code without changing the
+ * Worker's contract.
+ */
+describe('splitHarness — code out of the markdown, contract unchanged', () => {
+  const md = buildFuzzHarness('contract Vault { function deposit() external payable {} }')
+
+  it('returns Solidity with no markdown fences left in it', () => {
+    const { code } = splitHarness(md)
+    expect(code).not.toContain('```')
+    expect(code).toContain('pragma solidity')
+    expect(code).toContain('contract VaultFuzzTest')
+  })
+
+  it('keeps the honest framing as prose, separate from the code', () => {
+    const { prose } = splitHarness(md)
+    expect(prose).toMatch(/not a proof of correctness/i)
+    expect(prose).not.toContain('```')
+  })
+
+  it('names the file the way Foundry expects, from the test contract', () => {
+    expect(splitHarness(md).filename).toBe('VaultFuzzTest.t.sol')
+  })
+
+  it('degrades without throwing when there is no fenced block', () => {
+    expect(splitHarness('just prose')).toEqual({ prose: 'just prose', code: '', filename: 'Fuzz.t.sol' })
+    expect(splitHarness('')).toEqual({ prose: '', code: '', filename: 'Fuzz.t.sol' })
+    expect(splitHarness(null).code).toBe('')
+  })
+
+  it('leaves buildFuzzHarness itself untouched — the Worker still gets markdown', () => {
+    expect(md).toContain('```solidity')
   })
 })
