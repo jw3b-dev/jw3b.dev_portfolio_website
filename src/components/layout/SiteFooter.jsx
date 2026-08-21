@@ -13,9 +13,17 @@ export default function SiteFooter() {
   return (
     <footer
       role="contentinfo"
-      className="mt-24 border-t border-hairline bg-void/60"
+      /* mt-8, not more: page sections already carry their own bottom padding (pb-20 on the
+         landing page), so a large margin here stacked into ~176px of dead space above the
+         rule. The border + 32px reads as a deliberate break without the canyon. */
+      className="mt-8 border-t border-hairline bg-void/60"
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-content-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
+      {/* pb-24 below xl reserves the bottom-right corner for the fixed concierge launcher
+          (56px button + 20px offset). Without it the launcher sits on top of the last footer
+          link — "Hire John" — at part-screen widths, which is exactly the link that must stay
+          clickable. At xl+ the max-w-6xl container is centred far enough inboard that the
+          launcher never reaches it, so the padding drops back to normal. */}
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 pb-24 pt-8 text-content-muted sm:flex-row sm:items-center sm:justify-between sm:px-8 xl:pb-8">
         <p className="font-mono text-[11px] uppercase tracking-label">
           JW<span className="text-cyan">3</span>B<span className="text-cyan">.</span>dev — John Wellard
           {/* John's sign-off. Kept in the muted tone so it reads as a signature rather than a
