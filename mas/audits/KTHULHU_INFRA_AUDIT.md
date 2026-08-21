@@ -214,6 +214,46 @@ Two separate conditions, and they should not be conflated:
    consistent with no demand rather than a second fault. Not proof of health; just not evidence of
    breakage.
 
+### ✎ Rev 5 — the flags live in THREE places, and two gate both ends
+
+Owner correction, verified. My rev-4 table read only the Worker side of a mechanism that is
+deliberately two-sided, which is the same single-source error this document opens by describing.
+
+| Phase | Mechanism | On the box? |
+|---|---|---|
+| claude-discovery, ensemble, fv, markdown-pdf | `LEDGER_PULL_*` in the Worker | **yes** |
+| static-adjudication | **`STATIC_ADJ_ON_BOX` — two-sided** | **yes** (box side confirmed) |
+| fuzz | `LEDGER_PULL_FUZZ` + `FUZZ_REAL_PROJECT=1` on the box | **partial** — dep provisioning on, ledger pull off |
+| scenario-decomposition | `LEDGER_PULL_SCENARIO` | not found set in config or on the box |
+| graph mirror | `LEDGER_PULL_GRAPH` | **box-only, on** |
+
+So roughly **6 of 7**, not 4 of 7.
+
+**`STATIC_ADJ_ON_BOX` has three production readers** — `workers/workflows/overmind.ts:691`,
+`lib/engine/phases/static_adjudicate.ts:448`, and `box/dispatcher/dispatch.sh:2023` — and is
+`true` in the box's `dispatcher.env`. It does **not** use `LEDGER_PULL_STATIC`; that is a separate
+mechanism. The `FV_BOX_GEN` comment in the overmind config states the two-sided pattern is
+deliberate.
+
+**`LEDGER_PULL_GRAPH` is not a tool-kind flag.** `graph` is absent from `TOOL_KINDS`; the flag
+gates `mirror_graph()` at `dispatch.sh:1643`, mirroring ensemble findings into the box-local
+Neo4j. Box-only by design, correctly absent from the Worker's map.
+
+**Where the flags live — the reason single-sided reading fails:**
+
+1. **Worker config** (`wrangler.overmind.toml`, `plain_text`) — readable:
+   `LEDGER_PULL_{DISCOVERY,ENSEMBLE,FV,PDF}`, `FV_BOX_GEN`, `SCOPE_GATE_ENABLED`
+2. **Worker secrets** (`secret_text`, opaque) — verified present on the deployed orchestrator via
+   the Cloudflare API: `LEDGER_PULL_{FUZZ,SCENARIO,STATIC}`, `SHADOW_DISPATCH`, `STATIC_ADJ_ON_BOX`
+3. **Box env** (`dispatcher.env`) — `STATIC_ADJ_ON_BOX=true`, `FUZZ_REAL_PROJECT=1`,
+   `LEDGER_PULL_GRAPH=true`
+
+**✎ Narrowing the owner's open item.** "LEDGER_PULL_SCENARIO / _FUZZ not found set on either side"
+is true of *config and box*, but the deployed Worker carries a `secret_text` binding for each — and
+a secret binding only exists once `wrangler secret put` has run. So they **are set to something**.
+"Not set" is refuted; **"off" remains unproven**, because secret values are unreadable. The split is
+exact: every flag the owner could resolve is config, every flag he could not is a secret.
+
 ### Confidence, stated per fact
 
 | Fact | Verified how | Confidence |
