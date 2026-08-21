@@ -11,7 +11,7 @@
  * — a lookup, not a calculation — and shows the assessment answers as captured context. Prices
  * are printed ONLY from retainer.json (never free-typed); unprovisioned tiers say so honestly.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { resolveLoadout, recommendEngagement } from '../../lib/loadout.js'
 import ProgressRail from './ProgressRail.jsx'
 import CheckoutStateMachine from './CheckoutStateMachine.jsx'
@@ -129,6 +129,26 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
   const [assessment, setAssessment] = useState({}) // { stage, surface, urgency }
   const [engagement, setEngagement] = useState(null)
   const [booking, setBooking] = useState(false)
+
+  /*
+   * Honour the arrival hash. The concierge's hire tool-call has always routed to
+   * `/hire-me#contact` (or `#pricing`), and NOTHING on this page ever read it — the payload was
+   * built, validated against a closed registry, carried through a navigation, then silently
+   * dropped, landing the visitor on step 1 of a wizard with no sign of why they were sent. Each
+   * half was tested on its own; the seam between them was owned by nobody.
+   *
+   * `#contact` means they asked to book, so open the booking form directly: the floor is
+   * reachable without configuring anything (FR-036). `#pricing` means they want to see packages,
+   * which is what the configurator walks them to — so it starts where it already starts.
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.location.hash !== '#contact') return
+    // Same move as the "Rather skip the scoping?" shortcut: the booking form lives on the final
+    // step, so jump there first. go() clears booking, so set it AFTER.
+    setStep(STEPS.length - 1)
+    setMaxReached(STEPS.length - 1)
+    setBooking(true)
+  }, [])
 
   const go = (i) => {
     setStep(i)

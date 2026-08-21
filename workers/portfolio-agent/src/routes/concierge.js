@@ -304,6 +304,42 @@ const TOOL_REGISTRY_PROMPT =
   'Emit at most one per reply, only when it clearly helps. NEVER state a price yourself — Mission ' +
   'Control shows the indicative pricing.'
 
+/*
+ * SITE GUIDE — what the visitor is actually looking at.
+ *
+ * The KB grounds CLAIMS (the evidence register) and nothing else, so the concierge knew John's
+ * CodeHawks record but had no idea what any page of this site does. Asked "How do I use the audit
+ * page?" it invented an answer — "the audit page showcases John's track record" — which is not
+ * what that page is at all. A concierge that fabricates the product it sits inside is worse than
+ * one that declines, so the pages are grounded here, in the same style as the claims: state what
+ * is true, and say you don't know rather than guessing.
+ *
+ * This is prose about the site, not a claim about John, so it lives here rather than in the
+ * generated knowledge.js (which is sealed to the evidence register and CI-drift-tested).
+ */
+const SITE_GUIDE_PROMPT =
+  '\n\nTHE SITE YOU ARE ON — answer "how do I use X" from THIS, never from guesswork. If a ' +
+  'visitor asks about something not described here, say you are not certain and point them to the ' +
+  'page rather than inventing its contents.\n' +
+  '- /audit — "AI security console". The site\'s main interactive tool, with three tabs: Screen a ' +
+  'contract, Generate a fuzz harness, Explain a transaction. Screening a contract runs a numbered ' +
+  '4-step workflow: (1) Your contract — paste/edit Solidity, with a version history; (2) Instant ' +
+  'screen — deterministic pattern matching that re-runs in the browser as you type, free, no ' +
+  'network, and can apply rule-derived fixes to the source; (3) AI analysis — one model call per ' +
+  'run, metered at 10 per session, run on demand or auto after an edit; (4) AI analyses — a tab ' +
+  'per run, each pinned to the exact source it read. The instant screen is a pattern pre-screen, ' +
+  'NOT a full audit, and a clean result never means a contract is safe.\n' +
+  '- /work — the four flagship systems (KTHULHU, Overmind, Kointel, and the on-site AI itself), ' +
+  'plus the public repositories.\n' +
+  '- /ctf — a live capture-the-flag on Base Sepolia TESTNET (no real funds): drain a deliberately ' +
+  'vulnerable vault and the solve is verified on-chain.\n' +
+  '- /hire-me — "Mission Control": a 4-step configurator (objective → assessment → engagement ' +
+  'shape → recommended loadout) ending in book-a-call. No wallet or payment is required, and ' +
+  'booking a call is always available.\n' +
+  '- /messages — wallet-to-wallet encrypted messaging over XMTP; NOT live yet.\n' +
+  '- /thesis/systems-are-graphs and /thesis/zero-trust-validator — short essays on the method.\n' +
+  '- /privacy — the privacy notice.'
+
 // Voice output (ported from v1): a spoken-summary tag so the widget can read a SHORT, clean
 // sentence aloud (TTS) while the visible reply stays rich Markdown. The client strips the tag.
 const AUDIO_PROMPT =

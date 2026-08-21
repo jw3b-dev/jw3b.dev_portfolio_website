@@ -9,7 +9,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { usePortfolioAgent } from '../../hooks/usePortfolioAgent.js'
 import { useVoice } from '../../hooks/useVoice.js'
-import { toolCallTarget } from './toolCalls.js'
+import { offerFromToolCall } from './toolCalls.js'
 import Markdown from './Markdown.jsx'
 import { SpeakerToggle, MicButton } from './VoiceControls.jsx'
 import { useLiveVoice } from '../../hooks/useLiveVoice.js'
@@ -23,6 +23,8 @@ export default function ChatWidget() {
   const { recording, voiceOn, canRecord, startRecording, stopRecording, speak, toggleVoice, unlockAudio } = useVoice()
   const live = useLiveVoice() // P3 live-voice (flag-gated; on-device Whisper + Claude + Aura)
   const [draft, setDraft] = useState('')
+  // A pending, visitor-consented route offer from a tool-call — never an automatic navigation.
+  const [offer, setOffer] = useState(null)
   const listRef = useRef(null)
   const navigate = useNavigate()
 
@@ -37,17 +39,38 @@ export default function ChatWidget() {
     if (last && last.role === 'assistant' && !last.pending && last.audio) speak(last.audio)
   }, [messages, speak])
 
-  // FR-019: a concierge hire-routing tool-call opens Mission Control (/hire-me). Validated
-  // against the closed registry; unknown → ignored. Closes the widget so the route is visible.
+  /*
+   * FR-019 — a hire-routing tool-call OFFERS Mission Control; it never takes the visitor there.
+   *
+   * This used to navigate the instant the tag arrived, closing the widget with it. Asking the
+   * live concierge "How do I use the audit page?" therefore ejected the visitor to /hire-me
+   * mid-answer, and the reply they asked for was never seen — one over-eager tag from a small
+   * model silently became a navigation event. Now a validated call becomes a card the visitor
+   * can accept, and the answer stays on screen either way.
+   */
   useEffect(() => {
     if (!toolCall) return
-    const target = toolCallTarget(toolCall)
+    // Both must agree: the model proposed it AND the visitor actually asked about hiring.
+    const lastVisitor = [...messages].reverse().find((m) => m.role === 'user')?.content
+    const target = offerFromToolCall(toolCall, lastVisitor)
     clearToolCall()
-    if (target) {
-      setOpen(false)
-      navigate(`${target.path}${target.hash}`)
-    }
-  }, [toolCall, clearToolCall, navigate])
+    if (target) setOffer(target)
+  }, [toolCall, clearToolCall, messages])
+
+  const acceptOffer = () => {
+    if (!offer) return
+    const { path, hash } = offer
+    setOffer(null)
+    setOpen(false)
+    navigate(`${path}${hash}`)
+  }
+
+  // Probe once on mount so the launcher shows a real status on every route. It previously read
+  // "Agent status unknown" until you hovered or opened it — the signal existed, but announced
+  // ignorance to every visitor who never touched it.
+  useEffect(() => {
+    checkStatus()
+  }, [checkStatus])
 
   const submit = (e) => {
     e.preventDefault()
@@ -295,6 +318,33 @@ export default function ChatWidget() {
                   {stripMarkdown(live.displayReply)}
                 </p>
               )}
+            </div>
+          )}
+
+          {/* The consented route offer. The concierge proposes; the visitor decides. */}
+          {offer && (
+            <div className="border-t border-cyan/25 bg-raised p-3">
+              <p className="text-xs text-content-secondary">
+                {offer.hash === '#pricing'
+                  ? 'Want the packages and indicative pricing?'
+                  : 'Want to start a booking?'}
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={acceptOffer}
+                  className="rounded-md border border-cyan/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-label text-cyan motion-safe:transition-colors hover:bg-cyan/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+                >
+                  Open Mission Control →
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOffer(null)}
+                  className="font-mono text-[11px] uppercase tracking-label text-content-muted hover:text-content-secondary motion-safe:transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+                >
+                  Not now
+                </button>
+              </div>
             </div>
           )}
 

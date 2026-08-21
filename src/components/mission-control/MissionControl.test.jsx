@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import RETAINER from '../../data/retainer.json'
 
@@ -58,5 +58,37 @@ describe('MissionControl — 4-step configurator (P1-17 / FR-028)', () => {
     expect(onBook).toHaveBeenCalledWith(
       expect.objectContaining({ objective: 'security', engagement: 'project', tierId: expected.id }),
     )
+  })
+})
+
+/*
+ * W2 — the concierge's hire hash is actually consumed (PRODUCT_AUDIT #7).
+ *
+ * `toolCallTarget` has always produced `/hire-me#contact`, and nothing on this page read it. The
+ * seam test lives here rather than in toolCalls.test.js because the defect was not in either
+ * half: both were correct and tested, and the contract between them was honoured by no one.
+ */
+describe('MissionControl — arrival hash from the concierge', () => {
+  const setHash = (h) => window.history.replaceState(null, '', h)
+  afterEach(() => setHash('#'))
+
+  // CheckoutStateMachine is stubbed at the top of this file, so the booking surface renders as
+  // "CHECKOUT RAIL" — its presence is what proves the hash was honoured.
+  it('#contact opens the booking surface directly — the floor, no configuring required', () => {
+    setHash('#contact')
+    render(<MissionControl />)
+    expect(screen.getByText('CHECKOUT RAIL')).toBeInTheDocument()
+  })
+
+  it('#pricing starts the configurator normally', () => {
+    setHash('#pricing')
+    render(<MissionControl />)
+    expect(screen.queryByText('CHECKOUT RAIL')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /configure an engagement/i })).toBeInTheDocument()
+  })
+
+  it('no hash starts the configurator normally', () => {
+    render(<MissionControl />)
+    expect(screen.queryByText('CHECKOUT RAIL')).not.toBeInTheDocument()
   })
 })

@@ -29,3 +29,32 @@ export function toolCallTarget(tc) {
   const v = validateToolCall(tc)
   return v ? { path: '/hire-me', hash: `#${v.type}` } : null
 }
+
+/*
+ * Did the VISITOR ask for this?
+ *
+ * The only thing stopping the concierge routing someone to the hire page was a sentence of
+ * prompt ("only when it clearly helps"). A small model reads that generously: asked "How do I
+ * use the audit page?", it emitted a hire tool-call, and the client navigated. Model judgment is
+ * now advisory — this deterministic check on the visitor's own words decides whether the offer
+ * is even shown.
+ *
+ * Deliberately narrow, and deliberately about MONEY AND TIME, not enthusiasm: "this is great" is
+ * not a request to be sold to.
+ */
+const HIRE_INTENT =
+  /\b(pric(e|es|ing)|costs?|quotes?|rates?|budgets?|fees?|charges?|hire|hiring|engage|engagement|retainers?|book(ing)?|schedule|calls?|consult\w*|packages?|tiers?|available|availability|work with|working with|start a project)\b/i
+
+/** @returns {boolean} true when the visitor's message is plausibly about buying John's time. */
+export function visitorAskedToHire(text) {
+  return typeof text === 'string' && HIRE_INTENT.test(text)
+}
+
+/**
+ * The gate the UI uses: a route offer survives only if BOTH the model proposed it and the
+ * visitor's last message actually asked about hiring.
+ * @returns {{path:string, hash:string}|null}
+ */
+export function offerFromToolCall(tc, lastVisitorMessage) {
+  return visitorAskedToHire(lastVisitorMessage) ? toolCallTarget(tc) : null
+}

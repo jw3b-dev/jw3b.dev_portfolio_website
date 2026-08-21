@@ -89,15 +89,20 @@ console.log('\nTelegram lead alerts — setup\n' + '─'.repeat(56))
 const me = await api(token, 'getMe')
 console.log(`Bot: ${me.first_name} (@${me.username})`)
 
+// An explicit chat id short-circuits discovery. Needed whenever something else has already
+// consumed the bot's updates (an OpenClaw gateway polling the same bot will), which otherwise
+// makes a perfectly working chat look undiscoverable.
+const override = process.env.TELEGRAM_CHAT_ID?.trim()
+
 // A bot only sees chats that have messaged it, so this doubles as proof that the START landed.
-const updates = await api(token, 'getUpdates', { limit: 100 })
+const updates = override ? [] : await api(token, 'getUpdates', { limit: 100 })
 const chats = new Map()
 for (const u of updates) {
   const m = u.message || u.edited_message || u.channel_post || u.my_chat_member
   if (m?.chat) chats.set(m.chat.id, m.chat)
 }
 
-if (chats.size === 0) {
+if (!override && chats.size === 0) {
   die(
     `The bot has no messages yet, so its chat id cannot be discovered.\n\n` +
       `  Open @${me.username} in Telegram, press START, then re-run:\n` +
@@ -107,15 +112,13 @@ if (chats.size === 0) {
   )
 }
 
-if (chats.size > 1) {
+if (!override && chats.size > 1) {
   console.log('\nMultiple chats have messaged this bot:')
   for (const c of chats.values()) console.log(`  ${c.id}  ${c.type}  ${c.username || c.title || c.first_name || ''}`)
   die('Ambiguous target. Re-run with the one you want:  TELEGRAM_CHAT_ID=<id> npm run telegram:setup')
 }
 
-const chat = process.env.TELEGRAM_CHAT_ID
-  ? { id: process.env.TELEGRAM_CHAT_ID, type: 'override' }
-  : [...chats.values()][0]
+const chat = override ? { id: override, type: 'explicit' } : [...chats.values()][0]
 console.log(`Chat: ${chat.id} (${chat.type}${chat.username ? ` · @${chat.username}` : ''})`)
 
 console.log('\nSetting worker secrets…')
