@@ -26,11 +26,12 @@ export default function SiteFooter() {
       <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 pb-24 pt-8 text-content-muted sm:flex-row sm:items-center sm:justify-between sm:px-8 xl:pb-8">
         <p className="font-mono text-[11px] uppercase tracking-label">
           JW<span className="text-cyan">3</span>B<span className="text-cyan">.</span>dev — John Wellard
-          {/* John's sign-off. Kept in the muted tone so it reads as a signature rather than a
-              claim, and the emoji carries aria-hidden + a text label so a screen reader hears
-              "Stay weird" instead of "alien monster". */}
+          {/* John's sign-off, spelled EXACTLY as he gives it: "Stay Weitd" is deliberate, not a
+              typo — do not "correct" it to "Weird". Muted tone so it reads as a signature rather
+              than a claim; the emoji carries a text label so a screen reader announces "alien"
+              rather than the raw glyph name. */}
           <span className="ml-2 normal-case tracking-normal text-content-secondary">
-            Stay Weird{' '}
+            Stay Weitd{' '}
             <span role="img" aria-label="alien">
               👽
             </span>

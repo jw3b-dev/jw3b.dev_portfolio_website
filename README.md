@@ -122,4 +122,4 @@ license note. Reach him at **john@agilegypsy.com** or via
 
 ---
 
-<p align="center"><em>Stay Weird</em> 👽</p>
+<p align="center"><em>Stay Weitd</em> 👽</p>
