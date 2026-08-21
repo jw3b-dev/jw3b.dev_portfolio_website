@@ -105,6 +105,7 @@ export const ROUTE_LIMITS = {
   'POST /text-to-speech': { endpoint: 'tts', sse: false },
   'POST /ctf/verify': { endpoint: 'ctf', sse: false },
   'GET /ctf/leaderboard': { endpoint: 'light', sse: false },
+  'GET /health': { endpoint: 'light', sse: false },
   'POST /engagement': { endpoint: 'light', sse: false },
   'POST /book-a-call': { endpoint: 'light', sse: false },
 }

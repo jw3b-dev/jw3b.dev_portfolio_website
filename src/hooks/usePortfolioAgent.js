@@ -5,8 +5,9 @@
  * fallthrough / empty stream it degrades to the labelled Tier-2 bundled run + a book-a-call
  * offer — never a blank error (FR-020). Streaming state drives the typing indicator + input lock.
  */
-import { useCallback, useRef, useState } from 'react'
-import { AGENT_CHAT_URL } from '../config/worker.js'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { AGENT_CHAT_URL, AGENT_HEALTH_URL } from '../config/worker.js'
+import { AGENT_STATUS, statusFromHealth, statusFromExchange } from '../lib/agentStatus.js'
 import { parseSseLine } from '../lib/tagProtocol.js'
 import { buildOutgoing, shouldDegrade, degradedMessage, displayText } from '../lib/conciergeClient.js'
 import { parseTags } from '../lib/tagProtocol.js'
@@ -15,7 +16,26 @@ export function usePortfolioAgent() {
   const [messages, setMessages] = useState([])
   const [streaming, setStreaming] = useState(false)
   const [toolCall, setToolCall] = useState(null)
+  // Agent status: probed on mount for an up-front signal, then REPLACED by the verdict of any
+  // completed exchange — a probe can say "reachable", only an answer can say "live".
+  const [status, setStatus] = useState(AGENT_STATUS.UNKNOWN)
+  const provenRef = useRef(false) // once an exchange has spoken, stop letting probes overwrite it
   const historyRef = useRef([])
+
+  useEffect(() => {
+    let cancelled = false
+    setStatus(AGENT_STATUS.CHECKING)
+    fetch(AGENT_HEALTH_URL, { method: 'GET' })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((body) => {
+        if (cancelled || provenRef.current) return
+        setStatus(statusFromHealth(body))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const commit = useCallback((updater) => {
     setMessages((m) => {
@@ -51,6 +71,8 @@ export function usePortfolioAgent() {
         })
         if (shouldDegrade(res)) {
           patchLast(degradedMessage())
+          provenRef.current = true
+          setStatus(statusFromExchange(true))
           return
         }
         const reader = res.body.getReader()
@@ -77,16 +99,24 @@ export function usePortfolioAgent() {
             }
           }
         }
-        if (!acc.trim()) patchLast(degradedMessage())
+        if (!acc.trim()) {
+          patchLast(degradedMessage())
+          provenRef.current = true
+          setStatus(statusFromExchange(true))
+        }
         else {
           // `audio` = the [AUDIO:"…"] spoken summary (stripped from display) so the widget can
           // read it aloud (TTS); toolCall surfaces the hire-routing tool-call (FR-019).
           const parsed = parseTags(acc)
+          provenRef.current = true
+          setStatus(statusFromExchange(false))
           patchLast({ pending: false, audio: parsed.audio || null })
           if (parsed.toolCall) setToolCall(parsed.toolCall)
         }
       } catch {
         patchLast(degradedMessage())
+        provenRef.current = true
+        setStatus(statusFromExchange(true))
       } finally {
         setStreaming(false)
       }
@@ -94,5 +124,5 @@ export function usePortfolioAgent() {
     [streaming, commit, patchLast],
   )
 
-  return { messages, streaming, send, toolCall, clearToolCall: () => setToolCall(null) }
+  return { messages, streaming, status, send, toolCall, clearToolCall: () => setToolCall(null) }
 }

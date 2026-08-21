@@ -71,6 +71,7 @@ export default defineConfig({
         'src/lib/auditHeuristics.js',
         'src/lib/claimsRegister.js',
         'src/lib/schedulerLink.js',
+        'src/lib/agentStatus.js',
       ],
       // RAISED in the P5 expansion. Branches 85 -> 92 and statements 90 -> 98 for the pure
       // core, which the suite already clears — the old numbers had drifted well below actual

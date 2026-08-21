@@ -106,6 +106,25 @@ export default {
         const out = await handleCtfLeaderboard(req, env, ctx)
         return json(out.body, req, env, out.status)
       }
+      // ── Status ──────────────────────────────────────────────────────────────────────────
+      // Cheap liveness for the concierge's own status indicator. Deliberately makes NO model
+      // call: it reports whether the Worker is reachable and whether the AI bindings and
+      // credential EXIST — never that a given answer will be live, which only an actual
+      // exchange can prove. Booleans only; no secret value is echoed.
+      if (pathname === '/health' && method === 'GET') {
+        return json(
+          {
+            ok: true,
+            ai: Boolean(env && env.AI),
+            model: Boolean(env && env.ANTHROPIC_API_KEY),
+            ts: Math.floor(Date.now() / 1000),
+          },
+          req,
+          env,
+          200,
+        )
+      }
+
       // ── Conversion ──────────────────────────────────────────────────────────────────────
       if (pathname === '/engagement' && method === 'POST') {
         const b = await readJson(req)

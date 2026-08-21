@@ -14,11 +14,12 @@ import Markdown from './Markdown.jsx'
 import { SpeakerToggle, MicButton } from './VoiceControls.jsx'
 import { useLiveVoice } from '../../hooks/useLiveVoice.js'
 import { isEnabled } from '../../config/features.js'
+import { statusLabel, answerProvenance } from '../../lib/agentStatus.js'
 import { stripMarkdown } from '../../lib/micTurn.js'
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
-  const { messages, streaming, send, toolCall, clearToolCall } = usePortfolioAgent()
+  const { messages, streaming, status, send, toolCall, clearToolCall } = usePortfolioAgent()
   const { recording, voiceOn, canRecord, startRecording, stopRecording, speak, toggleVoice, unlockAudio } = useVoice()
   const live = useLiveVoice() // P3 live-voice (flag-gated; on-device Whisper + Claude + Aura)
   const [draft, setDraft] = useState('')
@@ -85,6 +86,25 @@ export default function ChatWidget() {
               <p className="mt-0.5 text-xs text-content-muted">
                 AI-generated · grounded to John&rsquo;s verified record
               </p>
+              {/* Live/offline status. Before this the site only spoke up when something BROKE —
+                  a visitor could not tell whether the agent was up, or whether the reply they
+                  just read was real. `proven` distinguishes "reachable" from "actually answered". */}
+              {(() => {
+                const s = statusLabel(status)
+                const dot =
+                  s.tone === 'verified' ? 'bg-verified' : s.tone === 'caution' ? 'bg-caution' : 'bg-content-muted'
+                const text =
+                  s.tone === 'verified' ? 'text-verified' : s.tone === 'caution' ? 'text-caution' : 'text-content-muted'
+                return (
+                  <p className="mt-1 flex items-center gap-1.5" aria-live="polite">
+                    <span
+                      aria-hidden="true"
+                      className={`inline-block h-1.5 w-1.5 rounded-full ${dot} ${s.proven ? 'motion-safe:animate-pulse' : ''}`}
+                    />
+                    <span className={`font-mono text-[10px] uppercase tracking-label ${text}`}>{s.text}</span>
+                  </p>
+                )
+              })()}
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
               {/* P3 live-voice entry (flag-gated; hands-free on-device voice). Full call UI is WIP. */}
@@ -159,6 +179,22 @@ export default function ChatWidget() {
                     m.content || (m.pending ? '…' : '')
                   )}
                 </div>
+                {/* Provenance on EVERY completed answer — "live" is as important to state as
+                    "recorded", or the absence of a label is the only thing carrying meaning. */}
+                {(() => {
+                  const p = answerProvenance(m)
+                  if (!p) return null
+                  return (
+                    <div
+                      title={p.title}
+                      className={`mt-1 font-mono text-[10px] uppercase tracking-label ${
+                        p.tone === 'verified' ? 'text-verified' : 'text-caution'
+                      }`}
+                    >
+                      {p.text}
+                    </div>
+                  )
+                })()}
                 {m.degraded && (
                   <div className="mt-1 text-xs text-caution">
                     Recorded run — live agent unavailable.{' '}

@@ -21,6 +21,9 @@ export const AGENT_AUDIT_URL = `${WORKER_URL}/audit`
 export const AGENT_FUZZ_URL = `${WORKER_URL}/fuzz`
 export const AGENT_TX_URL = `${WORKER_URL}/tx-explain`
 
+// Liveness for the concierge status indicator — cheap, no model call.
+export const AGENT_HEALTH_URL = `${WORKER_URL}/health`
+
 // Voice (Whisper STT / Aura TTS).
 export const AGENT_STT_URL = `${WORKER_URL}/speech-to-text`
 export const AGENT_TTS_URL = `${WORKER_URL}/text-to-speech`
