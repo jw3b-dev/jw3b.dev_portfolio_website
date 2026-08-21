@@ -89,3 +89,23 @@ Same investigation also observed `googletagmanager`/`cloudflareinsights` request
 the page. Neither appears in our build or the served HTML — they originate from the flagship
 iframes' own origins. Worth confirming during any future consent review, since the site's
 "no consent banner required" position depends on **jw3b.dev itself** setting no tracking storage.
+
+## Deploys go straight to production (changed 2026-08-21)
+
+CI previously deployed every push to the isolated `-v2` preview instances, with production
+promoted by hand. Running two live copies of the same branch turned out to be its own source
+of confusion — "is that fixed?" depended on which URL you had open, and the preview drifted
+from prod every time a manual deploy landed between pushes.
+
+Now: a push to `v2` deploys **the real site**. The safety that makes that acceptable:
+
+- the deploy jobs are gated on `verify` **and** `e2e` **and** `contracts` — previously they
+  were gated on `verify` alone, so a run with failing E2E still deployed (harmless against a
+  preview, unacceptable against production);
+- the Worker ships before the SPA that talks to it;
+- a post-deploy smoke drives the real site immediately afterwards, so a bad deploy is caught in
+  the same run that caused it;
+- `wrangler rollback` remains one command (versions listed in `docs/OPS.md`).
+
+The `-v2` workers still exist but are no longer updated, so the scheduled health check stopped
+monitoring them — alarming on stale infrastructure teaches people to ignore alarms.

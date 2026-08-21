@@ -63,18 +63,36 @@ export default function ChatWidget() {
       <button
         type="button"
         onClick={() => {
-          setOpen((o) => {
-            if (!o) checkStatus() // probe only when the panel is actually opened
-            return !o
-          })
+          const next = !open
+          if (next) checkStatus() // probe only when the panel is actually opened
+          setOpen(next)
         }}
         aria-expanded={open}
+        onMouseEnter={checkStatus}
+        onFocus={checkStatus}
         aria-label={open ? 'Close concierge chat' : 'Open concierge chat'}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-cyan/40 bg-panel text-cyan shadow-lg motion-safe:transition-transform motion-safe:hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-cyan/40 bg-panel text-cyan shadow-lg relative motion-safe:transition-transform motion-safe:hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
       >
         <span aria-hidden="true" className="text-xl font-semibold">
           {open ? '×' : 'AI'}
         </span>
+        {/* The status lived only inside the OPEN panel, so you had to start a conversation to
+            learn whether the agent was up. The launcher is on every route, so the signal
+            belongs here too — a proven-live agent pulses, a degraded one shows caution. */}
+        {!open && status !== 'unknown' && (
+          <span
+            aria-hidden="true"
+            className={
+              'absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-panel ' +
+              (statusLabel(status).tone === 'verified'
+                ? 'bg-verified' + (statusLabel(status).proven ? ' motion-safe:animate-pulse' : '')
+                : statusLabel(status).tone === 'caution'
+                  ? 'bg-caution'
+                  : 'bg-content-muted')
+            }
+          />
+        )}
+        <span className="sr-only">{statusLabel(status).text}</span>
       </button>
 
       {/* Panel */}

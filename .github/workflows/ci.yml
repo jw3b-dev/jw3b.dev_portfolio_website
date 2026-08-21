@@ -133,10 +133,10 @@ jobs:
   #   wrangler secret put NEON_DATABASE_URL --name portfolio-agent-v2
   # (worker secrets are per-worker; they persist across preview redeploys). PRODUCTION deploys
   # stay owner-manual (docs/RUNBOOK.md).
-  deploy-preview-backend:
-    name: Preview — Worker (portfolio-agent-v2)
+  deploy-backend:
+    name: Deploy — Worker (portfolio-agent)
     runs-on: ubuntu-latest
-    needs: verify
+    needs: [verify, e2e, contracts]
     if: github.event_name == 'push' && github.ref == 'refs/heads/v2'
     permissions:
       contents: read
@@ -163,12 +163,12 @@ jobs:
           # wrangler.jsonc (the SPA) instead of this worker's wrangler.toml.
           # --var ALLOWED_ORIGINS: the preview worker must allow the preview SPA origin (CORS),
           # which production's allowlist doesn't include — override it for the preview ONLY.
-          command: deploy --name portfolio-agent-v2 --config wrangler.toml --var ALLOWED_ORIGINS:https://jw3b.dev,https://www.jw3b.dev,https://jw3b-dev-site-v2.agilegypsy.workers.dev
+          command: deploy --name portfolio-agent --config wrangler.toml
 
-  deploy-preview-frontend:
-    name: Preview — SPA (jw3b-dev-site-v2)
+  deploy-frontend:
+    name: Deploy — SPA (jw3b.dev)
     runs-on: ubuntu-latest
-    needs: verify
+    needs: [verify, e2e, contracts, deploy-backend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/v2'
     permissions:
       contents: read
@@ -183,15 +183,11 @@ jobs:
         # Retried: runner network blips (ENETUNREACH / ECONNRESET reaching the registry)
         # were turning healthy commits red. A flaky gate trains people to ignore the gate.
         run: npm ci || (sleep 15 && npm ci) || (sleep 45 && npm ci)
-      # Point the preview SPA at the preview worker (not production). Feature flags + the public
-      # WalletConnect id come from the committed .env.production (mode=production).
-      - name: Build (→ preview worker)
+      # Builds against the PRODUCTION worker (the default in config/worker.js). Feature flags
+      # and the public WalletConnect id come from the committed .env.production — no env
+      # overrides here, so what CI ships is exactly what the repo says it ships.
+      - name: Build
         run: npm run build
-        env:
-          VITE_PORTFOLIO_AGENT_URL: https://portfolio-agent-v2.agilegypsy.workers.dev
-          # P3 live voice: ON for the preview only (the shipped flag default stays OFF;
-          # prod is the owner's manual deploy and keeps the default until John flips it).
-          VITE_FEATURE_VOICE_LIVE: 'true'
       - name: Deploy preview SPA
         uses: cloudflare/wrangler-action@v3
         with:
@@ -202,10 +198,39 @@ jobs:
           # hashed /assets/* — the SPA would ship with NO CSP and no immutable-asset caching.
           # wrangler 4.123.0 was verified (local `wrangler dev`) to apply run_worker_first: the
           # worker runs on every path (x-served-by + CSP on /, immutable on /assets/*). Re-verify:
-          #   curl -sSI https://jw3b-dev-site-v2.agilegypsy.workers.dev/  -> content-security-policy + x-served-by present
+          #   curl -sSI https://jw3b.dev/  -> content-security-policy + x-served-by present
           wranglerVersion: '4.123.0'
-          command: deploy --name jw3b-dev-site-v2 --config wrangler.jsonc
+          command: deploy --name jw3b-dev-site --config wrangler.jsonc
 
   # PRODUCTION (portfolio-agent / jw3b-dev-site) is deployed by the owner manually
   # (`wrangler deploy`, no --name). Contract deploys are owner-provisioned too.
   # See docs/RUNBOOK.md for the release + DR procedure.
+
+  # A green build proves compilation, not behaviour. This drives the REAL site right after it
+  # ships, including the live AI surfaces, so a bad deploy is caught in the same run that made
+  # it rather than by a visitor.
+  smoke:
+    name: Post-deploy smoke (live)
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/v2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci || (sleep 15 && npm ci) || (sleep 45 && npm ci)
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Wait for the deploy to propagate
+        run: sleep 20
+      - name: E2E against jw3b.dev
+        run: npm run e2e:prod
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: post-deploy-smoke
+          path: playwright-report/
+          retention-days: 7

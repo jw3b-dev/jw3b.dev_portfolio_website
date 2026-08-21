@@ -16,8 +16,7 @@ Runs every 6 hours (and on-demand via **Actions → Health check → Run workflo
 |---|---|
 | `https://jw3b.dev/` | HTTP 200 (the production SPA document) |
 | `https://portfolio-agent.agilegypsy.workers.dev/` | responds (any non-5xx) — prod worker liveness |
-| `https://jw3b-dev-site-v2.agilegypsy.workers.dev/` | HTTP 200 (preview SPA) |
-| `https://portfolio-agent-v2.agilegypsy.workers.dev/ctf/leaderboard` | HTTP 200 (preview worker) |
+| `https://portfolio-agent.agilegypsy.workers.dev/health` | HTTP 200 (Worker bindings present) |
 
 Each target is retried 3× with backoff (no false alarm on a blip). On a **state change**:
 
@@ -25,7 +24,9 @@ Each target is retried 3× with backoff (no false alarm on a blip). On a **state
   or comments on the existing one; the run also exits non-zero (red X in Actions).
 - **unhealthy → healthy**: auto-closes any open `health-alert` issue with a recovery note.
 
-Deliberately hits only liveness endpoints — never the paid concierge/audit routes.
+The **probe** job deliberately hits only liveness endpoints. The **live-e2e** job in the same
+workflow does drive the concierge and audit streams — a few model calls per run, which is the
+price of knowing the AI surfaces actually answer in production rather than assuming they do.
 
 ## D1 analytics digest (run periodically)
 

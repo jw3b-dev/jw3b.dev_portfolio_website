@@ -1,7 +1,15 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
-import MissionControl from './MissionControl.jsx'
 import RETAINER from '../../data/retainer.json'
+
+// This suite is about the CONFIGURATOR and its onBook seam — not the checkout rails, which
+// have their own tests. Rendering the real CheckoutStateMachine dragged in the whole wallet
+// provider stack (WalletConnect core init), which under full-suite parallel load pushed this
+// test past its timeout: it passed in isolation and failed in CI. A flaky gate is a gate
+// people learn to ignore, so the rails are stubbed here and exercised where they belong.
+vi.mock('./CheckoutStateMachine.jsx', () => ({ default: () => <div>CHECKOUT RAIL</div> }))
+
+const { default: MissionControl } = await import('./MissionControl.jsx')
 
 describe('MissionControl — 4-step configurator (P1-17 / FR-028)', () => {
   it('renders a 4-step progress rail with the step-3 label "Engagement", never "Parameters"', () => {

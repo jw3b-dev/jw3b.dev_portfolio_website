@@ -68,11 +68,13 @@ jobs:
           # 200 from a residential IP; the *.workers.dev origin returns 200 from the runner).
           # A 403 therefore proves the edge is up and deciding, not that the site is down; a
           # 404/5xx/timeout still alarms, so a genuine outage or broken route is NOT masked.
+          # PRODUCTION ONLY. CI now deploys straight to the live site, so the -v2 preview
+          # instances are no longer updated — monitoring them would alarm on staleness that
+          # means nothing, which is the fastest way to teach everyone to ignore the alert.
           TARGETS=(
             "prod-site|https://jw3b.dev/|200,403"
             "prod-worker|https://portfolio-agent.agilegypsy.workers.dev/|alive"
-            "preview-site|https://jw3b-dev-site-v2.agilegypsy.workers.dev/|200"
-            "preview-worker|https://portfolio-agent-v2.agilegypsy.workers.dev/ctf/leaderboard|200"
+            "prod-health|https://portfolio-agent.agilegypsy.workers.dev/health|200"
           )
           accepts() { case ",$1," in *",$2,"*) return 0;; *) return 1;; esac; }
           FAILURES=""
