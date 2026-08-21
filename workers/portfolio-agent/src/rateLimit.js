@@ -19,6 +19,7 @@ export const BUDGETS = {
   stt: 10, // Whisper
   tts: 20, // Aura
   ctf: 15, // on-chain verify
+  kb_search: 20, // one bge-m3 embedding per call
   light: 60, // leaderboard / engagement / book-a-call — never throttle the conversion floor hard
 }
 export const DEFAULT_BUDGET = 30
@@ -105,6 +106,11 @@ export const ROUTE_LIMITS = {
   'POST /text-to-speech': { endpoint: 'tts', sse: false },
   'POST /ctf/verify': { endpoint: 'ctf', sse: false },
   'GET /ctf/leaderboard': { endpoint: 'light', sse: false },
+  // Search embeds the query with Workers AI, so it is metered like the other model-touching
+  // routes rather than as a 'light' read. Traversal is pure SQL and costs no inference.
+  'GET /kb/search': { endpoint: 'kb_search', sse: false },
+  'GET /kb/related': { endpoint: 'light', sse: false },
+  'GET /kb/stats': { endpoint: 'light', sse: false },
   'GET /health': { endpoint: 'light', sse: false },
   'POST /engagement': { endpoint: 'light', sse: false },
   'POST /book-a-call': { endpoint: 'light', sse: false },

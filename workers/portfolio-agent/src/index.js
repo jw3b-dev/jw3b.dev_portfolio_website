@@ -9,6 +9,7 @@ import { handleConcierge } from './routes/concierge.js'
 import { handleAudit } from './routes/audit.js'
 import { handleEngagement, handleBookACall } from './routes/engagement.js'
 import { handleCtfVerify, handleCtfLeaderboard } from './routes/ctf.js'
+import { handleKbSearch, handleKbRelated, handleKbStats } from './routes/kbSearch.js'
 import { handleFuzz } from './routes/fuzz.js'
 import { handleTxExplain } from './routes/txExplain.js'
 import { handleStt, handleTts } from './routes/voice.js'
@@ -104,6 +105,24 @@ export default {
       }
       if (pathname === '/ctf/leaderboard' && method === 'GET') {
         const out = await handleCtfLeaderboard(req, env, ctx)
+        return json(out.body, req, env, out.status)
+      }
+      // Semantic search over the PUBLIC audit-finding corpus on Neon. Reads only
+      // `knowledge_base_findings`; the client-work tables next to it are never touched here.
+      if (pathname === '/kb/search' && method === 'GET') {
+        const out = await handleKbSearch(req, env, ctx, Object.fromEntries(url.searchParams))
+        return out.error ? bad(out.error, req, env, out.status) : json(out.body, req, env, out.status)
+      }
+      // One hop along a relationship (SWC class / protocol / source). Vector search finds an entry
+      // point by meaning; this expands it by relationship — the half cosine distance cannot do.
+      if (pathname === '/kb/related' && method === 'GET') {
+        const out = await handleKbRelated(req, env, ctx, Object.fromEntries(url.searchParams))
+        return out.error ? bad(out.error, req, env, out.status) : json(out.body, req, env, out.status)
+      }
+      // Aggregate audit volume + severity shape. COUNTS ONLY — the underlying tables hold client
+      // work, and this route selects no column that could identify a client or a contract.
+      if (pathname === '/kb/stats' && method === 'GET') {
+        const out = await handleKbStats(req, env, ctx, null)
         return json(out.body, req, env, out.status)
       }
       // ── Status ──────────────────────────────────────────────────────────────────────────

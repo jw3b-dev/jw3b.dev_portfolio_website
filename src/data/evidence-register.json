@@ -3,7 +3,7 @@
     {
       "id": "codehawks-124-rank",
       "value": "#124",
-      "label": "CodeHawks — competitive-audit rank",
+      "label": "CodeHawks \u2014 competitive-audit rank",
       "status": "cleared",
       "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy",
       "source_system": "CodeHawks / Cyfrin"
@@ -11,7 +11,7 @@
     {
       "id": "codehawks-124-findings",
       "value": "17 findings",
-      "label": "CodeHawks #124 — findings (8 High · 5 Medium · 4 Low)",
+      "label": "CodeHawks #124 \u2014 findings (8 High \u00b7 5 Medium \u00b7 4 Low)",
       "status": "cleared",
       "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy",
       "source_system": "CodeHawks / Cyfrin"
@@ -19,76 +19,75 @@
     {
       "id": "codehawks-124-exp",
       "value": "1,430 EXP",
-      "label": "CodeHawks #124 — competitive-audit EXP",
+      "label": "CodeHawks #124 \u2014 competitive-audit EXP",
       "status": "cleared",
       "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy",
       "source_system": "CodeHawks / Cyfrin"
     },
-
     {
       "id": "graphrag-retriever-uplift",
       "value": "+18 pts",
-      "label": "GraphRAG hybrid retriever — uplift vs baseline (CR-01)",
+      "label": "GraphRAG hybrid retriever \u2014 uplift vs baseline (CR-01)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark",
+      "evidence_pointer": "owner-attested \u2014 AgileGypsy Labs / EcoGraph GraphRAG benchmark",
       "provenance_note": "AgileGypsy Labs / EcoGraph",
       "source_system": "EcoGraph / GraphRAG"
     },
     {
       "id": "graphrag-entities",
       "value": "9,828 entities",
-      "label": "GraphRAG knowledge graph — entities, PageRank + Louvain (CR-02)",
+      "label": "GraphRAG knowledge graph \u2014 entities, PageRank + Louvain (CR-02)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark",
+      "evidence_pointer": "owner-attested \u2014 AgileGypsy Labs / EcoGraph GraphRAG benchmark",
       "provenance_note": "AgileGypsy Labs / EcoGraph",
       "source_system": "EcoGraph / GraphRAG"
     },
     {
       "id": "graphrag-chunks",
       "value": "77k chunks",
-      "label": "GraphRAG corpus — embedded chunks (CR-03)",
+      "label": "GraphRAG corpus \u2014 embedded chunks (CR-03)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark",
+      "evidence_pointer": "owner-attested \u2014 AgileGypsy Labs / EcoGraph GraphRAG benchmark",
       "provenance_note": "AgileGypsy Labs / EcoGraph",
       "source_system": "EcoGraph / GraphRAG"
     },
     {
       "id": "graphrag-memory-recovery",
-      "value": ">2× memory-miss recovery",
-      "label": "GraphRAG graph-backed memory — miss recovery vs baseline (CR-09)",
+      "value": ">2\u00d7 memory-miss recovery",
+      "label": "GraphRAG graph-backed memory \u2014 miss recovery vs baseline (CR-09)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark",
+      "evidence_pointer": "owner-attested \u2014 AgileGypsy Labs / EcoGraph GraphRAG benchmark",
       "provenance_note": "AgileGypsy Labs / EcoGraph",
       "source_system": "EcoGraph / GraphRAG"
     },
     {
       "id": "overmind-corpus",
       "value": "192,000+",
-      "label": "Overmind — corpus embedded & classified (CR-04)",
+      "label": "Overmind \u2014 corpus embedded & classified (CR-04)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — Overmind GenAI engine",
+      "evidence_pointer": "owner-attested \u2014 Overmind GenAI engine",
       "source_system": "Overmind"
     },
     {
       "id": "overmind-governance-tests",
-      "value": "1,345 tests · 100% coverage",
-      "label": "Overmind governance suite — over 2,468 lines of governance logic (CR-05)",
+      "value": "1,345 tests \u00b7 100% coverage",
+      "label": "Overmind governance suite \u2014 over 2,468 lines of governance logic (CR-05)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — Overmind GenAI engine",
+      "evidence_pointer": "owner-attested \u2014 Overmind GenAI engine",
       "source_system": "Overmind"
     },
     {
       "id": "overmind-pipeline",
       "value": "13-phase pipeline",
-      "label": "Overmind — production agent pipeline, 51 non-test modules (CR-06)",
+      "label": "Overmind \u2014 production agent pipeline, 51 non-test modules (CR-06)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — Overmind GenAI engine",
+      "evidence_pointer": "owner-attested \u2014 Overmind GenAI engine",
       "source_system": "Overmind"
     },
     {
       "id": "kthulhu-merged-prs",
       "value": "112+ merged PRs",
-      "label": "KTHULHU — merged pull requests (CR-07)",
+      "label": "KTHULHU \u2014 merged pull requests (CR-07)",
       "status": "cleared",
       "evidence_pointer": "https://kthulhu.co",
       "source_system": "KTHULHU"
@@ -96,7 +95,7 @@
     {
       "id": "kthulhu-paying-users",
       "value": "Live, paying users",
-      "label": "KTHULHU — live product, credit billing, REST API + MCP (CR-08)",
+      "label": "KTHULHU \u2014 live product, credit billing, REST API + MCP (CR-08)",
       "status": "cleared",
       "evidence_pointer": "https://kthulhu.co",
       "source_system": "KTHULHU"
@@ -104,16 +103,15 @@
     {
       "id": "neo4j-certified-professional",
       "value": "Neo4j Certified Professional",
-      "label": "Neo4j — Certified Professional (CR-10)",
+      "label": "Neo4j \u2014 Certified Professional (CR-10)",
       "status": "cleared",
       "evidence_pointer": "https://graphacademy.neo4j.com/c/e235aec4-a1e6-4bab-ad1b-2777f199d60c",
       "source_system": "Neo4j GraphAcademy"
     },
-
     {
       "id": "neo4j-genai-certification",
       "value": "Neo4j & Generative AI Certification",
-      "label": "Neo4j GraphAcademy — course certificate",
+      "label": "Neo4j GraphAcademy \u2014 course certificate",
       "status": "cleared",
       "evidence_pointer": "https://graphacademy.neo4j.com/c/1b9f3905-0d1e-455a-bd35-06c32e0e2128",
       "source_system": "Neo4j GraphAcademy"
@@ -121,7 +119,7 @@
     {
       "id": "neo4j-genai-fundamentals",
       "value": "Neo4j & GenerativeAI Fundamentals",
-      "label": "Neo4j GraphAcademy — course certificate",
+      "label": "Neo4j GraphAcademy \u2014 course certificate",
       "status": "cleared",
       "evidence_pointer": "https://graphacademy.neo4j.com/c/adfa7ccd-a347-4c09-8e62-0b236af41216",
       "source_system": "Neo4j GraphAcademy"
@@ -129,7 +127,7 @@
     {
       "id": "neo4j-fundamentals",
       "value": "Neo4j Fundamentals",
-      "label": "Neo4j GraphAcademy — course certificate",
+      "label": "Neo4j GraphAcademy \u2014 course certificate",
       "status": "cleared",
       "evidence_pointer": "https://graphacademy.neo4j.com/c/d306fc2c-5687-4d58-a821-33b0c10c7b33",
       "source_system": "Neo4j GraphAcademy"
@@ -137,7 +135,7 @@
     {
       "id": "cypher-fundamentals",
       "value": "Cypher Fundamentals",
-      "label": "Neo4j GraphAcademy — course certificate",
+      "label": "Neo4j GraphAcademy \u2014 course certificate",
       "status": "cleared",
       "evidence_pointer": "https://graphacademy.neo4j.com/c/f375dd5d-ce9a-4688-98b1-f5a765e07117",
       "source_system": "Neo4j GraphAcademy"
@@ -145,102 +143,115 @@
     {
       "id": "neo4j-mcp-tools",
       "value": "Developing with Neo4j MCP Tools",
-      "label": "Neo4j GraphAcademy — course certificate",
+      "label": "Neo4j GraphAcademy \u2014 course certificate",
       "status": "cleared",
       "evidence_pointer": "https://graphacademy.neo4j.com/c/b2cf5245-74e2-4864-a9b0-e16e27701262",
       "source_system": "Neo4j GraphAcademy"
     },
-
     {
       "id": "agilepm-practitioner",
-      "value": "AgilePM® v2 Practitioner",
-      "label": "APMG — AgilePM Practitioner (Oct 2023)",
+      "value": "AgilePM\u00ae v2 Practitioner",
+      "label": "APMG \u2014 AgilePM Practitioner (Oct 2023)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — APMG certificate PDF + Credly badge + results letter",
+      "evidence_pointer": "owner-attested \u2014 APMG certificate PDF + Credly badge + results letter",
       "source_system": "APMG International"
     },
     {
       "id": "agilepm-foundation",
-      "value": "AgilePM® v2 Foundation",
-      "label": "APMG — AgilePM Foundation (Aug 2023)",
+      "value": "AgilePM\u00ae v2 Foundation",
+      "label": "APMG \u2014 AgilePM Foundation (Aug 2023)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — APMG certificate PDF + Credly badge + results letter",
+      "evidence_pointer": "owner-attested \u2014 APMG certificate PDF + Credly badge + results letter",
       "source_system": "APMG International"
     },
     {
       "id": "prince2-foundation",
-      "value": "PRINCE2® Foundation",
-      "label": "AXELOS/PeopleCert — PRINCE2 Foundation (Jun 2023)",
+      "value": "PRINCE2\u00ae Foundation",
+      "label": "AXELOS/PeopleCert \u2014 PRINCE2 Foundation (Jun 2023)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — PeopleCert result sheet (passed)",
+      "evidence_pointer": "owner-attested \u2014 PeopleCert result sheet (passed)",
       "source_system": "PeopleCert / AXELOS"
     },
     {
       "id": "apm-pfq",
       "value": "APM Project Fundamentals Qualification",
-      "label": "APM — PFQ, cert P0528947 (Apr 2023)",
+      "label": "APM \u2014 PFQ, cert P0528947 (Apr 2023)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — APM certificate PDF (P0528947)",
+      "evidence_pointer": "owner-attested \u2014 APM certificate PDF (P0528947)",
       "source_system": "Association for Project Management"
     },
-
     {
       "id": "cyfrin-solidity",
       "value": "Solidity Smart Contract Development",
-      "label": "Cyfrin Updraft — course certificate, RJA259ONK621 (Mar 2025)",
+      "label": "Cyfrin Updraft \u2014 course certificate, RJA259ONK621 (Mar 2025)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — Cyfrin Updraft certificate RJA259ONK621",
+      "evidence_pointer": "owner-attested \u2014 Cyfrin Updraft certificate RJA259ONK621",
       "source_system": "Cyfrin Updraft"
     },
     {
       "id": "cyfrin-foundry",
       "value": "Foundry Fundamentals",
-      "label": "Cyfrin Updraft — course certificate, IUY789PSN004 (Jun 2025)",
+      "label": "Cyfrin Updraft \u2014 course certificate, IUY789PSN004 (Jun 2025)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — Cyfrin Updraft certificate IUY789PSN004",
+      "evidence_pointer": "owner-attested \u2014 Cyfrin Updraft certificate IUY789PSN004",
       "source_system": "Cyfrin Updraft"
     },
     {
       "id": "cyfrin-wallet-security-advanced",
       "value": "Advanced Web3 Wallet Security",
-      "label": "Cyfrin Updraft — course certificate, 1KG922MS21NX (Jul 2025)",
+      "label": "Cyfrin Updraft \u2014 course certificate, 1KG922MS21NX (Jul 2025)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — Cyfrin Updraft certificate 1KG922MS21NX",
+      "evidence_pointer": "owner-attested \u2014 Cyfrin Updraft certificate 1KG922MS21NX",
       "source_system": "Cyfrin Updraft"
     },
     {
       "id": "chainlink-fundamentals",
       "value": "Chainlink Fundamentals",
-      "label": "Chainlink — course certificate, CLF-9XSZOBM7L2SPS (Jan 2026)",
+      "label": "Chainlink \u2014 course certificate, CLF-9XSZOBM7L2SPS (Jan 2026)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — Chainlink certificate CLF-9XSZOBM7L2SPS",
+      "evidence_pointer": "owner-attested \u2014 Chainlink certificate CLF-9XSZOBM7L2SPS",
       "source_system": "Chainlink"
     },
     {
       "id": "dapp-university-bootcamp",
       "value": "Blockchain Bootcamp 2.0",
-      "label": "Dapp University — Certificate of Graduation, cert_4653nh2z (May 2025)",
+      "label": "Dapp University \u2014 Certificate of Graduation, cert_4653nh2z (May 2025)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — Dapp University certificate cert_4653nh2z",
+      "evidence_pointer": "owner-attested \u2014 Dapp University certificate cert_4653nh2z",
       "source_system": "Dapp University"
     },
-
     {
       "id": "delivery-plants-countries",
-      "value": "20+ plants · 7 countries",
+      "value": "20+ plants \u00b7 7 countries",
       "label": "Two decades of water-infrastructure delivery across 7 countries",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — named industrial-plant register (docs/PORTFOLIO_REFERENCE §2)",
+      "evidence_pointer": "owner-attested \u2014 named industrial-plant register (docs/PORTFOLIO_REFERENCE \u00a72)",
       "source_system": "Total Water Solutions / Designed Bio Solutions"
+    },
+    {
+      "id": "kthulhu-audits-run",
+      "value": "75 audits",
+      "label": "KTHULHU \u2014 audits run to a terminal state (CR-11)",
+      "status": "cleared",
+      "evidence_pointer": "https://kthulhu.co",
+      "source_system": "KTHULHU"
+    },
+    {
+      "id": "kthulhu-findings-surfaced",
+      "value": "2,056 findings",
+      "label": "KTHULHU \u2014 findings surfaced by the automated pipeline across those audits; machine output, not human-confirmed vulnerabilities (CR-12)",
+      "status": "cleared",
+      "evidence_pointer": "https://kthulhu.co",
+      "source_system": "KTHULHU"
     }
   ],
   "forbidden": [
     "aggregate TVL / total value locked",
     "$ secured / protocols secured / $50M+ secured / dollar bounties",
     "50+ audits completed",
-    "PMP certified — the artifact is an ITU Online PMP exam-prep course completion (2014), NOT the PMI credential",
-    "PRINCE2 Practitioner — holds PRINCE2 Foundation only",
-    "Neo4j GDS certificate — no such credential exists among the verified GraphAcademy certificates",
+    "PMP certified \u2014 the artifact is an ITU Online PMP exam-prep course completion (2014), NOT the PMI credential",
+    "PRINCE2 Practitioner \u2014 holds PRINCE2 Foundation only",
+    "Neo4j GDS certificate \u2014 no such credential exists among the verified GraphAcademy certificates",
     "decades of combined experience"
   ]
 }
