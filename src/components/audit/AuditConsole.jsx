@@ -21,6 +21,7 @@
  */
 import RunTabs from './RunTabs.jsx'
 import { section } from './consoleCopy.js'
+import { buildAuditReport, reportFilename } from '../../lib/auditReport.js'
 import VersionDiff from './VersionDiff.jsx'
 import { Link } from 'react-router-dom'
 import { useAuditWorkspace } from '../../hooks/useAuditWorkspace.js'
@@ -52,6 +53,30 @@ function SectionHead({ n, title, cost, id, aside }) {
 
 export default function AuditConsole({ initialSource, idleMs } = {}) {
   const w = useAuditWorkspace({ initialSource, idleMs })
+
+  /*
+   * Take it with you. Everything in this console lives in a tab that a reload wipes — that is
+   * deliberate (nothing is persisted, by design), but it also meant a visitor could screen a
+   * contract, iterate versions and spend model calls, then leave with nothing at all. The report
+   * is built by a pure function so the honesty rules travel with the file: verbatim disclaimer,
+   * per-run live/recorded provenance, and "no patterns matched" never rendered as "safe".
+   */
+  const exportReport = () => {
+    const generatedAt = new Date().toISOString()
+    const md = buildAuditReport({
+      source: w.draft,
+      findings: w.findings,
+      versions: w.versions,
+      runs: w.runs,
+      generatedAt,
+    })
+    const url = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = reportFilename(w.draft, generatedAt)
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div className="grid gap-5 lg:grid-cols-2">
@@ -127,6 +152,16 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
             id="ac-screen-title"
             title={section('2').title}
             cost={section('2').cost}
+            aside={
+              <button
+                type="button"
+                onClick={exportReport}
+                title="Download everything on this screen as Markdown — findings, analyses, versions and the contract"
+                className={chipBase + ' border-hairline text-content-muted hover:text-content-primary'}
+              >
+                Export report
+              </button>
+            }
           />
 
           {w.overCap && (
