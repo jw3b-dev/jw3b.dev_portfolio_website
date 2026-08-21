@@ -329,7 +329,7 @@ export async function handleKbStats(req, env, ctx, params, { neonClient } = {}) 
     // Three fixed aggregate statements. No interpolation, no parameters, no selectable columns.
     const [
       auditRows, findingRows, sevRows, statusRows, deliveredRows, deliveredSevRows, confirmedRows,
-      fvRows, dispositionRows, rejectionRows,
+      fvRows, dispositionRows, rejectionRows, recencyRows,
     ] = await Promise.all([
       sql`SELECT count(*)::int AS n FROM audit_submissions`,
       sql`SELECT count(*)::int AS n FROM findings`,
@@ -385,6 +385,16 @@ export async function handleKbStats(req, env, ctx, params, { neonClient } = {}) 
           JOIN audit_submissions a ON a.id = f.submission_id
           WHERE a.status IN ('complete', 'awaiting_review')
           GROUP BY rejection_stage`,
+      /*
+       * Recency per status — aggregates only, still no rows and no identifiers.
+       *
+       * MUST STAY LAST: this array is positionally destructured, and adding a statement in the
+       * middle silently shifts every later result onto the wrong variable. That is exactly what
+       * happened on the first attempt — `recency` came back holding the rejection-stage rows, and
+       * every number after position 3 was misaligned without a single error being raised.
+       */
+      sql`SELECT status, max(created_at) AS newest, min(created_at) AS oldest
+          FROM audit_submissions GROUP BY status`,
     ])
     const body = {
       audits: Number(auditRows?.[0]?.n ?? 0),
@@ -399,6 +409,11 @@ export async function handleKbStats(req, env, ctx, params, { neonClient } = {}) 
       // Severity shape of REAL work only — a chart drawn from failed runs describes an error rate.
       deliveredSeverity: shapeSeverity(deliveredSevRows),
       confirmedFindings: Number(confirmedRows?.[0]?.n ?? 0),
+      recency: (recencyRows || []).map((r) => ({
+        status: r.status,
+        newest: r.newest ? String(r.newest) : null,
+        oldest: r.oldest ? String(r.oldest) : null,
+      })),
       fvVerdicts: shapeSeverity((fvRows || []).map((r) => ({ severity: r.fv_verdict ?? 'not_recorded', n: r.n }))),
       disposition: shapeSeverity((dispositionRows || []).map((r) => ({ severity: r.disposition ?? 'not_recorded', n: r.n }))),
       rejectionStage: shapeSeverity((rejectionRows || []).map((r) => ({ severity: r.rejection_stage ?? 'not_rejected', n: r.n }))),

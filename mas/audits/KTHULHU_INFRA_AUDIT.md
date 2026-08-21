@@ -175,6 +175,45 @@ system.
 config anywhere in the repo** — it exists only in the account. Deployed, scheduled `0 */6 * * *`,
 and unreproducible from source.
 
+### ✎ Rev 4 — the cutover DID happen, and the ledger proves it
+
+Asked the ledger instead of reasoning about the flags. `tool_jobs` in D1 `kthulhu-overmind`:
+
+| kind | done | failed | latest |
+|---|---|---|---|
+| static-adjudication | 51 | 26 | 2026-08-08 |
+| fuzz | 49 | 23 | 2026-08-08 |
+| scenario-decomposition | 47 | 12 | 2026-08-08 |
+| ensemble | 38 | 10 | 2026-08-08 |
+| markdown-pdf | 33 | 7 | 2026-08-08 |
+| **fv** | **31** | 11 | 2026-08-08 |
+| claude-discovery | 21 | 5 | 2026-07-31 |
+
+**270 jobs completed through the ledger.** The box-pull cutover is real and worked; the queue send
+is confirmed vestigial. `LEDGER_PULL_*` names the path that actually carries the work.
+
+**But the whole pipeline stopped dead on 2026-08-08T20:28.** `tool_jobs` (382 rows) and
+`signal_log` (2,699 rows) end within 27 seconds of each other. Thirteen days of total silence.
+
+**And four submissions were never dispatched at all.** Submission recency by status:
+
+```
+awaiting_review   newest 2026-08-08     complete  newest 2026-08-05
+queued            newest 2026-07-31     failed    newest 2026-07-06
+                  oldest 2026-07-06
+```
+
+The four `queued` audits arrived between **6 and 31 July** and never started — while the pipeline
+demonstrably ran other work around them, right through to 8 August. That is not an idle system: it
+is work that arrived, was accepted, and was silently skipped. Between three and seven weeks stuck.
+
+Two separate conditions, and they should not be conflated:
+
+1. **Four stuck submissions** — dispatch never picked them up even while healthy. A real defect.
+2. **Thirteen days of no activity since 8 August** — no new submissions either, so this is
+   consistent with no demand rather than a second fault. Not proof of health; just not evidence of
+   breakage.
+
 ### Confidence, stated per fact
 
 | Fact | Verified how | Confidence |
