@@ -7,7 +7,7 @@
  * only motion is a token-driven colour transition on each gate. Semantic tokens only.
  */
 import { useState } from 'react'
-import { OVERMIND_STAGES, TOTAL_STEPS, stageStatus, advance, reset, isComplete, gatesPassed, gateCount } from '../../lib/overmindPipeline.js'
+import { OVERMIND_STAGES, TOTAL_STEPS, stageStatus, advance, reset, isComplete, gatesPassed, gateCount, stageDetail, rejectAt } from '../../lib/overmindPipeline.js'
 
 const STATUS_TONE = {
   passed: 'border-verified/50 text-verified',
@@ -17,7 +17,10 @@ const STATUS_TONE = {
 
 export default function OvermindGraph() {
   const [step, setStep] = useState(0)
+  // The last rejection, so a gate can be SEEN refusing work rather than only passing it.
+  const [rejection, setRejection] = useState(null)
   const complete = isComplete(step)
+  const detail = stageDetail(step)
 
   return (
     <section aria-labelledby="overmind-title" className="rounded-lg border border-hairline bg-panel p-5">
@@ -52,11 +55,48 @@ export default function OvermindGraph() {
         })}
       </ol>
 
-      <div className="mt-5 flex items-center gap-4">
+      {/*
+          What this stage emits, and what its gate checks. Thirteen advancing labels only showed
+          that a pipeline has stages — which nobody doubted. The claim worth demonstrating is the
+          zero-trust one: that work is rejected at gates rather than waved through.
+      */}
+      {!complete && detail && (
+        <div className="mt-4 rounded-md border border-hairline bg-void p-3">
+          <p className="font-mono text-[10px] uppercase tracking-label text-content-muted">
+            Stage {step + 1} · {detail.label}
+            {detail.gate && <span className="ml-2 text-cyan">zero-trust gate</span>}
+          </p>
+          <p className="mt-1 text-sm text-content-secondary">
+            Emits: <span className="text-content-primary">{detail.emits}</span>
+          </p>
+          {detail.check && (
+            <p className="mt-1 text-sm text-content-secondary">
+              Gate asks: <span className="text-content-primary">{detail.check}</span>
+            </p>
+          )}
+        </div>
+      )}
+
+      {rejection && (
+        <div role="status" className="mt-3 rounded-md border border-caution/40 bg-caution/5 p-3">
+          <p className="font-mono text-[10px] uppercase tracking-label text-caution">Gate rejected the work</p>
+          <p className="mt-1 text-sm text-content-secondary">
+            <span className="text-content-primary">{OVERMIND_STAGES[rejection.rejectedAt].label}</span> refused it, so
+            the run returned to{' '}
+            <span className="text-content-primary">{OVERMIND_STAGES[rejection.returnedTo].label}</span> — not to the
+            start. A gate rejects for a reason, and the reason names the earliest output now in doubt.
+          </p>
+        </div>
+      )}
+
+      <div className="mt-5 flex flex-wrap items-center gap-4">
         {!complete ? (
           <button
             type="button"
-            onClick={() => setStep((s) => advance(s))}
+            onClick={() => {
+              setRejection(null)
+              setStep((s) => advance(s))
+            }}
             className="rounded-md border border-cyan/50 bg-cyan/5 px-4 py-2 font-mono text-[12px] font-semibold uppercase tracking-label text-cyan hover:bg-cyan/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
           >
             Step the pipeline →
@@ -64,9 +104,27 @@ export default function OvermindGraph() {
         ) : (
           <p className="font-mono text-[12px] uppercase tracking-label text-verified">Pipeline validated end-to-end ✓</p>
         )}
+        {/* Only offered ON a gate — you cannot reject at a stage that does not check anything. */}
+        {!complete && detail?.gate && (
+          <button
+            type="button"
+            onClick={() => {
+              const r = rejectAt(step)
+              if (!r) return
+              setRejection(r)
+              setStep(r.step)
+            }}
+            className="rounded-md border border-caution/40 px-3 py-2 font-mono text-[11px] uppercase tracking-label text-caution hover:bg-caution/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+          >
+            Fail this gate
+          </button>
+        )}
         <button
           type="button"
-          onClick={() => setStep(reset())}
+          onClick={() => {
+            setRejection(null)
+            setStep(reset())
+          }}
           className="font-mono text-[11px] uppercase tracking-label text-content-muted hover:text-content-secondary"
         >
           Reset
