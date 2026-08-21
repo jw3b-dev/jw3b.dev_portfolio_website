@@ -11,7 +11,9 @@
  * keyboard-operable — this console is the site's own proof of care.
  */
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Seo from '../components/seo/Seo.jsx'
+import { FAILURES } from '../data/recorded-runs/failures/index.js'
 import AuditConsole from '../components/audit/AuditConsole.jsx'
 import FuzzTool from '../components/audit/FuzzTool.jsx'
 import TxExplainer from '../components/audit/TxExplainer.jsx'
@@ -24,6 +26,12 @@ const TABS = [
 
 export default function Audit() {
   const [active, setActive] = useState('screen')
+
+  // `?case=<failure id>` loads that captured failure's EXACT input into the console. The
+  // failures surface links here, so "reproduce it" is a click rather than a copy-paste
+  // instruction — you run the real tool on the real input and watch it miss the bug yourself.
+  const [params] = useSearchParams()
+  const replay = FAILURES.find((f) => f.id === params.get('case') && f.surface === 'audit')
 
   // Left/Right arrows move between tabs, matching the WAI-ARIA tabs pattern.
   const onKeyDown = (e) => {
@@ -45,6 +53,16 @@ export default function Audit() {
         Three tools against the same discipline: reproduce the finding, don&rsquo;t assert it. The
         heuristics run instantly in your browser and stay real even if the live model is offline.
       </p>
+
+      {replay && (
+        <p className="mt-4 rounded-md border border-caution/40 bg-caution/5 p-3 text-sm text-content-secondary">
+          <span className="font-mono text-[11px] uppercase tracking-label text-caution">Replaying a captured miss</span>
+          <br />
+          Loaded the exact contract from “{replay.title}”. Run it: the pass returns{' '}
+          <span className="font-mono text-content-primary">no findings</span> on a contract anyone
+          can drain — which is precisely what a heuristic pre-screen cannot promise.
+        </p>
+      )}
 
       <div
         role="tablist"
@@ -88,7 +106,9 @@ export default function Audit() {
           className="mt-6"
         >
           {/* Mounted only when active so a hidden tool never fires a request or holds state. */}
-          {t.id === active && t.id === 'screen' && <AuditConsole />}
+          {t.id === active && t.id === 'screen' && (
+            <AuditConsole key={replay?.id || 'default'} initialSource={replay?.input} />
+          )}
           {t.id === active && t.id === 'fuzz' && <FuzzTool />}
           {t.id === active && t.id === 'tx' && <TxExplainer />}
         </div>

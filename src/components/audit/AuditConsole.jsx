@@ -11,8 +11,8 @@ import { useAuditStream } from '../../hooks/useAuditStream.js'
 import { SEVERITY_META, SAMPLE_CONTRACT } from '../../lib/auditHeuristics.js'
 import { AUDIT_DISCLAIMER } from '../../lib/auditClient.js'
 
-export default function AuditConsole() {
-  const [source, setSource] = useState(SAMPLE_CONTRACT)
+export default function AuditConsole({ initialSource } = {}) {
+  const [source, setSource] = useState(initialSource || SAMPLE_CONTRACT)
   const { findings, narrative, running, error, degraded, run } = useAuditStream()
   const hasRun = findings.length > 0 || narrative || degraded || error
 

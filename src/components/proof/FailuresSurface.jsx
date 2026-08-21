@@ -7,6 +7,7 @@
  * accents frame the miss, the verified accent frames the fix; motion is limited to the native
  * <details> disclosure. Every line here traces to a captured artifact — nothing is narrated.
  */
+import { Link } from 'react-router-dom'
 import { FAILURES } from '../../data/recorded-runs/failures/index.js'
 
 function FailureCard({ f }) {
@@ -55,6 +56,17 @@ function FailureCard({ f }) {
             <span className="hidden group-open:inline">▾ Hide the input</span>
           </summary>
           {f.reproduce && <p className="mt-2 text-xs text-content-muted">{f.reproduce}</p>}
+          {/* The thesis is "operate, not read": the input used to sit here as dead text under a
+              "reproduce it" heading with no way to actually do so. This loads it into the live
+              console, where it IS editable — change the contract and watch the pass change. */}
+          {f.surface === 'audit' && (
+            <Link
+              to={`/audit?case=${encodeURIComponent(f.id)}`}
+              className="mt-3 inline-block rounded-md border border-cyan/50 bg-cyan/5 px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-label text-cyan hover:bg-cyan/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+            >
+              Run it in /audit →
+            </Link>
+          )}
           <pre className="mt-2 overflow-x-auto rounded-md border border-hairline bg-void p-3 font-mono text-[12px] leading-relaxed text-content-secondary">
             {f.input}
           </pre>
