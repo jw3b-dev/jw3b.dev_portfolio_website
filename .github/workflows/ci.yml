@@ -14,11 +14,15 @@
 # ADR-09: the claims-gate BLOCKS any uncleared/forbidden claim in CI.
 name: ci
 
+# ONE BRANCH. `main` held v1's history — an unrelated tree with no common ancestor — and CI
+# triggered on it, so pushing there ran the v2 pipeline against v1 code. `main`, `v2-upgrade` (59
+# superseded commits) and a stale dependabot branch were deleted 2026-08-21, archived first as the
+# tags `v1-archive` and `v2-upgrade-archive`. `v2` is the default and the only branch.
 on:
   push:
-    branches: [main, v2]
+    branches: [v2]
   pull_request:
-    branches: [main, v2]
+    branches: [v2]
 
 # Cancel superseded runs on the same ref.
 concurrency:

@@ -51,6 +51,16 @@ describe('deploy targets — exactly one, and it is production', () => {
     expect(CI).toMatch(/needs:\s*\[verify, e2e, contracts\]/)
   })
 
+  it('triggers on exactly one branch — the one it deploys from', () => {
+    // `main` carried v1's unrelated history and CI triggered on it too, so a push there ran the v2
+    // pipeline against v1 code. One branch in, one branch out, or the pipeline is lying about what
+    // it builds. (v1 is preserved as the `v1-archive` tag, not as a branch that can be pushed to.)
+    const triggers = [...CI.matchAll(/branches:\s*\[([^\]]*)\]/g)].map((m) => m[1].replace(/\s/g, ''))
+    expect(triggers.length).toBeGreaterThan(0)
+    for (const t of triggers) expect(t).toBe('v2')
+    expect(CI).not.toMatch(/branches:\s*\[[^\]]*main/)
+  })
+
   it('keeps the CORS allowlist to production origins only', () => {
     const origins = AGENT_CONFIG.match(/ALLOWED_ORIGINS\s*=\s*"([^"]+)"/)?.[1] ?? ''
     expect(origins).toContain('https://jw3b.dev')
