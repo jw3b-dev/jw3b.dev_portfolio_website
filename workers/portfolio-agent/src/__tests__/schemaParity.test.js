@@ -73,7 +73,9 @@ function declaredColumns() {
       const cols = m[2]
         .split('\n')
         .map((l) => l.trim())
-        .filter((l) => l && !/^(PRIMARY|FOREIGN|UNIQUE|CHECK|CONSTRAINT)\b/i.test(l))
+        // Skip blanks, table-level constraints, and CONTINUATION lines of a wrapped column
+        // definition — a `NOT NULL` that wrapped onto its own line parsed as a column called "NOT".
+        .filter((l) => l && !/^(PRIMARY|FOREIGN|UNIQUE|CHECK|CONSTRAINT|NOT|NULL|DEFAULT|REFERENCES|ON)\b/i.test(l))
         .map((l) => l.split(/[\s(]/)[0])
         .filter((c) => /^\w+$/.test(c))
       if (!tables.has(m[1])) tables.set(m[1], new Set())
@@ -85,6 +87,10 @@ function declaredColumns() {
       if (!tables.has(m[1])) tables.set(m[1], new Set())
       tables.get(m[1]).add(m[2])
     }
+
+    // A dropped table stops being declared — otherwise retired v1 tables look like live ones.
+    const dropRe = /DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["']?(\w+)["']?/gi
+    while ((m = dropRe.exec(sql)) !== null) tables.delete(m[1])
   }
   return tables
 }
@@ -110,9 +116,16 @@ describe('D1 schema parity — every column the code writes is a column the migr
     ).toEqual([])
   })
 
-  it('specifically covers the two columns that were missing in production for five days', () => {
-    const messages = declared.get('messages')
-    expect(messages.has('had_audio')).toBe(true)
-    expect(messages.has('source')).toBe(true)
+  it('covers the columns that were missing from the LIVE v1-inherited database', () => {
+    // `messages` cost five days of chat transcripts; `ctf_solves` meant no solve could ever be
+    // recorded, so its "0 solves" was a write failure wearing the costume of a usage statistic.
+    for (const col of ['had_audio', 'source']) expect(declared.get('messages').has(col)).toBe(true)
+    for (const col of ['attacker', 'drained_amount']) expect(declared.get('ctf_solves').has(col)).toBe(true)
+  })
+
+  it('stops declaring a table once a migration drops it', () => {
+    // v1's `rate_limits` was superseded by `rate_limits_v2` and dropped in 0004.
+    expect(declared.has('rate_limits')).toBe(false)
+    expect(declared.has('rate_limits_v2')).toBe(true)
   })
 })

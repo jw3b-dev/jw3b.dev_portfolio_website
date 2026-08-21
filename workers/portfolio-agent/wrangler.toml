@@ -13,8 +13,16 @@ binding = "AI"
 # D1 — analytics, leaderboard, engagements, rate limits, escrow index (§4)
 [[d1_databases]]
 binding = "DB"
-database_name = "jw3b_analytics" # reused from the prior deployment
-database_id = "7ed65107-5531-4f6b-a0b8-ac9c30ec8fb4" # reused; v2 migration is idempotent (CREATE TABLE IF NOT EXISTS) — apply with `wrangler d1 migrations apply jw3b_analytics`
+database_name = "jw3b_analytics"
+database_id = "7ed65107-5531-4f6b-a0b8-ac9c30ec8fb4"
+# INHERITED FROM v1 (this database was created 2026-03-15, before v2 existed) and reconciled to the
+# v2 schema by migrations 0003/0004. The comment that used to live here said the v2 migration was
+# "idempotent (CREATE TABLE IF NOT EXISTS)" — that was the bug. Against a table that ALREADY EXISTS,
+# `CREATE TABLE IF NOT EXISTS` is a no-op, not an upgrade, so a migration can report ✅ applied while
+# changing nothing. It cost five days of chat transcripts (`messages`) and every CTF solve record
+# (`ctf_solves`), both swallowed by best-effort catches.
+# Adding a column to an existing table needs its own ALTER migration. Verify the live database with
+# `npm run schema:check` — it diffs production against these migration files.
 migrations_dir = "migrations"
 
 # KV — Tier-1 recorded-run transcripts (ADR-01). Re-seedable from the repo — see

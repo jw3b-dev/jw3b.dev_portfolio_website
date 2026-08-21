@@ -637,3 +637,44 @@ escrow_agreements 0, ctf_solves 0. The backend is real, deployed and working; wh
 *used by anyone but us*.
 
 Gate: lint 0 errors · 807 tests · build 0-warn · claims · secret-scan.
+
+**v1 → v2 backend consolidation (owner: "v1, v2 and preview should all be merged to the new
+production backend") — 2026-08-21.** The owner's diagnosis was right and better than mine: v2 was
+built against an isolated `-v2` preview *specifically so deploying wouldn't overwrite live v1*, so
+the v2 production backend was never actually created — it was v1's, inherited. I had been
+answering "is it production?" (yes) when the real question was "is it V2?" (partly).
+
+**Audited every stateful resource for provenance.**
+
+| Resource | Created | Verdict |
+|---|---|---|
+| Worker `portfolio-agent` | 2026-03-15 (v1) | name inherited, **code fully replaced each deploy — harmless** |
+| D1 `jw3b_analytics` | 2026-03-15 (v1) | **v1 SCHEMA inherited — the real problem** |
+| KV `jw3b-recorded-runs` | v2-era | v2-native ✓ |
+| R2 `jw3b-recorded-runs` | 2026-08-16 | v2-native ✓ |
+| Escrow `0xe44A…87F8` | v2 redeploy | **10/10 selectors — genuine v2** ✓ |
+| CTF vault `0x4f72…C240` | v1-era | **3/4 selectors — NOT the v2 contract** |
+
+**D1 was the damage.** `wrangler.toml` carried the comment "reused from the prior deployment … v2
+migration is idempotent (CREATE TABLE IF NOT EXISTS)". That parenthesis was the bug: against a
+table that already exists, `CREATE TABLE IF NOT EXISTS` is a no-op, not an upgrade, so a migration
+reports ✅ applied while changing nothing. Three tables had drifted:
+· `messages` missing `had_audio`, `source` → five days of chat transcripts lost (fixed 0003);
+· `ctf_solves` missing `attacker`, `drained_amount` → **every solve write threw**, so the "0 CTF
+solves" figure was a write failure wearing the costume of a usage statistic (fixed 0004);
+· `rate_limits` — v1's limiter table, superseded by `rate_limits_v2` for this exact reason and
+left lying around to mislead the next reader (dropped in 0004).
+Live schema now matches every v2 migration; the misleading comment is replaced with the rule.
+
+**Two guards, because they answer different questions.** `schemaParity.test.js` (CI, static) —
+CODE vs MIGRATIONS: "you wrote a column no migration declares". `npm run schema:check` (on demand,
+needs the network) — LIVE vs MIGRATIONS: "the migration never actually reached the database".
+Only the second can see an `IF NOT EXISTS` no-op, and nothing in CI ever could.
+
+**CTF vault — OWNER-GATED, cannot be done here.** `contracts/broadcast/DeployCtf.s.sol/84532/`
+contains only a **dry-run**: the v2 CTF vault was never broadcast from this repo, and the address in
+`src/config/contracts.js` is a v1 deployment (`totalHeld()` absent from its bytecode). It does NOT
+break the CTF flow — nothing in the client or worker calls `totalHeld`, and the three functions the
+flow uses (`balances`, `deposit`, `withdraw`) all match — but it is not the v2 contract and the
+vault holds **0.00012 ETH**, so there is nothing to drain even when it works. Blocked here: no
+`contracts/.env` keystore locally, and the deployer holds 0.0005 ETH on Base Sepolia.
