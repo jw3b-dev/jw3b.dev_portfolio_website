@@ -60,13 +60,40 @@ function readToken() {
   return raw
 }
 
-async function api(token, method, params = {}) {
+/**
+ * One Bot API call, with the network treated as hostile.
+ *
+ * Reaching api.telegram.org is not reliable from every network — ISPs throttle or block it, and
+ * a machine with a broken IPv6 route will sit on ENETUNREACH before falling back. The first run
+ * of this script died on exactly that with a raw Node stack trace, which tells the operator
+ * nothing about what to do next. Retried once, then reported as a sentence.
+ */
+async function api(token, method, params = {}, { attempt = 1 } = {}) {
   const url = `https://api.telegram.org/bot${token}/${method}`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(params),
-  })
+  let res
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(params),
+      signal: AbortSignal.timeout(15000),
+    })
+  } catch (err) {
+    if (attempt === 1) {
+      console.log(`   … ${method} could not reach Telegram, retrying once`)
+      return api(token, method, params, { attempt: 2 })
+    }
+    const code = err?.cause?.code || err?.code || err?.name || 'network error'
+    die(
+      `Could not reach api.telegram.org (${code}) while calling ${method}.\n\n` +
+        `  The token itself is fine — an earlier call succeeded.\n` +
+        `  This is connectivity between this machine and Telegram: some ISPs block or throttle\n` +
+        `  it, and a stale IPv6 route produces ENETUNREACH before any fallback.\n\n` +
+        `  Try again, or from a different network / VPN. If getUpdates is the step that fails,\n` +
+        `  skip it entirely by naming the chat yourself:\n` +
+        `    TELEGRAM_CHAT_ID=<your id> npm run telegram:setup`,
+    )
+  }
   const body = await res.json().catch(() => ({}))
   if (!body.ok) die(`Telegram ${method} failed: ${body.description || res.status}`)
   return body.result
