@@ -48,6 +48,27 @@ register is complete over the walked surface, not a sample.
 | 27 | Scheduler URL null (Cal.com never provisioned) — superseded by the OpenClaw rail | P1 | 2 | W1 |
 | 28 | XMTP absent (deliberate dep decision) while /messages sells it | P2 | 2 | R1 |
 
+## Status — W1 and W2 closed and re-verified on live jw3b.dev
+
+| # | Status | Live evidence (2026-08-21) |
+|---|---|---|
+| 1 | **FIXED** | `POST /engagement` on production returns `"alerting":true`; a Telegram alert channel is configured and was proven by a real send. |
+| 2 | **FIXED** | `POST /book-a-call` returns an `id` and the row appears in `book_a_call_leads` — the first row that table has ever held. |
+| 3 | **FIXED** | The confirmation now reports the actual delivery state (delivered/alerted · delivered/recorded · queued for reconnect · rejected with a mailto fallback). |
+| 4 | **FIXED** | Asked the deployed concierge "How do I use the audit page?" — no navigation, widget stayed open, answer fully readable. |
+| 5 | **FIXED** | Same question now returns the real console description: three tools, the four numbered steps, free instant screen, 10 metered AI calls, per-run tabs, and the "not a full audit" caveat. |
+| 6 | **FIXED** | The informational question produced no offer card — the tool-call was suppressed by the deterministic intent gate. |
+| 7 | **FIXED** | `#contact` opens the booking surface directly; seam test pins the hash Mission Control honours to the hash `toolCallTarget` emits. |
+| 8, 9 | **FIXED** | Status probes on mount from the deployed origin (and only there — an unprompted cross-origin ping is CORS-blocked console noise, which CI caught). |
+| 27 | **SUPERSEDED** | Cal.com dropped; the OpenClaw Telegram rail replaces it (owner-gated on a dedicated bot). |
+
+A regression found *during* this verification is worth recording: `SITE_GUIDE_PROMPT` was defined
+and never concatenated into the system prompt, so #5 shipped "fixed" while the live model kept
+fabricating. CI was green throughout — nothing imports a prompt constant. Only re-asking the
+deployed model caught it. `conciergeSystemPrompt.test.js` now fails if any defined prompt block
+does not reach `system`. **This is root cause 3 reproducing itself inside its own remediation:
+static gates cannot see model behaviour.**
+
 ## Walkthrough evidence highlights
 
 - **The concierge test, verbatim.** Asked live: *"How do I use the audit page?"* Response
