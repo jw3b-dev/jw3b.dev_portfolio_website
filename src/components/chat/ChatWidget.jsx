@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { usePortfolioAgent } from '../../hooks/usePortfolioAgent.js'
 import { useVoice } from '../../hooks/useVoice.js'
 import { offerFromToolCall } from './toolCalls.js'
+import { framingOriginAllowed } from '../../config/embeds.js'
 import Markdown from './Markdown.jsx'
 import { SpeakerToggle, MicButton } from './VoiceControls.jsx'
 import { useLiveVoice } from '../../hooks/useLiveVoice.js'
@@ -65,11 +66,21 @@ export default function ChatWidget() {
     navigate(`${path}${hash}`)
   }
 
-  // Probe once on mount so the launcher shows a real status on every route. It previously read
-  // "Agent status unknown" until you hovered or opened it — the signal existed, but announced
-  // ignorance to every visitor who never touched it.
+  /*
+   * Probe once on mount so the launcher shows a real status on every route — it previously read
+   * "Agent status unknown" until you hovered or opened it, announcing ignorance to every visitor
+   * who never touched it.
+   *
+   * ONLY from the deployed origin. The Worker's CORS allowlist is production-only (the dev origin
+   * rides a DEV_ORIGIN secret that is absent everywhere else), so an unprompted ping from
+   * localhost or a preview host is blocked by the browser and logged as a console error the page
+   * cannot catch — the first CI run of this change failed the console-error budget for exactly
+   * that reason. Same guard the flagship embeds use (src/config/embeds.js): attempt the
+   * cross-origin thing only where it is actually permitted. Hover/focus still probe everywhere,
+   * so local development keeps the signal on demand.
+   */
   useEffect(() => {
-    checkStatus()
+    if (framingOriginAllowed()) checkStatus()
   }, [checkStatus])
 
   const submit = (e) => {

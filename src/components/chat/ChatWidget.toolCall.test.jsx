@@ -5,6 +5,9 @@ import { MemoryRouter } from 'react-router-dom'
 const navigate = vi.fn()
 vi.mock('react-router-dom', async (orig) => ({ ...(await orig()), useNavigate: () => navigate }))
 let hook
+// Origin gate, controlled per test: true = "served from https://jw3b.dev".
+let framingAllowed = true
+vi.mock('../../config/embeds.js', () => ({ framingOriginAllowed: () => framingAllowed }))
 vi.mock('../../hooks/usePortfolioAgent.js', () => ({ usePortfolioAgent: () => hook }))
 const { default: ChatWidget } = await import('./ChatWidget.jsx')
 
@@ -31,6 +34,7 @@ const base = (over = {}) => ({
 
 /** Mount with the panel OPEN — the state a visitor is in whenever a tool-call can arrive. */
 const mount = () => {
+  framingAllowed = true
   const out = render(<MemoryRouter><ChatWidget /></MemoryRouter>)
   fireEvent.click(screen.getByRole('button', { name: /open concierge chat/i }))
   return out
@@ -94,10 +98,32 @@ describe('ChatWidget — hire-routing tool-call dispatch (FR-019)', () => {
     expect(screen.queryByRole('button', { name: /open mission control/i })).not.toBeInTheDocument()
   })
 
-  it('probes agent status on mount, so the launcher never just says "unknown"', () => {
+  /*
+   * The launcher used to report "Agent status unknown" until hovered, so it now probes on mount —
+   * but ONLY from the deployed origin, because the Worker's CORS allowlist is production-only and
+   * an unprompted cross-origin ping is logged as an uncatchable console error everywhere else.
+   * CI caught exactly that (the console-error budget went red on the first attempt), so both
+   * halves of the guard are pinned here.
+   *
+   * Note these render WITHOUT the shared mount() helper: it opens the panel, which probes too,
+   * and would make this assertion pass for the wrong reason.
+   */
+  it('probes agent status on mount when served from the deployed origin', () => {
+    framingAllowed = true
     const checkStatus = vi.fn()
     hook = base({ checkStatus })
-    mount()
+    render(<MemoryRouter><ChatWidget /></MemoryRouter>)
+    expect(checkStatus).toHaveBeenCalled()
+  })
+
+  it('does NOT probe on mount from any other origin — a CORS-blocked ping is console noise', () => {
+    framingAllowed = false
+    const checkStatus = vi.fn()
+    hook = base({ checkStatus })
+    render(<MemoryRouter><ChatWidget /></MemoryRouter>)
+    expect(checkStatus).not.toHaveBeenCalled()
+    // …but an explicit interaction still probes, so local development keeps the signal.
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /open concierge chat/i }))
     expect(checkStatus).toHaveBeenCalled()
   })
 })

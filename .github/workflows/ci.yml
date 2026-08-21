@@ -108,14 +108,29 @@ jobs:
       # runners, turning healthy commits red. The retry is a real second attempt — NOT
       # continue-on-error alone, which would let the job limp on with no forge and fail
       # confusingly later. If both attempts fail the job still fails, as it must.
+      #
+      # `version: stable` pins the toolchain to a released artifact. The default (nightly)
+      # resolves a fresh build and its attestation on every run, and that attestation download
+      # is what returned HTTP 504 on 2026-08-21, reddening a commit whose contracts were fine.
+      # A floating toolchain also means this gate can change underneath us with no commit,
+      # which is its own bug. The retry now WAITS first: the original two attempts fired
+      # seconds apart, landing inside the same outage window, so the retry never had a chance.
       - name: Install Foundry
         id: foundry
         continue-on-error: true
         uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Wait out the upstream blip
+        if: steps.foundry.outcome == 'failure'
+        run: sleep 30
 
       - name: Install Foundry (retry)
         if: steps.foundry.outcome == 'failure'
         uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
 
       - name: Fetch contract deps (contracts/lib is gitignored)
         working-directory: contracts
