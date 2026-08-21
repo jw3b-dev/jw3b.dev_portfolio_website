@@ -589,3 +589,51 @@ Also confirmed for the owner: **run #127** was the post-deploy smoke failure alr
 fixed in #128 (an E2E route predicate matching any `workers.dev` `/audit`, which intercepted the
 page itself when the smoke ran against the deployed origin). #128 and #129 both green.
 Gate: lint 0 errors · 799 tests · build 0-warn · claims · secret-scan.
+
+**Backend production verification + a five-day silent data loss (owner asked) — 2026-08-21.** Owner
+suspected the production route was talking to a preview backend. It is not — but the check found a
+worse problem the preview question was standing next to.
+
+**Verified via the Cloudflare MCP at ACCOUNT level, not by URL probing** (which is what made the
+earlier answer wrong). `workers_list` showed `portfolio-agent` modified 08:09:04 and
+`jw3b-dev-site` 08:10:29 — both today's push. It also showed **`portfolio-agent-v2` still existed
+as a script**, which a previous 404 check had been read as "already deleted": a 404 on the
+workers.dev URL means *no route is enabled*, not *no script*. Deleted; the account went 9 → 8
+workers with neither `-v2` remaining. `workers_get_worker_code` pulled the 8,136-line deployed
+bundle and every marker from recent commits is in it (`rate_limits_v2`, `GET /health`,
+`claude-opus-4-8`, `qwen2.5-coder-32b`, `audio/mpeg`, `PERSONA_GUARD`, the verbatim disclaimer, and
+`audit: 10` — the exact budget the client mirrors). D1 `jw3b_analytics` and KV `jw3b-recorded-runs`
+match the wrangler ids exactly; no duplicate/preview resources exist. Every deployed JS chunk on
+jw3b.dev contains exactly ONE agent host and it is production. Decisive: the live concierge
+answered "LIVE — ANSWERING NOW" *six minutes after* `portfolio-agent-v2` was deleted, calling only
+`portfolio-agent.agilegypsy.workers.dev`.
+
+**What the check actually found — `messages` writes had been failing silently since 2026-08-16.**
+`0001_init.sql` declares `messages` with `had_audio` and `source`, but does so with
+`CREATE TABLE IF NOT EXISTS`, and this is the ORIGINAL v1 database (created 2026-03-15) whose
+`messages` table already existed in the older four-column shape. The migration was a no-op for it,
+so every `INSERT INTO messages (…, had_audio, source)` threw "no such column" into the deliberately
+best-effort catch in `appendMessage()`. Symptom: **279 of 333 conversation rows had ZERO messages**
+— the conversation INSERT (first, valid) succeeded and the message INSERT (second) threw, leaving a
+shell. Last message stored before the fix: **2026-08-16 03:20:30**. That also means the
+"conversations 207" figure the P5 funnel scoping reasoned from was inflated roughly 6×.
+
+**This is the SECOND time this exact trap hit this database** — `rate_limits` needed
+`rate_limits_v2` for the same reason (v1 table, no `endpoint` column, `IF NOT EXISTS` no-op'd).
+Nobody swept for others. Fixed: migration `0003_messages_missing_columns.sql` (additive
+`ADD COLUMN`, applied to production, verified — 2 messages stored within 5 minutes, last write
+08:23:07). Guard: `workers/portfolio-agent/src/__tests__/schemaParity.test.js` parses every
+`INSERT INTO … (cols)` in the worker and every `CREATE TABLE`/`ALTER TABLE ADD COLUMN` in the
+migrations, and fails when the code writes a column no migration declares. Proven by reverting
+0001 to the pre-fix shape: 2 tests fail naming `had_audio, source`. Because the analytics catch is
+correct and must stay, a static check is the ONLY place this class can ever be caught.
+
+**Traffic reality (owner asked "is it being used").** Conversations by day: 153 today, 0 on the
+20th, 0 on the 19th, 16 on the 18th, 58 on the 17th, 53 on the 16th, 8 on the 15th. Two
+consecutive zero days is not the shape of organic traffic — this is us testing. `audit_runs`: 53,
+all `live`, all the `auditor` tool; **zero `fuzz` and zero `tx_explainer` runs ever**, despite both
+being reachable since the P5 tab work. Funnel bottom is empty: engagement_requests 0,
+escrow_agreements 0, ctf_solves 0. The backend is real, deployed and working; what it is not yet is
+*used by anyone but us*.
+
+Gate: lint 0 errors · 807 tests · build 0-warn · claims · secret-scan.
