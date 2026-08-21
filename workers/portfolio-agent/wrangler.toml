@@ -57,6 +57,16 @@ CTF_RPC_URL = "https://sepolia.base.org"        # public Base Sepolia RPC (no ke
 #                         (the ~9.5k-finding corpus reused from KTHULHU). Set via:
 #                           wrangler secret put NEON_DATABASE_URL
 #                         Absent → the /audit narrative runs without RAG (degrades cleanly).
+#   TELEGRAM_BOT_TOKEN  — Bot API token used to alert John the moment a lead lands (W1, notify.js)
+#   TELEGRAM_CHAT_ID    — the chat that receives those alerts (John's DM with the bot)
+#                         Set BOTH or neither — a half-configured channel counts as absent:
+#                           wrangler secret put TELEGRAM_BOT_TOKEN --name portfolio-agent
+#                           wrangler secret put TELEGRAM_CHAT_ID   --name portfolio-agent
+#                         Absent → leads are still validated, persisted and acknowledged, and the
+#                         response carries `alerting:false` so the UI stops promising a follow-up
+#                         that nothing would deliver. This pair is the fix for the defect where a
+#                         COMPLETED hire request reached nobody: engagement_requests held 0 rows
+#                         in production while the success screen said "John will follow up".
 
 # /audit edge-RAG (P2-14 · OD-06): retrieval hits the Neon pgvector KB over NEON_DATABASE_URL
 # (see auditRag.js), NOT a Cloudflare Vectorize index — the corpus already exists on Neon, so

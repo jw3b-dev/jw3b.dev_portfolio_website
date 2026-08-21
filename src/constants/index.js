@@ -18,6 +18,9 @@ export const SITE = Object.freeze({
   defaultDescription:
     'John Wellard — Senior Agentic AI Developer and smart-contract auditor (JW3B / AgileGypsy). Multi-agent systems that survive production, an operable AI security console, and a proof-first hire path.',
   ogImage: '', // owner-provisioned later (P2-18); empty ⇒ text-only unfurl (still valid)
+  // The human fallback beneath every automated path, used when a capture genuinely fails and
+  // retrying cannot help. A dead end at the hire step costs more than a published address.
+  contactEmail: 'john@agilegypsy.com',
 })
 
 export const HATS = [

@@ -3,10 +3,17 @@
  * `/engagement` captures a conversion request: every input validated, the tier resolved against
  * the sealed pricing catalog (src/data/retainer.json — single source), and indicative_price
  * COPIED FROM the catalog, never trusted from the client (BR-12). Parameterized INSERT into
- * engagement_requests. `/book-a-call` is the guaranteed terminal action (FR-036): it only needs
- * a contact and acknowledges; the persisted capture path is `/engagement` (P1-19 posts there).
+ * engagement_requests. `/book-a-call` is the guaranteed terminal action (FR-036).
+ *
+ * W1 (2026-08-21) — BOTH routes now REACH JOHN. Previously a submitted lead landed in D1 and
+ * nothing read it (`engagement_requests`: 0 rows ever, in production, while the UI said "John
+ * will follow up"), and `/book-a-call` validated a contact then discarded it entirely. The order
+ * here is load-bearing: PERSIST first, alert second, and the alert can never fail the capture.
+ * Each response now carries `alerting` — whether an alert channel is actually configured — so the
+ * client can promise a follow-up only when something is genuinely listening.
  */
 import catalog from '../../../../src/data/retainer.json'
+import { notifyLead, telegramConfigured } from '../notify.js'
 
 export const OBJECTIVES = ['security', 'engineering', 'pm']
 export const ENGAGEMENTS = ['project', 'retainer']
@@ -76,13 +83,45 @@ export async function handleEngagement(req, env, ctx, body) {
       return { status: 503, error: 'could not persist request' }
     }
   }
-  return { status: 200, body: { id, status: 'submitted' } }
+  // The row is durable — only now do we try to reach John. notifyLead never throws and never
+  // awaits the send inline (ctx.waitUntil), so a Telegram outage costs a notification, not a lead.
+  const { alerting } = notifyLead(env, ctx, 'engagement', { ...r, id })
+  return { status: 200, body: { id, status: 'submitted', alerting } }
 }
 
-/** `/book-a-call` — guaranteed terminal action (FR-036). Contact only; scheduler owner-provisioned. */
-export function handleBookACall(req, env, body) {
+/**
+ * `/book-a-call` — the guaranteed terminal action (FR-036) and the floor every other rail
+ * degrades to. It now PERSISTS (0005_book_a_call_leads) and alerts; before W1 it validated the
+ * contact and dropped it, which made "book a call" the most-promised and least-delivered path on
+ * the site. Async because capture is a write now, not a formality.
+ */
+export async function handleBookACall(req, env, ctx, body) {
   if (!body || typeof body.contact !== 'string' || !body.contact.trim())
     return { status: 400, error: 'contact required' }
   if (body.contact.length > 200) return { status: 400, error: 'contact too long' }
-  return { status: 200, body: { ok: true, scheduler_url: (env && env.SCHEDULER_URL) || null } }
+
+  const wallet = body.wallet != null && body.wallet !== '' ? String(body.wallet) : null
+  if (wallet && !ADDRESS.test(wallet)) return { status: 400, error: 'invalid wallet' }
+  const contact = body.contact.trim().slice(0, 200)
+  const source = typeof body.source === 'string' ? body.source.trim().slice(0, 40) : null
+  const id = crypto.randomUUID()
+  const alerting = telegramConfigured(env)
+
+  if (env && env.DB) {
+    try {
+      await env.DB.prepare(
+        `INSERT INTO book_a_call_leads (id, contact, wallet, source, notified)
+         VALUES (?1, ?2, ?3, ?4, ?5)`,
+      )
+        .bind(id, contact, wallet, source, alerting ? 1 : 0)
+        .run()
+    } catch {
+      // Same rule as /engagement: tell the client to retry (its offline queue will) rather than
+      // acknowledge a booking that was never written down.
+      return { status: 503, error: 'could not persist request' }
+    }
+  }
+
+  notifyLead(env, ctx, 'book_a_call', { id, contact, wallet, source })
+  return { status: 200, body: { ok: true, id, alerting, scheduler_url: (env && env.SCHEDULER_URL) || null } }
 }

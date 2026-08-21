@@ -133,7 +133,7 @@ export default {
       }
       if (pathname === '/book-a-call' && method === 'POST') {
         const b = await readJson(req)
-        const out = handleBookACall(req, env, b)
+        const out = await handleBookACall(req, env, ctx, b)
         return out.error ? bad(out.error, req, env, out.status) : json(out.body, req, env, out.status)
       }
 

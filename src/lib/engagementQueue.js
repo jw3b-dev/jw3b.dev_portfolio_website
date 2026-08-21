@@ -115,7 +115,18 @@ export async function flush({
       })
       if (res.ok) {
         item.status = 'done'
-        results.push({ id: item.id, ok: true })
+        // The Worker reports whether an alert channel is actually configured (`alerting`). The
+        // caller needs it to phrase its confirmation honestly: before W1 this surface promised
+        // "John will follow up" on every submission, including ones nothing was listening for.
+        // Body parsing is best-effort — a delivered lead stays delivered either way.
+        let alerting = false
+        try {
+          const body = typeof res.json === 'function' ? await res.json() : null
+          alerting = body?.alerting === true
+        } catch {
+          alerting = false
+        }
+        results.push({ id: item.id, ok: true, alerting })
       } else if (res.status >= 400 && res.status < 500) {
         item.status = 'rejected'
         item.error = `HTTP ${res.status}`

@@ -79,16 +79,32 @@ describe('handleEngagement — persistence', () => {
   })
 })
 
+/*
+ * W1 changed this handler's contract: `/book-a-call` is now an async CAPTURE (it persists to
+ * book_a_call_leads and alerts John) rather than a synchronous acknowledgement that discarded the
+ * contact it had just validated. Signature is (req, env, ctx, body); `alerting` reports whether an
+ * alert channel is actually configured. Full capture/alert coverage lives beside the route in
+ * workers/portfolio-agent/src/__tests__/notify.test.js; these keep the FR-036 floor guarantees.
+ */
 describe('handleBookACall — guaranteed terminal action (FR-036)', () => {
-  it('acknowledges with a contact and surfaces the owner scheduler url', () => {
-    expect(handleBookACall({}, { SCHEDULER_URL: 'https://cal/x' }, { contact: 'me@x.io' })).toEqual({
+  const ctx = { waitUntil: () => {} }
+
+  it('acknowledges with a contact and surfaces the owner scheduler url', async () => {
+    expect(await handleBookACall({}, { SCHEDULER_URL: 'https://cal/x' }, ctx, { contact: 'me@x.io' })).toMatchObject({
       status: 200,
       body: { ok: true, scheduler_url: 'https://cal/x' },
     })
-    expect(handleBookACall({}, {}, { contact: 'me@x.io' }).body.scheduler_url).toBeNull()
+    expect((await handleBookACall({}, {}, ctx, { contact: 'me@x.io' })).body.scheduler_url).toBeNull()
   })
-  it('rejects a missing/oversized contact', () => {
-    expect(handleBookACall({}, {}, {}).status).toBe(400)
-    expect(handleBookACall({}, {}, { contact: 'x'.repeat(201) }).status).toBe(400)
+
+  it('completes even with no database bound — the floor never depends on storage being up', async () => {
+    const out = await handleBookACall({}, {}, ctx, { contact: 'me@x.io' })
+    expect(out.status).toBe(200)
+    expect(out.body.alerting).toBe(false) // honest: nothing is configured to alert
+  })
+
+  it('rejects a missing/oversized contact', async () => {
+    expect((await handleBookACall({}, {}, ctx, {})).status).toBe(400)
+    expect((await handleBookACall({}, {}, ctx, { contact: 'x'.repeat(201) })).status).toBe(400)
   })
 })

@@ -11,15 +11,29 @@
  */
 import { useEffect, useState } from 'react'
 import { enqueue, flush, startAutoFlush } from '../../lib/engagementQueue.js'
+import { SITE } from '../../constants/index.js'
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
+const OWNER_EMAIL = SITE.contactEmail
+
+// The status chip states the delivery truth, not a generic success. "Captured" used to appear
+// the instant localStorage accepted the write, which is why the old copy could promise a
+// follow-up on a submission the Worker had recorded and told nobody about.
+const DELIVERY_LABEL = {
+  sending: 'Sending',
+  delivered: 'Delivered to John',
+  queued: 'Saved — sends on reconnect',
+  rejected: 'Not delivered',
+}
 
 export default function BookACall({ selection, loadout, onBack = () => {} }) {
   const [contact, setContact] = useState('')
   const [wallet, setWallet] = useState('')
   const [error, setError] = useState(null)
   const [confirmed, setConfirmed] = useState(null)
+  // What actually happened to the lead: sending → delivered (alerting?) | queued | rejected.
+  const [delivery, setDelivery] = useState({ state: 'sending' })
 
   // Keep retrying any queued captures on reconnect while this surface is mounted (BR-11).
   useEffect(() => startAutoFlush(), [])
@@ -50,26 +64,84 @@ export default function BookACall({ selection, loadout, onBack = () => {} }) {
       assessment: selection.assessment,
     })
     setConfirmed(item) // optimistic — the floor completes regardless of network (BR-11)
-    flush() // best-effort immediate delivery; failures retry with backoff
+    setDelivery({ state: 'sending' })
+
+    // W1: report the REAL outcome. This surface used to say "John will follow up" the instant it
+    // wrote to localStorage — on a path where the Worker kept the row and told nobody. Now the
+    // confirmation waits for the flush and states what actually happened: alerted, saved, or
+    // still queued for reconnect. Optimism is fine; a promise nothing keeps is not.
+    flush()
+      .then(({ results }) => {
+        const mine = results.find((r) => r.id === item.id)
+        if (mine?.ok) setDelivery({ state: 'delivered', alerting: mine.alerting === true })
+        else if (mine?.rejected) setDelivery({ state: 'rejected' })
+        else setDelivery({ state: 'queued' })
+      })
+      .catch(() => setDelivery({ state: 'queued' }))
   }
 
   if (confirmed) {
     return (
-      <div className="rounded-lg border border-verified/40 bg-panel p-5" role="status">
+      <div
+        className={`rounded-lg border bg-panel p-5 ${
+          delivery.state === 'rejected' ? 'border-caution/40' : 'border-verified/40'
+        }`}
+        role="status"
+      >
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-verified" aria-hidden="true" />
-          <span className="font-mono text-[11px] uppercase tracking-label text-verified">
-            Request captured
+          <span
+            className={`h-2 w-2 rounded-full ${
+              delivery.state === 'rejected' ? 'bg-caution' : 'bg-verified'
+            }`}
+            aria-hidden="true"
+          />
+          <span
+            className={`font-mono text-[11px] uppercase tracking-label ${
+              delivery.state === 'rejected' ? 'text-caution' : 'text-verified'
+            }`}
+          >
+            {DELIVERY_LABEL[delivery.state]}
           </span>
         </div>
         <h3 className="mt-3 font-display text-base font-semibold text-content-primary">
-          You’re on John’s list{loadout.tier ? ` for ${loadout.tier.name}` : ''}.
+          {delivery.state === 'rejected'
+            ? 'That didn’t send — here’s the direct line.'
+            : `You’re on John’s list${loadout.tier ? ` for ${loadout.tier.name}` : ''}.`}
         </h3>
         <p className="mt-2 text-sm text-content-secondary">
-          Saved and sending — no wallet or payment needed. If you’re offline it’ll deliver the
-          moment you reconnect. John will follow up at{' '}
-          <span className="font-mono text-content-primary">{confirmed.payload.contact}</span> to book
-          the call.
+          {delivery.state === 'sending' && (
+            <>
+              Sending your request for{' '}
+              <span className="font-mono text-content-primary">{confirmed.payload.contact}</span>…
+            </>
+          )}
+          {delivery.state === 'delivered' && (
+            <>
+              {delivery.alerting
+                ? 'Delivered — John gets an alert on his phone the moment this lands. He’ll reply at '
+                : 'Delivered and recorded against your request. John will reply at '}
+              <span className="font-mono text-content-primary">{confirmed.payload.contact}</span>.
+            </>
+          )}
+          {delivery.state === 'queued' && (
+            <>
+              Saved on this device — it will send itself the moment you’re back online, then John
+              replies at{' '}
+              <span className="font-mono text-content-primary">{confirmed.payload.contact}</span>.
+              Nothing is lost if you close this tab.
+            </>
+          )}
+          {delivery.state === 'rejected' && (
+            <>
+              The request didn’t reach John’s system and retrying won’t fix it. Message him
+              directly at{' '}
+              <a href={`mailto:${OWNER_EMAIL}`} className="text-cyan underline">
+                {OWNER_EMAIL}
+              </a>{' '}
+              and quote {loadout.tier ? loadout.tier.name : 'your engagement'} — it will get the
+              same answer, faster.
+            </>
+          )}
         </p>
         <button
           type="button"
