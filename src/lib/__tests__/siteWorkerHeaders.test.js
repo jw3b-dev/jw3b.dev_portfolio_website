@@ -171,3 +171,29 @@ describe('missing /assets/* must 404, never the SPA shell (P5 audit fix)', () =>
     expect(res.headers.get('content-type')).toMatch(/text\/html/)
   })
 })
+
+/*
+ * FR-039 — the XMTP channel must not be CSP-blocked the moment it is switched on.
+ *
+ * Finding 28 recorded XMTP as "owner-gated on a provisioned recipient address". The address was
+ * necessary and NOT sufficient: `connect-src` carried no XMTP host, so provisioning it would have
+ * produced a blocked channel — an owner ask that could not have worked when acted on. This pins
+ * the hosts against the SDK's own endpoints so the gap cannot silently reopen.
+ */
+describe('CSP — the XMTP endpoints the SDK actually dials', () => {
+  const connectSrc = async () => {
+    const csp = (await headersOf('https://jw3b.dev/', 'text/html; charset=utf-8')).get('content-security-policy')
+    return csp.split(';').map((d) => d.trim()).find((d) => d.startsWith('connect-src'))
+  }
+
+  it.each(['https://api.production.xmtp.network', 'https://api.dev.xmtp.network'])(
+    'connect-src allows %s',
+    async (host) => {
+      expect(await connectSrc()).toContain(host)
+    },
+  )
+
+  it('still refuses a wildcard for the XMTP domain — allowlists stay specific', async () => {
+    expect(await connectSrc()).not.toContain('*.xmtp.network')
+  })
+})

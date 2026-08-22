@@ -17,6 +17,13 @@
 // 'wasm-unsafe-eval' in script-src (the WASM-only directive; NOT 'unsafe-eval' — JS eval stays
 // blocked). The Whisper model files are fetched SAME-ORIGIN via this worker's /hf-models/*
 // proxy (see below) — so connect-src needs no Hugging Face hosts at all.
+// XMTP (FR-039): `api.production.xmtp.network` + `api.dev.xmtp.network` — the endpoints
+// `@xmtp/browser-sdk` v7 actually dials, read out of the installed package rather than guessed.
+// They were ABSENT while finding 28 recorded the feature as "owner-gated on a provisioned
+// recipient address". The address was necessary and NOT sufficient: provisioning it would have
+// produced a CSP-blocked channel — an owner ask that could not have worked when acted on, which
+// is the same shape as finding 21. Adding the hosts costs nothing while the flag is off, and
+// means the flag is the only thing left between here and a working channel.
 const CSP = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -28,7 +35,7 @@ const CSP = [
   "font-src 'self' data:",
   "img-src 'self' data: https:",
   "worker-src 'self' blob:",
-  "connect-src 'self' https://portfolio-agent.agilegypsy.workers.dev https://portfolio-agent-v2.agilegypsy.workers.dev https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://explorer-api.walletconnect.com https://*.web3modal.org https://*.reown.com https://mainnet.base.org https://sepolia.base.org https://*.base.org https://cloudflare-eth.com https://paywall.unlock-protocol.com https://rpc.unlock-protocol.com",
+  "connect-src 'self' https://portfolio-agent.agilegypsy.workers.dev https://portfolio-agent-v2.agilegypsy.workers.dev https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://explorer-api.walletconnect.com https://*.web3modal.org https://*.reown.com https://mainnet.base.org https://sepolia.base.org https://*.base.org https://cloudflare-eth.com https://paywall.unlock-protocol.com https://rpc.unlock-protocol.com https://api.production.xmtp.network https://api.dev.xmtp.network",
   'frame-src \'self\' https://paywall.unlock-protocol.com https://app.unlock-protocol.com https://kthulhu.co https://kointel.co.za',
 ].join('; ')
 
