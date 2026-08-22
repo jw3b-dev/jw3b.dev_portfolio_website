@@ -13,6 +13,7 @@ import { isEnabled } from './config/features.js'
 import HireSpine from './components/layout/HireSpine'
 import SiteFooter from './components/layout/SiteFooter'
 import RouteError from './components/layout/RouteError'
+import { HAS_NOTES } from './lib/notesIndex.js'
 
 // Lazy-loaded routes — each page is code-split and loads behind the single
 // <Suspense> boundary in RootLayout. Heavy Web3 (and future R3F) libs are
@@ -26,6 +27,8 @@ const Messages = lazy(() => import('./pages/Messages'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const SystemsAreGraphs = lazy(() => import('./pages/thesis/SystemsAreGraphs'))
 const ZeroTrustValidator = lazy(() => import('./pages/thesis/ZeroTrustValidator'))
+const NoteIndex = lazy(() => import('./pages/notes/NoteIndex'))
+const Note = lazy(() => import('./pages/notes/Note'))
 
 const queryClient = new QueryClient()
 
@@ -102,6 +105,16 @@ const router = createBrowserRouter([
       { path: '/privacy', element: <Privacy /> },
       { path: '/thesis/systems-are-graphs', element: <SystemsAreGraphs /> },
       { path: '/thesis/zero-trust-validator', element: <ZeroTrustValidator /> },
+      /* P5-04: the notes routes exist ONLY when a note does. With src/content/notes/ empty the
+         glob yields nothing, HAS_NOTES is false, and /notes is not a route — so there is no
+         empty "Notes" section advertising an absence. Publishing the first markdown file is what
+         brings the section into being; no component is edited to do it. */
+      ...(HAS_NOTES
+        ? [
+            { path: '/notes', element: <NoteIndex /> },
+            { path: '/notes/:slug', element: <Note /> },
+          ]
+        : []),
       { path: '*', element: <NotFound /> },
     ],
   },

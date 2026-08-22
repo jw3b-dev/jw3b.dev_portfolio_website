@@ -66,7 +66,16 @@ bare `vitest`/`vite` from the root will not pick them up.
 - `src/constants/index.js` — site copy, personas, projects, services, `HATS`.
 - `src/data/` — `evidence-register.json` (+ schema), `retainer.json`, `recorded-runs/`,
   `vuln-corpus/`.
-- `src/content/` — `privacy.md`, `terms.md` (rendered in full; never stub legal text).
+- `src/content/` — `privacy.md`, `terms.md` (rendered in full; never stub legal text) and
+  `notes/` (the P5-04 publishing pipeline).
+
+**Publishing a note is adding a file.** Drop `src/content/notes/<slug>.md` with frontmatter
+(`title` required; `date`, `description`, `draft` optional) and it gains `/notes/<slug>`, an index
+entry, SEO and JSON-LD with **no component edit**. Two rules the pipeline enforces rather than
+documents: a file with no title, no body, or `draft: true` is dropped rather than half-published;
+and with **zero** notes the `/notes` routes are not registered at all, so there is never an empty
+section advertising an absence. `src/__tests__/sitemap.test.js` fails if a published note has no
+`<loc>` in `public/sitemap.xml` — that entry is the one step still done by hand.
 - `workers/portfolio-agent/src/` — `index.js` (routing + CORS + rate limit) and `routes/*.js`
   (one file per endpoint), plus `knowledge.js` (concierge KB), `notify.js` (Telegram lead
   alerts), `auditRag.js`, `tagProtocol.js`, `rateLimit.js`, `replay.js`.
