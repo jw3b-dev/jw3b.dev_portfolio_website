@@ -74,6 +74,13 @@ jobs:
       - name: Brief gate (product-owner pass)
         run: npm run brief-gate
 
+      # FR-038 ("nothing ships that a user can't reach") was a requirement with no check, and the
+      # rule was enforced by whoever noticed. It went unnoticed five times — FuzzTool, TxExplainer,
+      # the vuln corpus, the CTF walkthrough, and the KTHULHU corpus endpoints, that last one for a
+      # month while the flagship it would have made operable was reported as owner-gated.
+      - name: Reachability gate (FR-038 — no unreachable endpoint)
+        run: npm run reachability-gate
+
       - name: Build
         run: npm run build
 

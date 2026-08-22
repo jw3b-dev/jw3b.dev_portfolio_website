@@ -14,6 +14,7 @@
     "claims-gate": "node scripts/claims-gate.mjs",
     "copy-gate": "node scripts/copy-gate.mjs",
     "brief-gate": "node scripts/brief-gate.mjs",
+    "reachability-gate": "node scripts/reachability-gate.mjs",
     "seed:kv": "node scripts/seed-kv-runs.mjs",
     "gen:knowledge": "node scripts/gen-knowledge.mjs",
     "secret-scan": "node scripts/secret-scan.mjs",

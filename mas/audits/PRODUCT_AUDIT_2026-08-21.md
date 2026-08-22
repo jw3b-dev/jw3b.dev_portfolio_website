@@ -119,14 +119,39 @@ Code-only rows say so rather than claiming a live check they did not get.
 | 26 | P1 | **OPEN — owner-gated** | Unlock locks are placeholders, escrow testnet-only. Both flags fail closed and degrade to the hire floor. **Ask: lock provisioning + mainnet funding.** |
 | 28 | P2 | **CLOSED — degrades honestly; owner-gated to go live** | Reclassified. XMTP is no longer absent: `@xmtp/browser-sdk` is a dependency, `useXMTP` + `xmtpFlow.js` are implemented, and `/messages` gates on `isEnabled('xmtp') && isEthAddress(XMTP_RECIPIENT)`. The flag is unset in `.env.production`, so the surface degrades rather than selling what it lacks. **Ask: a provisioned XMTP recipient address.** |
 
+---
+
+## ✎ Findings 29–30 — added 2026-08-22, by the sweep that finding 21 forced
+
+Finding 21 turned out to be an endpoint nobody called. The obvious next question was whether it was
+the only one, so every Worker route was checked against every client consumer. Two more:
+
+| # | Finding (verified) | Sev | Status |
+|---|---|---|---|
+| 29 | **`/book-a-call` is answered by the Worker and called by nothing.** The floor submits through `engagementQueue` → `/engagement`, which persists and notifies. W1 added persistence and the Telegram alert to `/book-a-call` as well, and that half has never run. **No visitor impact** — the floor works and is proven live — but the money path has two endpoints for one job and only one of them is real. | P3 | **DECLARED, not deleted.** Recorded in `scripts/reachability-gate.mjs`'s `DECIDED` list with its reason; a deletion candidate, kept because a public endpoint may be referenced externally. |
+| 30 | **`/fuzz` is answered by the Worker and called by nothing.** `FuzzTool` builds the harness client-side from `src/lib/fuzzHarness.js` — the generator the Worker imports too — so no round trip is needed. Harmless, and precisely the shape of the bug that `Audit.jsx`'s own header describes ("the Worker's /fuzz route was answering requests nobody could make"): the components were mounted, the route was left. | P3 | **DECLARED** in the same list. |
+
+**The class fix, which matters more than either row.** FR-038 — *nothing ships that a user can't
+reach* — has been a requirement since P2 with **no check behind it**, enforced only by whoever
+happened to notice. It went unnoticed five times: FuzzTool, TxExplainer, the vuln corpus, the CTF
+walkthrough, and the KTHULHU corpus. `scripts/reachability-gate.mjs` now blocks in `verify` on any
+Worker route without a client constant, or any constant without a consumer. Red-witnessed by
+reproducing the pre-fix state. Its limits are stated in the file: it verifies
+`route → constant → source file`, not `transport → component → mounted route`, so the FuzzTool
+failure mode itself is still outside its reach.
+
 ### Verdict
 
-**21 of the 27 live findings fixed · 1 retracted · 1 closed as not-ours · 4 open, every one
-owner-gated with a named ask.** No row is open for an engineering reason. Per the disposition rule
-the gate is **green on the work and red on provisioning** — and the four gating asks are exactly the
-standing owner list, not new discoveries.
+**✎ Revised 2026-08-22.** The previous verdict read: *"No row is open for an engineering reason …
+the gate is green on the work and red on provisioning."* **That was false when written.** Row 21
+was open for an engineering reason — an unbuilt UI over a deployed endpoint — and had been recorded
+as an owner ask for a month. A register that mistakes an engineering gap for a provisioning gap
+sends the owner a bill for work that was already paid for.
 
-**One caveat, stated rather than buried:** the deployed site verified above does **not** yet include
-the Overmind flagship rewrite — local commits are unpushed pending owner authorisation, because
-`v2` deploys to production on push. Row 21 is unaffected. The Overmind correction is verified
-locally only, and one line of this table needs re-walking after that deploy.
+**Now: 22 of 29 live findings fixed · 1 retracted · 1 closed as not-ours · 2 newly declared ·
+3 open, each owner-gated with a named ask** (23 zone RUM · 25 CTF vault · 26 Unlock/escrow), plus
+**Kointel**, which is open and whose cause is *unknown* — it must be re-diagnosed the way KTHULHU
+just was, not assumed to need API access.
+
+*Earlier caveat, now resolved:* the Overmind flagship rewrite has since been pushed and deployed;
+the table no longer describes a site the deploy does not match.
