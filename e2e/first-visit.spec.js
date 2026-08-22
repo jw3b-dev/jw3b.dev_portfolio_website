@@ -220,3 +220,21 @@ test('the Kointel flagship runs its rule, and says it is not the product', async
   await expect(gate.getByRole('status')).toContainText(/build fails/i)
   await expect(gate).toContainText(/line 1/i)
 })
+
+test('the hero hat chips are actionable, not decoration', async ({ page }) => {
+  // Brief 01, next-need 2: the four hats were rendered in the hero as static text and were
+  // filterable four folds below, so a visitor learned the vocabulary in one place and discovered
+  // it was interactive somewhere else. Clicking a chip now preselects that hat on the identity
+  // section. Asserted in a browser because the handoff rides router state.
+  await page.goto('/')
+  // The accessible name is the chip's TEXT ("Auditor"); `title` does not override that when a
+  // link has content. Scoped to the hero, since the identity section below names the hats too.
+  const chip = page.locator('section').first().getByRole('link', { name: 'Auditor', exact: true })
+  await expect(chip).toBeVisible()
+  await chip.click()
+
+  const hats = page.locator('section[aria-labelledby="fourhats-title"]')
+  await expect(hats).toBeVisible()
+  // The chosen hat is the active filter — the others are dimmed, never removed (BR-07).
+  await expect(hats.getByRole('button', { name: /auditor/i })).toHaveAttribute('aria-pressed', 'true')
+})

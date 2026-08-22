@@ -19,6 +19,7 @@
  * with it; the version chips moved the other way, under the editor, because they are the history
  * of the source.
  */
+import { useCallback, useRef } from 'react'
 import RunTabs from './RunTabs.jsx'
 import { section } from './consoleCopy.js'
 import { meteringState, meteringLabel } from '../../lib/meteringPolicy.js'
@@ -69,6 +70,39 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
    * by eye in their own contract to find what was being described. Clicking it now selects that
    * line in the editor, which turns the finding into navigation.
    */
+  // Keyboard-first: this is a tool for people who live in an editor, and every control was
+  // mouse-only. A ref (not state) holds which finding is "current" for next/prev, because moving
+  // the cursor must not re-render the editor mid-keystroke.
+  const findingCursor = useRef(-1)
+  const jumpToLineRef = useRef(() => {})
+  const exportReportRef = useRef(() => {})
+
+  const jumpToFinding = useCallback((dir) => {
+    const fs = w.findings
+    if (!fs.length) return
+    const n = fs.length
+    findingCursor.current = (findingCursor.current + dir + n) % n
+    const f = fs[findingCursor.current]
+    if (f) jumpToLineRef.current(f.line)
+  }, [w.findings])
+
+  /*
+   * Shortcuts, scoped to this console (a listener on the root, not window, so they never fire
+   * while the visitor is elsewhere on the page). Alt-based so they coexist with typing in the
+   * editor and with the browser's own Ctrl/Cmd bindings:
+   *   Alt+Enter  run analysis     Alt+J / Alt+K  next / previous finding
+   *   Alt+E      export report    Alt+/          focus the editor
+   */
+  const onConsoleKeyDown = useCallback((e) => {
+    if (!e.altKey || e.ctrlKey || e.metaKey) return
+    const k = e.key.toLowerCase()
+    if (k === 'enter') { if (!w.running) { e.preventDefault(); w.run() } }
+    else if (k === 'j') { e.preventDefault(); jumpToFinding(1) }
+    else if (k === 'k') { e.preventDefault(); jumpToFinding(-1) }
+    else if (k === 'e') { e.preventDefault(); exportReportRef.current() }
+    else if (k === '/') { e.preventDefault(); document.getElementById('audit-src')?.focus() }
+  }, [w, jumpToFinding])
+
   const jumpToLine = (line) => {
     const el = document.getElementById('audit-src')
     if (!el) return
@@ -79,6 +113,7 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
     const lineHeight = el.scrollHeight / Math.max(1, w.draft.split('\n').length)
     el.scrollTop = Math.max(0, (Math.trunc(Number(line) || 1) - 2) * lineHeight)
   }
+  jumpToLineRef.current = jumpToLine
 
   const exportReport = () => {
     const generatedAt = new Date().toISOString()
@@ -96,9 +131,18 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
     a.click()
     URL.revokeObjectURL(url)
   }
+  exportReportRef.current = exportReport
 
   return (
-    <div className="grid gap-5 lg:grid-cols-2">
+    // onKeyDown on the root (not window): shortcuts are live only while focus is inside the
+    // console, so they never hijack a key while the visitor reads elsewhere. role="group" + the
+    // aria-label give the interactive container an accessible identity.
+    <div
+      role="group"
+      aria-label="Audit console — keyboard shortcuts active"
+      className="grid gap-5 lg:grid-cols-2"
+      onKeyDown={onConsoleKeyDown}
+    >
       {/* ═══ 1 · YOUR CONTRACT ══════════════════════════════════════════════ the source */}
       <section aria-labelledby="ac-src-title" className="flex flex-col">
         <p id="ac-src-title" className="font-mono text-[10px] uppercase tracking-label text-content-muted">
@@ -298,7 +342,14 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
           />
 
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button
+            {/* The shortcuts have to be SEEN to exist. Kept terse; kbd for the keys. */}
+              <p className="mb-2 w-full font-mono text-[10px] uppercase tracking-label text-content-muted">
+                <kbd className="text-content-secondary">Alt+Enter</kbd> run ·{' '}
+                <kbd className="text-content-secondary">Alt+J/K</kbd> next/prev finding ·{' '}
+                <kbd className="text-content-secondary">Alt+E</kbd> export ·{' '}
+                <kbd className="text-content-secondary">Alt+/</kbd> editor
+              </p>
+              <button
               type="button"
               onClick={w.run}
               disabled={w.running}

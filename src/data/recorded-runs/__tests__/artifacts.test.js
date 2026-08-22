@@ -92,3 +92,12 @@ describe('P1-16 failure artifact is VERIFIABLY REAL — the blind spot reproduce
     expect(scanTextForForbidden(`${blindspot.failure} ${blindspot.fix}`)).toEqual([])
   })
 })
+
+describe('failure artifacts — open/closed is explicit, never implied by the presence of a fix', () => {
+  it('every failure declares a status', () => {
+    for (const f of FAILURES) expect(['open', 'closed']).toContain(f.status)
+  })
+  it('a CLOSED failure must actually carry its fix — closed-with-no-fix is the implied lie this removes', () => {
+    for (const f of FAILURES.filter((x) => x.status === 'closed')) expect(String(f.fix || '').trim()).not.toBe('')
+  })
+})

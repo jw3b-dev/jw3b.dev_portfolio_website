@@ -42,11 +42,24 @@ function FailureCard({ f }) {
         <p className="mt-1 text-sm text-content-secondary">{f.failure}</p>
       </div>
 
-      {/* The fix */}
+      {/*
+          The fix — or, honestly, its absence. Every artifact rendered a `fix`, which implied every
+          failure was closed. A failure John is still living with had no way to say so, and those
+          are the most credible kind. `status: 'open'` is a first-class state now.
+      */}
+      {f.status === 'open' ? (
+        <div className="mt-3 border-l-2 border-caution/50 pl-3">
+          <p className="font-mono text-[10px] uppercase tracking-label text-caution">Still open</p>
+          <p className="mt-1 text-sm text-content-secondary">
+            {f.fix || 'No fix yet. Still being lived with — and saying so is the point of this section.'}
+          </p>
+        </div>
+      ) : (
       <div className="mt-3 border-l-2 border-verified pl-3">
         <p className="font-mono text-[10px] uppercase tracking-label text-verified">The fix</p>
         <p className="mt-1 text-sm text-content-secondary">{f.fix}</p>
       </div>
+      )}
 
       {/* Reproduce it yourself — honesty you can check */}
       {f.input && (

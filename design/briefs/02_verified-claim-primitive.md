@@ -74,5 +74,5 @@ the gate are the same contract: if you can see a number, it has a receipt.
 **Next needs:**
 
 - **The register has no history.** An entry can be edited or re-cleared with no record of what it said before, so "this figure changed" is invisible to a reader and to review. The claims gate checks the current state only.
-- **Nothing renders the blocklist inline.** The gate demo lets a visitor test a phrase, but the list of claims this site refuses to make is never simply shown — and it is one of the more persuasive things here.
+- ~~Nothing renders the blocklist inline.~~ **✎ DONE 2026-08-22** — `/evidence` now lists every refused claim with the reason it is refused. The trap this created is closed by a test: a REASON that trips its own pattern would fail the claims gate the moment the page rendered, so each `why` is scanned by the real scanner, and `FORBIDDEN_PATTERNS` is proven to be derived from the rules rather than a second hand-maintained list.
 - ~~Make the evidence pointer reachable · distinguish attested from verified · a register view.~~ **✎ ALL DONE 2026-08-22** — `evidenceKind()` splits the two, `<Claim>` marks and exposes attested provenance, and `/evidence` lists all 31 with the verified/attested split stated up front.

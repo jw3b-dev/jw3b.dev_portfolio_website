@@ -115,6 +115,6 @@ what it costs does not ship.
 
 **Next needs:**
 
-- **Keyboard-first operation.** This is a tool for people who live in an editor. Every control is mouse-first; run, re-run, next-finding and jump-to-line should all have keys.
+- ~~Keyboard-first operation.~~ **✎ DONE 2026-08-22** — Alt+Enter runs, Alt+J/K walk the findings, Alt+E exports, Alt+/ focuses the editor. Alt-based so they coexist with typing in the editor and with the browser's own Ctrl/Cmd bindings; the listener sits on the console root, not window, so the keys are dead while the visitor is reading elsewhere on the page. A visible legend lists them — an undiscoverable shortcut is a shortcut for nobody.
 - ~~Diff the re-screen.~~ **✎ DONE 2026-08-22 — and it was a correctness bug, not a missing view.** `applyFixAndVerify` counted only findings matching the fix's OWN id, so a fix that cleared its target while INTRODUCING a different one reported a clean `cleared: true` and the console printed "the finding is gone" in success colours. `findingsDelta` now returns resolved/introduced/unchanged, and `FixVerdict.jsx` enforces the rule that `introduced` outranks `cleared` and leads the sentence. A test drives the introduced case through the component, because "no current fix does that" is not a guarantee.
 - ~~Surface the budget before it bites.~~ **✎ DONE 2026-08-22** — the header now reads from `meteringPolicy`, counts down while runs remain, and on exhaustion says what is still free rather than rendering a bare "0 of 10".

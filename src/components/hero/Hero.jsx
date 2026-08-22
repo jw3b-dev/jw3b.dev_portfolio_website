@@ -274,11 +274,21 @@ export default function Hero() {
           {/* four-hat strip (low, identity structure without a skills grid) */}
           <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-hairline pt-4 lg:col-span-12">
             <span className="font-mono text-[10px] uppercase tracking-label text-content-muted">One operator, four hats</span>
+            {/* Brief 01, next-need 2: these were display-only. A visitor learned the vocabulary
+                here and discovered it was actionable four folds down. Each chip now jumps to the
+                identity section with THAT hat preselected — router state carries the choice, so
+                nothing is stored and the URL stays clean. */}
             {HATS.map((h) => (
-              <span key={h.key} className="inline-flex items-center gap-2">
+              <Link
+                key={h.key}
+                to="/#fourhats-title"
+                state={{ hat: h.key }}
+                className="inline-flex items-center gap-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+                title={`See the ${h.label} hat's work`}
+              >
                 <span className={`h-1.5 w-1.5 rounded-full ${h.dot}`} />
-                <span className={`text-[13px] ${h.text}`}>{h.label}</span>
-              </span>
+                <span className={`text-[13px] ${h.text} underline-offset-4 hover:underline`}>{h.label}</span>
+              </Link>
             ))}
           </div>
         </motion.div>

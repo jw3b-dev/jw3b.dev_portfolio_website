@@ -76,5 +76,5 @@ JS. Concierge + Web3 hydrate after first paint (provider order Wagmi→Query→R
 **Next needs:**
 
 - ~~`/messages` is an orphan.~~ ✎ Corrected 2026-08-22 (an earlier draft claimed it "remains in the footer"; `grep` found no link anywhere in `src/` — a registered route and a sitemap `<loc>` reachable by no visitor), then **RESOLVED the same day**: `SiteFooter.jsx` links it as "Messages (not live)". Of the two honest options — link it truthfully, or drop it from the sitemap — the first was taken, so the crawler and the visitor now see the same site.
-- **Spine that knows its state.** A visitor who already submitted an engagement is still asked to submit one. The confirmation carries a real delivery state (FR-037), and nothing above the page reads it.
+- ~~Spine that knows its state.~~ **✎ DONE 2026-08-22** — `engagementState.js` reads the offline queue and the spine now says when a request is still queued on this device, or gave up after its retries. Deliberately NOT a "delivered" state: the queue knows what left this browser, never what John received, and inventing that would be the unearned reassurance this site argues against.
 - **A defined stacking order at 390px.** `layout-and-assets.spec.js` asserts the hire spine and concierge launcher never cover a footer link — that is the floor, not the design. The intended z-order and offsets are still implicit.

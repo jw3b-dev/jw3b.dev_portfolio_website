@@ -13,5 +13,6 @@
   "result": "0 findings — clean pass",
   "failure": "The regex pre-screen has no model of authorization. sweep() lets any caller move the whole balance, and the pass reported nothing. A clean heuristic result is not a safe contract — it only means none of three known patterns matched.",
   "fix": "Two fixes, and the honest one matters most. The contract: add an onlyOwner modifier to sweep(). The tool: this is exactly why it is labelled a heuristic pre-screen, not an audit — the on-page disclaimer states a clean pass is no guarantee, and a real review is manual plus symbolic execution. Showing the tool's own blind spot is the point, not an embarrassment.",
-  "reproduce": "Paste the input into /audit, or call auditSolidity(input) directly — the result is findings: [] on every run."
+  "reproduce": "Paste the input into /audit, or call auditSolidity(input) directly — the result is findings: [] on every run.",
+  "status": "closed"
 }

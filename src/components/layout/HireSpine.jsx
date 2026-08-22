@@ -6,7 +6,9 @@
  * (the 404 route included). Route links give each surface a way OUT; the CTA is the spine.
  * Semantic tokens only; motion is limited to token-driven colour transitions (NFR-05 safe).
  */
+import { useState, useEffect } from 'react'
 import { NavLink, Link } from 'react-router-dom'
+import { engagementState, engagementStateMessage } from '../../lib/engagementState.js'
 
 // The operable surfaces the spine exposes. Order = the intended journey; /hire-me is the CTA,
 // not a nav link. Privacy lives in the page footer, not the spine.
@@ -39,11 +41,22 @@ function SurfaceLinks() {
 }
 
 export default function HireSpine() {
+  // A returning visitor who already submitted on this device should not be greeted as a stranger.
+  // Read once on mount (localStorage is client-only; SSR/first paint shows nothing, which is fine).
+  const [prior, setPrior] = useState(null)
+  useEffect(() => { setPrior(engagementState()) }, [])
+  const notice = engagementStateMessage(prior)
+
   return (
     <header
       role="banner"
       className="fixed inset-x-0 top-0 z-nav border-b border-hairline bg-void/80 backdrop-blur-nav"
     >
+        {notice && (
+          <p className="w-full border-b border-caution/30 bg-caution/5 px-1 py-1 text-center font-mono text-[10px] uppercase tracking-label text-caution">
+            {notice}
+          </p>
+        )}
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-5 sm:px-8">
         {/* wordmark — home from anywhere (no terminal dead-end) */}
         <Link

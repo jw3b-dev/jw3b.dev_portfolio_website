@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import FourHats from './FourHats.jsx'
 import { HATS } from '../../constants/index.js'
 
 describe('FourHats — four-hat identity (FR-003 / BR-07)', () => {
   it('shows all four hats together on one surface', () => {
-    render(<FourHats />)
+    render(<MemoryRouter><FourHats /></MemoryRouter>)
     for (const h of HATS) {
       expect(screen.getByRole('button', { name: new RegExp(h.label, 'i') })).toBeInTheDocument()
     }
@@ -13,7 +14,7 @@ describe('FourHats — four-hat identity (FR-003 / BR-07)', () => {
   })
 
   it('filtering DIMS the non-selected hats but never removes them from the DOM (BR-07)', () => {
-    render(<FourHats />)
+    render(<MemoryRouter><FourHats /></MemoryRouter>)
     const engineer = screen.getByRole('button', { name: /engineer/i })
     fireEvent.click(engineer)
 
@@ -31,7 +32,7 @@ describe('FourHats — four-hat identity (FR-003 / BR-07)', () => {
   })
 
   it('re-selecting the active hat clears the filter (all back to full weight)', () => {
-    render(<FourHats />)
+    render(<MemoryRouter><FourHats /></MemoryRouter>)
     const auditor = screen.getByRole('button', { name: /auditor/i })
     fireEvent.click(auditor)
     fireEvent.click(auditor)
@@ -41,7 +42,7 @@ describe('FourHats — four-hat identity (FR-003 / BR-07)', () => {
   })
 
   it('renders each hat with its distinct grounded blurb', () => {
-    render(<FourHats />)
+    render(<MemoryRouter><FourHats /></MemoryRouter>)
     const list = screen.getByRole('list')
     for (const h of HATS) {
       expect(within(list).getByText(h.blurb)).toBeInTheDocument()

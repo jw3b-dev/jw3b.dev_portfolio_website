@@ -17,6 +17,7 @@
 import Seo from '../components/seo/Seo.jsx'
 import Claim from '../components/Claim.jsx'
 import { allClaims, isClaimCleared, evidenceKind } from '../lib/claimsRegister.js'
+import { FORBIDDEN_RULES } from '../lib/claimsValidate.js'
 
 const cleared = allClaims().filter(isClaimCleared)
 const verifiedCount = cleared.filter((c) => evidenceKind(c) === 'verified').length
@@ -114,6 +115,30 @@ export default function Evidence() {
         </a>{' '}
         page.
       </p>
+
+      {/*
+          Brief 02, next-need 2: the list of claims this site REFUSES to make was never simply shown.
+          The pattern is rendered from its source at runtime — never as a literal in this file —
+          so the claims gate that scans src/ cannot be tripped by the page that explains it.
+      */}
+      <section id="refused-claims-section" aria-labelledby="refused-claims" className="mt-10 border-t border-hairline pt-6">
+        <h2 id="refused-claims" className="font-display text-lg font-semibold text-content-primary">
+          Claims this site refuses to make
+        </h2>
+        <p className="mt-2 text-sm text-content-secondary">
+          Every page is scanned against these rules in CI. A match fails the build. They exist
+          because each one has either appeared in a draft of this site or appears on most sites
+          like it.
+        </p>
+        <ol className="mt-4 flex flex-col gap-3">
+          {FORBIDDEN_RULES.map((r) => (
+            <li key={r.pattern.source} className="border-l-2 border-failed/40 pl-3">
+              <code className="font-mono text-[11px] text-failed">{r.pattern.source}</code>
+              <p className="mt-1 text-sm text-content-secondary">{r.why}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
     </main>
   )
 }

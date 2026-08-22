@@ -71,5 +71,5 @@ real fix (FR-045). Nothing fabricated, nothing dramatized. Honesty is the produc
 **Next needs:**
 
 - **There is exactly ONE failure artifact.** `FAILURES` holds a single entry, so a section built to demonstrate a habit currently demonstrates an instance. The surface is finished; the corpus is not.
-- **A failure that is still open has no way to say so.** Every artifact renders a `fix`, which implies each one is closed — there is no state for a failure John is still living with, and those are the most credible kind.
+- ~~A failure that is still open has no way to say so.~~ **✎ DONE 2026-08-22** — `status: 'open' | 'closed'` is a first-class field and the surface renders "Still open" distinctly. A test asserts a CLOSED failure actually carries its fix, which is the implied lie the old shape allowed: every artifact rendered a `fix`, so every failure looked resolved.
 - ~~Make every failure replayable · date them · link each to its fix.~~ **✎ ALL THREE WRONG WHEN WRITTEN, corrected 2026-08-22.** `FailuresSurface.jsx` already renders `captured {capturedAt}`, the `fix` field, and a `?case=` replay link — and the single artifact is wired. I wrote three next-needs without reading the component. Kept visible because a brief full of already-done work sends the next person to fix what is not broken, which is the same rot this project keeps finding elsewhere.

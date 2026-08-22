@@ -6,11 +6,27 @@
  * hat again clears the filter. Buttons carry aria-pressed; only colour/opacity move, and only
  * under motion-safe (NFR-05). Semantic tokens only — hat accents from HATS (constants/index).
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { HATS } from '../../constants/index.js'
 
 export default function FourHats({ className = '' }) {
-  const [active, setActive] = useState(null) // null = no filter, all at full weight
+  // A hero chip arrives here with the hat it named in router state; honour it as the initial
+  // filter, then behave exactly as before. Anything that is not one of the four keys is ignored.
+  const location = useLocation()
+  const fromHero = HATS.some((h) => h.key === location.state?.hat) ? location.state.hat : null
+  const [active, setActive] = useState(fromHero) // null = no filter, all at full weight
+
+  /*
+   * The hero chips link to this same route, so React Router does NOT remount this component —
+   * `useState(fromHero)` runs once, on first mount, and a later chip click would change the URL
+   * state while leaving the filter untouched. Syncing on the state key fixes that. `location.key`
+   * (not the hat) is the dependency: clicking the SAME hat twice should re-apply it, and keying on
+   * the value would swallow the second click.
+   */
+  useEffect(() => {
+    if (fromHero) setActive(fromHero)
+  }, [location.key, fromHero])
 
   return (
     <section aria-labelledby="fourhats-title" className={className}>

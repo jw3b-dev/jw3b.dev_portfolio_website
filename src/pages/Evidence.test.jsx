@@ -23,10 +23,17 @@ const renderPage = () =>
     </HelmetProvider>,
   )
 
+/** Claim rows only — every <li> inside a source section, excluding the blocklist below. */
+const registerRows = () =>
+  screen.getAllByRole('listitem').filter((li) => li.closest('section')?.id !== 'refused-claims-section')
+
 describe('/evidence — completeness', () => {
   it('lists EVERY cleared claim — a partial register is a curated one', () => {
     renderPage()
-    const rows = screen.getAllByRole('listitem')
+    // Scoped to the REGISTER sections. The refused-claims blocklist below is also a list, and a
+    // page-wide count conflates "claims we make" with "claims we refuse to make" — two opposite
+    // things that must never be summed.
+    const rows = registerRows()
     expect(rows).toHaveLength(cleared.length)
   })
 
@@ -73,8 +80,7 @@ describe('/evidence — it does not flatter the register', () => {
     const attested = cleared.filter((c) => evidenceKind(c) === 'attested')
     // Scope to the ROWS. The summary prose also contains the exact string "owner-attested",
     // so counting page-wide overcounts by one — which is what this assertion first did.
-    const rowMarkers = screen.getAllByRole('listitem')
-      .filter((li) => within(li).queryByText(/^owner-attested$/i))
+    const rowMarkers = registerRows().filter((li) => within(li).queryByText(/^owner-attested$/i))
     expect(rowMarkers).toHaveLength(attested.length)
     for (const c of attested) {
       expect(screen.queryByRole('link', { name: c.evidence_pointer })).toBeNull()
@@ -107,6 +113,9 @@ describe('/evidence — reachable', () => {
     renderPage()
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
     const sources = new Set(cleared.map((c) => c.source_system || 'Other'))
-    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(sources.size)
+    // One h2 per evidence source, PLUS the refused-claims blocklist section — that section is a
+    // peer of the sources, not a source, so it is named here rather than folded into the count.
+    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(sources.size + 1)
+    expect(screen.getByRole('heading', { level: 2, name: /refuse|refused|never claim/i })).toBeInTheDocument()
   })
 })

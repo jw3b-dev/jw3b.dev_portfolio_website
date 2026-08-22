@@ -14,13 +14,14 @@
  * applied or edited past, simply isn't offered — rather than sitting there as a button that would
  * quietly do nothing.
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { section } from './consoleCopy.js'
 import ResultTabs from './ResultTabs.jsx'
 import { auditSolidity, SEVERITY_META } from '../../lib/auditHeuristics.js'
 import { fixesFor } from '../../lib/auditFixes.js'
 import { AUDIT_DISCLAIMER } from '../../lib/auditClient.js'
 import { RUN_STATUS, runIsStale } from '../../lib/auditWorkspace.js'
+import RunCompare from './RunCompare.jsx'
 
 function RunPanel({ run, draft, onApplyFix, onRestore }) {
   // Derived from the run's pinned source, never stored — same rule as the live panel, so a run
@@ -122,9 +123,14 @@ function RunPanel({ run, draft, onApplyFix, onRestore }) {
 }
 
 export default function RunTabs({ runs, selectedRun, onSelect, draft, onApplyFix, onRestore }) {
+  const [compareBaseId, setCompareBaseId] = useState(null)
   if (!runs.length) return null
 
   const activeId = selectedRun?.id ?? runs[runs.length - 1].id
+  const active = runs.find((r) => r.id === activeId) || null
+  const activeIdx = runs.findIndex((r) => r.id === activeId)
+  // Default compare base = the run before the active one, so "what did this edit change?" needs no clicks.
+  const base = runs.find((r) => r.id === compareBaseId) || (activeIdx > 0 ? runs[activeIdx - 1] : null)
 
   const onKeyDown = (e) => {
     const i = runs.findIndex((r) => r.id === activeId)
@@ -172,6 +178,31 @@ export default function RunTabs({ runs, selectedRun, onSelect, draft, onApplyFix
           {r.id === activeId && <RunPanel run={r} draft={draft} onApplyFix={onApplyFix} onRestore={onRestore} />}
         </div>
       ))}
+
+      {/* Compare — the thing an auditor wants after a fix: not one run, but the delta between two.
+          Only appears once there are two runs to compare; hidden for a single run, where it would
+          be a control with nothing to do. */}
+      {runs.length > 1 && active && base && (
+        <div className="mt-4 border-t border-hairline pt-3">
+          <label className="font-mono text-[10px] uppercase tracking-label text-content-muted">
+            Compare Run {active.seq} against{' '}
+            <select
+              value={base.id}
+              onChange={(e) => setCompareBaseId(e.target.value)}
+              className="ml-1 rounded border border-hairline bg-void px-1.5 py-0.5 font-mono text-[10px] text-content-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+            >
+              {runs
+                .filter((r) => r.id !== active.id)
+                .map((r) => (
+                  <option key={r.id} value={r.id}>
+                    Run {r.seq} · {r.versionLabel}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <RunCompare base={base} other={active} />
+        </div>
+      )}
     </section>
   )
 }

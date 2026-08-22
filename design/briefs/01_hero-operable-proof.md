@@ -88,5 +88,5 @@ Anthropic is down (Tier-1/2 replay behind it).
 **Next needs:**
 
 - **The hero screen is the one surface P5-02 cannot see.** Its whole claim is "a visitor runs a real screen in under 10s", and the instant screen runs entirely client-side — so `tool_run` counts `/audit` and never counts this. The measurement gap is precisely on the claim.
-- **The four hats are display-only here.** They are rendered as a strip in the hero and are filterable further down the page, so a visitor learns the vocabulary in one place and discovers it is actionable in another.
+- ~~The four hats are display-only here.~~ **✎ DONE 2026-08-22** — each hero chip is now a link carrying its hat in router state, and the identity section preselects it. Needed a sync effect, not just an initial value: the chips target the same route, so React Router never remounts `FourHats` and `useState(initial)` would have run once and then ignored every later click.
 - ~~Carry the source into the full console.~~ **✎ DONE 2026-08-22** — the screened contract now travels to `/audit` in router state; `e2e/first-visit.spec.js` asserts it end to end. Kept struck through so the next reader can see what moved.

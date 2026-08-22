@@ -86,6 +86,7 @@ export default defineConfig({
         // failure the Worker can hand it must resolve to an honest empty rather than throw
         // inside a flagship card, and an untested branch here is exactly the one that throws.
         'src/lib/kbClient.js',
+        'src/lib/engagementState.js',
         // The Kointel compliance rule. A detector under a claim about a real product's
         // engineering: an untested rule that silently stopped firing would leave the card
         // demonstrating a gate that passes everything.

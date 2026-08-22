@@ -71,6 +71,6 @@ to a labelled recorded run (Tier-1 KV → Tier-2 client). First-token ≤ 3s; ef
 
 **Next needs:**
 
-- **Compare two runs.** Runs accumulate as tabs, each pinned to the exact source it read — the hard part is done — but there is no side-by-side, which is the thing an auditor actually wants after applying a fix.
+- ~~Compare two runs.~~ **✎ DONE 2026-08-22** — `RunCompare.jsx` shows two deltas side by side: which detectors started or stopped firing (`findingsDelta`, by count) and the source edit that caused it. Findings lead, because rendering only the diff invites the reader to infer the finding change by eye — which is how a fix that introduced a new pattern reads as an improvement. Base defaults to the previous run, so the common question needs no clicks.
 - **A shareable run.** Export is a local `.md` download. A permalink to a run (source hash + findings, no source stored) is what turns the console into something a visitor sends to a colleague.
 - ~~Load an example.~~ **✎ DONE 2026-08-22** — three teaching contracts ship in `src/lib/auditExamples.js` as chips above the editor. Not from the Worker-side corpus this line proposed: they are client-side, and each is *tested* to raise exactly the finding it advertises and nothing else, so an example that quietly stopped demonstrating its own detector fails the suite rather than teaching a visitor the wrong lesson.
