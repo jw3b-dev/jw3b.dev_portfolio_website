@@ -1,108 +1,150 @@
+/*
+ * FR-006 — Overmind's DSDM lifecycle model.
+ *
+ * Rewritten 2026-08-22 with the model. Every expected value here is transcribed from Overmind's
+ * own source (lifecycle.ts PROJECT_PHASES/PHASE_PLANS, products.ts PHASE_GATES/evaluatePhaseGate,
+ * director.ts TIMEBOX_PHASES) — so these tests fail if the site's copy drifts from the engine it
+ * describes, which is a failure the previous thirteen invented stage names could not produce.
+ */
 import { describe, it, expect } from 'vitest'
 import {
-  OVERMIND_STAGES, TOTAL_STEPS, stageStatus, advance, stepBack, reset, isComplete, gatesPassed, gateCount, stageDetail, rejectAt } from '../overmindPipeline.js'
+  OVERMIND_PHASES,
+  TOTAL_PHASES,
+  TIMEBOX_PHASES,
+  gateCount,
+  phaseGateProducts,
+  evaluatePhaseGate,
+  seedTasks,
+  baseline,
+  phaseStatus,
+  advance,
+  reset,
+  isComplete,
+  gatesPassed,
+  phaseDetail,
+} from '../overmindPipeline.js'
 
-describe('overmindPipeline — steppable validated pipeline (FR-006)', () => {
-  it('models 13 stages with zero-trust gates (consistent with the 13-phase claim)', () => {
-    expect(OVERMIND_STAGES).toHaveLength(13)
-    expect(TOTAL_STEPS).toBe(13)
-    expect(gateCount()).toBeGreaterThan(0)
+const FOUNDATIONS = 2
+const EVOLUTIONARY = 3
+
+describe("FR-006: the phases are Overmind's, not a generic agent pipeline", () => {
+  it('is the six DSDM project phases in lifecycle order', () => {
+    expect(OVERMIND_PHASES.map((p) => p.id)).toEqual([
+      'pre-project', 'feasibility', 'foundations', 'evolutionary', 'deployment', 'post-project',
+    ])
+    expect(TOTAL_PHASES).toBe(6)
   })
 
-  it('stageStatus: past = passed, current = validating, ahead = pending', () => {
-    expect(stageStatus(0, 1)).toBe('passed')
-    expect(stageStatus(1, 1)).toBe('validating')
-    expect(stageStatus(2, 1)).toBe('pending')
+  it('carries the timebox cycle as a sub-structure, never as extra phases', () => {
+    expect(TIMEBOX_PHASES).toEqual(['Investigation', 'Refinement', 'Consolidation'])
+    // Exploration/Engineering are activities inside evolutionary development. If they ever leak
+    // into the spine, six phases silently becomes a longer list.
+    expect(OVERMIND_PHASES.map((p) => p.id)).not.toContain('exploration')
+    expect(OVERMIND_PHASES).toHaveLength(6)
   })
 
-  it('advance/stepBack/reset are clamped', () => {
-    expect(advance(0)).toBe(1)
-    expect(advance(TOTAL_STEPS)).toBe(TOTAL_STEPS) // clamps at the end
-    expect(stepBack(0)).toBe(0) // clamps at the start
-    expect(stepBack(3)).toBe(2)
+  it('gates exactly the three phases PHASE_GATES gates, with their real products', () => {
+    expect(gateCount()).toBe(3)
+    expect(phaseGateProducts(1)).toEqual(['feasibility-assessment'])
+    expect(phaseGateProducts(FOUNDATIONS)).toEqual(['foundations-summary', 'prl', 'delivery-plan'])
+    expect(phaseGateProducts(4)).toEqual(['project-review-report'])
+  })
+
+  it('gives every ungated phase a documented reason, so absent never reads as forgotten', () => {
+    for (const p of OVERMIND_PHASES) {
+      if (p.gateProducts.length === 0) expect(p.noGateReason).toBeTruthy()
+      else expect(p.noGateReason).toBeNull()
+    }
+  })
+
+  it('returns empty/null for an out-of-range phase rather than throwing', () => {
+    expect(phaseGateProducts(99)).toEqual([])
+    expect(seedTasks(99)).toEqual([])
+    expect(phaseDetail(99)).toBeNull()
+  })
+})
+
+describe('FR-006: the governance gate refuses, and names what is missing', () => {
+  it('refuses while any gate product is unbaselined, listing exactly those', () => {
+    expect(evaluatePhaseGate(FOUNDATIONS, [])).toEqual({
+      allowed: false, missing: ['foundations-summary', 'prl', 'delivery-plan'],
+    })
+    expect(evaluatePhaseGate(FOUNDATIONS, ['prl'])).toEqual({
+      allowed: false, missing: ['foundations-summary', 'delivery-plan'],
+    })
+  })
+
+  it('allows only when EVERY gate product is baselined', () => {
+    const all = ['foundations-summary', 'prl', 'delivery-plan']
+    expect(evaluatePhaseGate(FOUNDATIONS, all)).toEqual({ allowed: true, missing: [] })
+  })
+
+  it('an ungated phase always allows', () => {
+    expect(evaluatePhaseGate(EVOLUTIONARY, [])).toEqual({ allowed: true, missing: [] })
+    expect(evaluatePhaseGate(EVOLUTIONARY)).toEqual({ allowed: true, missing: [] })
+  })
+
+  it('advance is BLOCKED by an unmet gate and carries the reason', () => {
+    expect(advance(1, [])).toEqual({ step: 1, advanced: false, missing: ['feasibility-assessment'] })
+  })
+
+  it('advance succeeds once the gate is satisfied', () => {
+    expect(advance(1, ['feasibility-assessment'])).toEqual({ step: 2, advanced: true, missing: [] })
+  })
+
+  it('advance through an ungated phase is never blocked', () => {
+    expect(advance(0, [])).toEqual({ step: 1, advanced: true, missing: [] })
+    expect(advance(0)).toEqual({ step: 1, advanced: true, missing: [] })
+  })
+
+  it('advance past the end is a no-op, not an overflow', () => {
+    expect(advance(TOTAL_PHASES, [])).toEqual({ step: TOTAL_PHASES, advanced: false, missing: [] })
+  })
+})
+
+describe('FR-006: product baselining', () => {
+  it('seeds only the products not already baselined', () => {
+    expect(seedTasks(1, [])).toEqual(['feasibility-assessment'])
+    expect(seedTasks(1, ['feasibility-assessment'])).toEqual([])
+    expect(seedTasks(FOUNDATIONS, ['prl', 'sad'])).toEqual([
+      'business-case', 'dad', 'delivery-plan', 'mad', 'foundations-summary',
+    ])
+    expect(seedTasks(1)).toEqual(['feasibility-assessment'])
+  })
+
+  it('baseline is pure and idempotent', () => {
+    const before = ['prl']
+    const after = baseline(before, 'sad')
+    expect(after).toEqual(['prl', 'sad'])
+    expect(before).toEqual(['prl']) // not mutated
+    expect(baseline(after, 'sad')).toBe(after) // re-baselining does not duplicate
+  })
+})
+
+describe('FR-006: stepper mechanics', () => {
+  it('reports passed / active / pending around the current step', () => {
+    expect(phaseStatus(0, 1)).toBe('passed')
+    expect(phaseStatus(1, 1)).toBe('active')
+    expect(phaseStatus(2, 1)).toBe('pending')
+  })
+
+  it('counts only the gates actually cleared', () => {
+    expect(gatesPassed(0)).toBe(0)
+    expect(gatesPassed(2)).toBe(1)            // feasibility behind us
+    expect(gatesPassed(TOTAL_PHASES)).toBe(3) // all three
+  })
+
+  it('completes only after the final phase', () => {
+    expect(isComplete(TOTAL_PHASES - 1)).toBe(false)
+    expect(isComplete(TOTAL_PHASES)).toBe(true)
+  })
+
+  it('reset returns to the first phase', () => {
     expect(reset()).toBe(0)
   })
 
-  it('isComplete only when every stage has passed', () => {
-    expect(isComplete(0)).toBe(false)
-    expect(isComplete(TOTAL_STEPS)).toBe(true)
-  })
-
-  it('gatesPassed grows monotonically and equals gateCount at the end', () => {
-    expect(gatesPassed(0)).toBe(0)
-    expect(gatesPassed(TOTAL_STEPS)).toBe(gateCount())
-    expect(gatesPassed(5)).toBeLessThanOrEqual(gatesPassed(6))
-  })
-})
-
-/*
- * W4 — a gate that cannot be seen rejecting is decoration (PRODUCT_AUDIT #21).
- *
- * The stepper advanced thirteen labels, which demonstrates that a pipeline has stages — something
- * nobody doubted. The claim worth showing is the zero-trust one: work gets REFUSED at gates. That
- * needs the detail behind each stage and a real rejection path.
- */
-describe('stageDetail — what a stage emits and what its gate asks', () => {
-  it('describes every stage, with a check on every gate and none on the others', () => {
-    OVERMIND_STAGES.forEach((stage, i) => {
-      const d = stageDetail(i)
-      expect(d.emits, `${stage.id} emits nothing`).toBeTruthy()
-      if (stage.gate) expect(d.check, `gate ${stage.id} checks nothing`).toBeTruthy()
-      else expect(d.check, `non-gate ${stage.id} should not pose a check`).toBeNull()
-    })
-  })
-
-  it('returns null out of range rather than throwing', () => {
-    expect(stageDetail(-1)).toBeNull()
-    expect(stageDetail(OVERMIND_STAGES.length)).toBeNull()
-  })
-})
-
-describe('rejectAt — rework goes where the doubt is, not to the start', () => {
-  const gateIndexes = OVERMIND_STAGES.map((s, i) => (s.gate ? i : -1)).filter((i) => i >= 0)
-
-  it('only gates can reject — a stage that checks nothing cannot refuse', () => {
-    OVERMIND_STAGES.forEach((stage, i) => {
-      if (!stage.gate) expect(rejectAt(i), `${stage.id} is not a gate but rejected`).toBeNull()
-    })
-    expect(gateIndexes.length).toBeGreaterThan(3)
-  })
-
-  it('always returns the run to an EARLIER stage', () => {
-    for (const i of gateIndexes) {
-      const r = rejectAt(i)
-      expect(r.returnedTo, `${OVERMIND_STAGES[i].id} did not go backwards`).toBeLessThan(i)
-      expect(r.rejectedAt).toBe(i)
-      expect(r.step).toBe(r.returnedTo)
-    }
-  })
-
-  it('sends the work to the stage whose OUTPUT is in doubt, not to stage zero', () => {
-    // critique failing means the DRAFT was wrong; validate failing means the citations were.
-    const idx = (id) => OVERMIND_STAGES.findIndex((s) => s.id === id)
-    expect(rejectAt(idx('critique')).returnedTo).toBe(idx('draft'))
-    expect(rejectAt(idx('validate')).returnedTo).toBe(idx('revise'))
-    expect(rejectAt(idx('govern')).returnedTo).toBe(idx('plan'))
-    // Only the first gate legitimately returns to the beginning.
-    expect(rejectAt(idx('classify')).returnedTo).toBe(idx('ingest'))
-  })
-
-  /*
-   * A rejection must never INCREASE trust, and rework that crosses earlier gates must give their
-   * progress back. It does not follow that every rejection loses a gate: critique returning to
-   * draft crosses none, and classify/plan were never the thing in doubt — retaining them is
-   * correct. My first version of this test asserted the stronger claim and was simply wrong about
-   * the domain.
-   */
-  it('never increases gate progress, and gives back the gates the rework invalidates', () => {
-    for (const i of gateIndexes) {
-      const r = rejectAt(i)
-      expect(gatesPassed(r.step), `${OVERMIND_STAGES[i].id} gained trust by being rejected`).toBeLessThanOrEqual(
-        gatesPassed(i),
-      )
-    }
-    // govern sends the run back to plan, which is behind three cleared gates — those are re-earned.
-    const govern = OVERMIND_STAGES.findIndex((s) => s.id === 'govern')
-    expect(gatesPassed(rejectAt(govern).step)).toBeLessThan(gatesPassed(govern))
+  it('phaseDetail carries the index and whether the phase is gated', () => {
+    expect(phaseDetail(FOUNDATIONS)).toMatchObject({ id: 'foundations', index: FOUNDATIONS, hasGate: true })
+    expect(phaseDetail(EVOLUTIONARY)).toMatchObject({ id: 'evolutionary', hasGate: false })
   })
 })
