@@ -1,0 +1,20 @@
+{
+  "id": "audit-cross-function-reentrancy",
+  "surface": "audit",
+  "label": "Unedited run",
+  "capturedAt": "2026-08-22",
+  "title": "Two correct functions, one drainable pool — the screen sees neither",
+  "attempt": "Run the /audit instant screen on a Pool contract that keeps two parallel ledgers. Each function on its own follows checks-effects-interactions correctly, which is exactly what the reentrancy detector looks for.",
+  "input": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.20;\n\ncontract Pool {\n    mapping(address => uint256) public shares;\n    mapping(address => uint256) public credited;\n\n    function deposit() external payable {\n        shares[msg.sender] += msg.value;\n        credited[msg.sender] += msg.value;\n    }\n\n    // Correct on its own: state is zeroed BEFORE the external call.\n    function withdraw() external {\n        uint256 amount = shares[msg.sender];\n        shares[msg.sender] = 0;\n        (bool ok, ) = msg.sender.call{value: amount}(\"\");\n        require(ok, \"transfer failed\");\n    }\n\n    // Also correct on its own — and it pays from a ledger withdraw() never cleared.\n    function refund() external {\n        uint256 amount = credited[msg.sender];\n        require(amount > 0, \"nothing to refund\");\n        credited[msg.sender] = 0;\n        (bool ok, ) = msg.sender.call{value: amount}(\"\");\n        require(ok, \"refund failed\");\n    }\n}\n",
+  "log": [
+    "auditSolidity(Pool.sol) -> { findings: [], empty: false, clean: true }",
+    "0 findings - the reentrancy rule checks ONE function at a time, and both pass it",
+    "withdraw(): shares[msg.sender] = 0 BEFORE the external call - effects then interaction",
+    "refund():   credited[msg.sender] = 0 BEFORE the external call - effects then interaction"
+  ],
+  "result": "0 findings - clean pass",
+  "failure": "The detector reasons about a single function body. Here the bug lives BETWEEN two of them: deposit() credits both ledgers, withdraw() clears only `shares`, and `credited` still holds the full amount. Re-entering refund() from withdraw()'s callback pays the deposit out a second time from a ledger the first function never touched. Nothing inside either function is out of order, so a per-function rule has nothing to flag.",
+  "fix": "The contract: one ledger, or a reentrancy guard shared across every payout path. The TOOL: this is not a tunable regex. Catching it needs cross-function state reasoning - which is the boundary between a pattern screen and an audit, and the reason the console labels itself a first-pass screen and says a clean result means 'none of my patterns matched', never 'this is safe'. Captured rather than quietly fixed, because the limit is real and permanent at this tier.",
+  "reproduce": "Paste the input into /audit, or call auditSolidity(input) directly - the result is findings: [] and clean: true. Both are reproducible from this file alone.",
+  "status": "open"
+}

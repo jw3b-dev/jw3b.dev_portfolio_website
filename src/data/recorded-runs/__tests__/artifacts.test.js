@@ -101,3 +101,33 @@ describe('failure artifacts — open/closed is explicit, never implied by the pr
     for (const f of FAILURES.filter((x) => x.status === 'closed')) expect(String(f.fix || '').trim()).not.toBe('')
   })
 })
+
+/*
+ * Every failure artifact must STILL FAIL the way it says it does.
+ *
+ * This corpus documents blind spots in a detector that is under active development. An artifact
+ * claiming "0 findings — clean pass" against source the screen has since learned to catch would be
+ * a false confession: it would advertise a weakness that no longer exists, which is its own kind
+ * of dishonesty on a page whose whole subject is being accurate about limits.
+ */
+describe('failure artifacts still reproduce', () => {
+  it.each(FAILURES.filter((f) => f.surface === 'audit').map((f) => [f.id, f]))(
+    '%s: the screen still produces what the artifact claims',
+    (_id, f) => {
+      const findings = auditSolidity(f.input).findings
+      if (/0 findings/.test(f.result)) {
+        expect(findings, `${f.id} says "0 findings" but the screen now raises [${findings.map((x) => x.id)}]`).toHaveLength(0)
+      }
+    },
+  )
+
+  it('the corpus demonstrates a habit, not an instance', () => {
+    // Brief 07's next-need: one entry made a section about a practice into a single anecdote.
+    expect(FAILURES.length).toBeGreaterThan(1)
+  })
+
+  it('distinct ids, and every one is reproducible from its own file', () => {
+    expect(new Set(FAILURES.map((f) => f.id)).size).toBe(FAILURES.length)
+    for (const f of FAILURES) expect(String(f.reproduce || '').trim()).not.toBe('')
+  })
+})

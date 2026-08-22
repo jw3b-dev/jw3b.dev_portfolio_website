@@ -1,4 +1,5 @@
 import auditHeuristicBlindspot from './audit-heuristic-blindspot.json'
+import crossFunctionReentrancy from './cross-function-reentrancy.json'
 
 /*
  * Radical-honesty failure artifacts (FR-045) — the "unedited run / what failed & why"
@@ -8,6 +9,6 @@ import auditHeuristicBlindspot from './audit-heuristic-blindspot.json'
  * to the same clean-but-vulnerable result (see the paired .log). Import/export only so
  * the claims-gate walk over src/ finds no copy to police here.
  */
-export const FAILURES = [auditHeuristicBlindspot]
+export const FAILURES = [auditHeuristicBlindspot, crossFunctionReentrancy]
 
 export const FAILURE_IDS = FAILURES.map((f) => f.id)
