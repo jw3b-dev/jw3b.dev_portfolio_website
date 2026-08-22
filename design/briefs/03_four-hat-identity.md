@@ -62,3 +62,15 @@ never fully hides** (FR-003, BR-07). The section must read as *one person*, not 
    Practitioner) never appear on the PM station.
 6. Founder accent stays a distinct **warm gold** confined to this hat — never a site-wide orange (C7;
    pending John's confirm, story §10 Q1).
+
+---
+
+## Product owner
+
+**The job the visitor finishes:** A visitor works out that John does four distinct jobs, and which of the four is the one they need.
+
+**Next needs:**
+
+- **A way back to all four.** Filters dim rather than hide (the IA rule), but there is no reset affordance — a visitor who filters to Auditor has no obvious route back to the whole picture.
+- **Traversable hat → work mapping.** Selecting a hat should surface the flagships, projects and claims that sit under it. Today the hats colour cards; they do not navigate.
+- **Tie the delivery record to the PM hat.** FR-060 keeps the 20-plants/7-countries anchor deliberately separate from the flagships, which is right — but it currently floats free of the hat it evidences.

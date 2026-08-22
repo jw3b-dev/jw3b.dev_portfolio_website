@@ -66,3 +66,15 @@ JS. Concierge + Web3 hydrate after first paint (provider order Wagmi→Query→R
 4. No stacked-card nav, no mega-menu clone of the studio, no octopus, no orange, no Orbitron (C7).
 5. Every footer trust line (privacy, AI disclosure, testnet honesty) is present from day one — they
    are MUST compliance duties, not decoration (FR-021/024/057, BR-08/09/10).
+
+---
+
+## Product owner
+
+**The job the visitor finishes:** From any page, a visitor who has decided to act finds the way to act — without hunting, and without losing the page they were reading.
+
+**Next needs:**
+
+- **Spine that knows its state.** A visitor who already submitted an engagement is still asked to submit one. The spine should acknowledge an in-flight enquiry rather than repeat the ask — the confirmation state exists (FR-037) but nothing above the page reads it.
+- **A defined stacking order at 390px.** The hire spine and the concierge launcher are both fixed and adjacent on mobile. `layout-and-assets.spec.js` asserts neither covers a footer link, which is the floor, not the design — the intended z-order and offsets are still implicit.
+- **An honest marker on the footer's `/messages` link.** The route left primary nav (finding 20) but remains in the footer with nothing saying it is not live yet, which is the same overselling one level quieter.

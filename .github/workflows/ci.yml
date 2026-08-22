@@ -68,6 +68,12 @@ jobs:
       - name: Copy gate (permanent naming ban)
         run: npm run copy-gate
 
+      # Root cause 5: no standing role re-asked "what job does the visitor finish?", so depth
+      # arrived only when the owner demanded it. The rule was written into CLAUDE.md and then
+      # went unenforced — zero of ten briefs carried it and nothing failed.
+      - name: Brief gate (product-owner pass)
+        run: npm run brief-gate
+
       - name: Build
         run: npm run build
 

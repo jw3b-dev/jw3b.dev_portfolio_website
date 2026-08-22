@@ -59,3 +59,15 @@ Chain/Worker down → **labelled recorded solve** (Tier-1/2), never a broken flo
 5. **No decorative FX** on the drain — the real balance hitting zero is the moment; no explosions,
    coins, or casino iconography.
 6. Every leaderboard number is real (D1-persisted, chain-verified) — no seeded/fake ranks.
+
+---
+
+## Product owner
+
+**The job the visitor finishes:** A visitor reads a challenge worth attempting, attempts it on testnet, and sees their solve verified on-chain and ranked.
+
+**Next needs:**
+
+- **Show what a solve looks like.** The leaderboard is honestly empty and says which kind of empty it is — but nothing demonstrates success. A recorded solve playback turns an empty board from a discouragement into a walkthrough.
+- **The vault is v1-era.** Owner-gated on keystore + gas for a redeploy (finding 25). Until then the challenge is readable and not fully attemptable, and the copy must keep saying so.
+- **A learning path, not only a competition.** Progressive hints for a visitor who wants to understand reentrancy rather than race for a rank — the CTF currently serves the second audience only.

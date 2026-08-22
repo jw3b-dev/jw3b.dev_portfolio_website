@@ -69,3 +69,15 @@ chain, no live Worker** (client-queued to localStorage, retries to D1) — BR-11
    is **captured to D1 with a visible confirmation** (FR-037).
 7. **No dark patterns** — no fake scarcity, countdowns, decoy tiers, or pre-checked upsells (story
    anti-pattern #11).
+
+---
+
+## Product owner
+
+**The job the visitor finishes:** A visitor configures the engagement they actually want and reaches John — with the confirmation telling them the truth about what just happened.
+
+**Next needs:**
+
+- **Survive a reload.** The offline queue protects a submitted request (BR-11), but a half-finished configuration is lost on refresh. The visitor most likely to reload is the one thinking hardest about spending money.
+- **The live agent rail.** ADR-R2-02 scopes a dedicated hardened reception agent for `t.me` hand-off; it is the named next capability for this surface and is owner-gated on a 24/7 host.
+- **Explain what moves the price.** The indicative figure traces to `retainer.json` and is honest, but a visitor cannot see which of their answers drove it — so it reads as a quote rather than a calculation.

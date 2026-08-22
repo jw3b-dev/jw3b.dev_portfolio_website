@@ -64,3 +64,15 @@ the gate are the same contract: if you can see a number, it has a receipt.
 5. `recorded`/`live` states are **honest** — a replayed value is never shown as live (BR-03).
 6. Never a decorative stat with no receipt; if it has no receipt, it is not a claim and does not use
    this component.
+
+---
+
+## Product owner
+
+**The job the visitor finishes:** A visitor who doubts a number can find out where it came from, without leaving the page or taking John's word for it.
+
+**Next needs:**
+
+- **Make the evidence pointer reachable.** The register stores an `evidence_pointer` for every cleared claim and the UI renders only the value. A claim you cannot inspect is still a promise — which is the exact posture this primitive exists to end.
+- **Distinguish owner-attested from independently verified.** The register knows the difference and the rendering does not, so a CodeHawks rank and a self-reported metric currently look equally hard.
+- **A register view.** `ClaimGraphWalk` traverses the evidence graph on one thesis page; there is no plain list of every cleared claim and its source for someone who wants to audit the audit.

@@ -180,6 +180,9 @@ The three gates the pipeline lacked are now wired (W5, 2026-08-22):
 | First-visitor walkthrough — walletless, empty state, mobile | `e2e/first-visit.spec.js` | blocking, `e2e` job |
 | Zero same-origin console errors, every route | `e2e/journeys.spec.js` | blocking, `e2e` job |
 | Live-model behavioural smoke | `e2e/live.spec.js` | post-deploy `smoke` job |
+| Permanent naming ban (banned vocabulary in rendered copy) | `scripts/copy-gate.mjs` | blocking, `verify` job |
+| Product-owner pass in every brief (job + ≥3 next-needs) | `scripts/brief-gate.mjs` | blocking, `verify` job |
+| Lead route deployed, validating, alert channel present | `e2e/lead-path.spec.js` | post-deploy `smoke` job |
 
 The console budget filters noise by the **originating URL**, not by message text: a bare "Failed
 to load resource" from our own origin is our defect and must fail the gate. Do not re-broaden it.

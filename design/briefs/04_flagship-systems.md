@@ -74,3 +74,15 @@ broken** (BR-03, NFR-02, R-01). Effective success ≥ 95%.
    proof (FR-044/056/061).
 6. Kointel's EU AI Act / compliance framing must stay accurate to the register — no invented
    regulatory claim.
+
+---
+
+## Product owner
+
+**The job the visitor finishes:** A visitor sees four real systems and can operate at least one of them without leaving this site.
+
+**Next needs:**
+
+- **Two of four are still frames.** KTHULHU and Kointel are their own origins in an iframe — an honest label over an absent on-site capability. FR-066 stays OPEN and owner-gated on read-only API access; the copy must not call them operable until it is not.
+- **Resolve the four-flagship framing.** KTHULHU and Overmind are the same product — the live auditor and its engine. That may be the right presentation, but it is currently an accident rather than a decision, and it is the owner's to make.
+- **Per-flagship liveness.** No card says whether its system is up right now. A flagship that is down and silent about it is worse than one that says so.

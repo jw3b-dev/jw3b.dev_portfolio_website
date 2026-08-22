@@ -78,3 +78,15 @@ Anthropic is down (Tier-1/2 replay behind it).
    zero-value counters (the old site's `0 TVL` sin); CodeHawks #124 deep-links out (FR-044).
 6. The "wow" must survive reduced-motion and pre-hydration — the truthful static verdict carries it
    with zero animation.
+
+---
+
+## Product owner
+
+**The job the visitor finishes:** Within ten seconds of landing, a visitor has watched this site do something real and knows the single next thing to click.
+
+**Next needs:**
+
+- **Carry the source into the full console.** The hero screen produces findings and then dead-ends — a visitor who is interested has to paste their contract a second time on `/audit`. The run should hand off with its source intact.
+- **Know whether anyone runs it.** The entire claim of this section is 'a visitor runs a real screen in under 10s' and nothing counts how many do. Blocked on P5-02, which is exactly why P5-02 moved to the top of the reconciled list.
+- **Make the four hats operable from the hero.** They are named here and filterable further down the page; naming without affordance teaches a visitor the words but not that they can act on them.

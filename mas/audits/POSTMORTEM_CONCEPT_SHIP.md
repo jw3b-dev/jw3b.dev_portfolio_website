@@ -100,13 +100,17 @@ two passed only after work done during the check itself.
 | 2 | "Degrade honestly" became the product | **PARTIALLY** | The floor now works end to end — a lead reaches John, proven live, and the confirmation states the real delivery state instead of a promise. `/messages` degrades rather than overselling. **Not fully falsified:** two flagships are still frames of other origins (#21), which is the original shape — an honest label over an absent capability. Owner-gated on API access, and until then FR-066 stays open rather than being quietly reworded. |
 | 3 | Gates measured code properties, never visitor outcomes | **YES** | Five gates now fail on visitor-facing reality: first-visitor walkthrough (walletless, empty-state, mobile), a console-error budget that filters by originating URL so our own failures cannot hide as third-party noise, live-model behavioural smoke, the lead-path probe, and the copy gate. Four are blocking in `verify`; two run post-deploy against production. |
 | 4 | Component-scoped tasks; seams owned by nobody | **YES** | Each seam that failed now has one source and a guard: `consoleCopy.js` + the copy gate for naming, `tagProtocol.js` + its drift test for the AI protocol, the tool-call↔hash seam test, and `conciergeSystemPrompt.test.js` asserting every defined prompt block actually reaches `system` — the regression that shipped green inside this very remediation. |
-| 5 | The MAS knew on day one; no standing product-owner | **PARTIALLY** | `CLAUDE.md` now requires a product-owner pass in every brief (the job the visitor finishes + ≥3 next-needs), and EPIC K makes the question a requirement rather than a habit. **Not fully falsified:** that rule is documented, not *gated* — nothing fails a build when a brief omits it, which is precisely the weakness that let cause 1 survive as long as it did. Recorded as the residual rather than claimed. |
+| 5 | The MAS knew on day one; no standing product-owner | **YES — closed 2026-08-22** | First scored PARTIAL and recorded as a residual: the rule was in `CLAUDE.md` and **zero of ten briefs carried it**, with nothing failing. Now gated. `scripts/brief-gate.mjs` blocks in `verify` on any brief missing *"the job the visitor finishes"* or carrying fewer than three next-needs, and all ten briefs were written to it — each with real next-needs drawn from the re-walk, not filler. Red-witnessed: dropping one next-need turns it red, restoring it turns it green. |
 
 ### Verdict
 
-**Three falsified, two partially.** Neither residual is an engineering gap: #2 is owner-gated on
-flagship API access, and #5 is a process rule with no mechanical enforcement — an honest open item,
-not a pass.
+**✎ Updated 2026-08-22: four falsified, one partial.** #5 was closed by gating the rule that had
+only been written down (see its row). The single remaining residual is **#2**, and it is not an
+engineering gap: two flagships are frames of other origins, owner-gated on read-only API access,
+with FR-066 left OPEN rather than reworded to match what shipped.
+
+*Original verdict, kept because the movement is the point:* three falsified, two partially —
+neither residual an engineering gap.
 
 **The check earned its keep by failing.** Had R4 been a re-walk of the product register alone, cause
 1 would have read as closed: every visible symptom was fixed and gated. It was the *requirements

@@ -61,3 +61,15 @@ real fix (FR-045). Nothing fabricated, nothing dramatized. Honesty is the produc
 5. "Still open" items are stated **plainly** — no pretending every failure is already resolved.
 6. Same instrument rigor as the passing surfaces — a failure is a readout with a receipt, not a sad
    empty state.
+
+---
+
+## Product owner
+
+**The job the visitor finishes:** A visitor sees John publish his own failures in detail, and revises his credibility upward rather than down.
+
+**Next needs:**
+
+- **Make every failure replayable.** The console accepts `?case=` and exactly one failure is wired to it. A failure you can load into the tool and re-run is evidence; a failure in prose is a story.
+- **Date them.** Undated failures read as either ancient or ongoing, and a reader cannot tell which. The honesty is undercut by the ambiguity.
+- **Link each failure to its fix.** Several of these have since been closed. Showing the failure without the resolution understates the work and, worse, leaves a visitor unsure whether it is still live.
