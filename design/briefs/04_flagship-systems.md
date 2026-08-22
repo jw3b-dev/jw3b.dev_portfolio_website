@@ -83,6 +83,7 @@ broken** (BR-03, NFR-02, R-01). Effective success ≥ 95%.
 
 **Next needs:**
 
-- **Two of four are still frames.** KTHULHU and Kointel are their own origins in an iframe — an honest label over an absent on-site capability. FR-066 stays OPEN and owner-gated on read-only API access; the copy must not call them operable until it is not.
+- **ONE of four is still a frame.** ✎ Corrected 2026-08-22 — this said *two*, and blamed read-only API access. **KTHULHU no longer needs one**: `KthulhuCorpus.jsx` runs the product's retrieval layer on this page, and the endpoints behind it had been deployed and uncalled since W4. **Kointel is the remaining frame**, and the standing instruction for it is to look for an already-built capability *before* asking the owner for access — that assumption is what cost KTHULHU a month.
+- **Kointel needs the same diagnosis KTHULHU just got.** Its classification rules are its product; the question is whether any of it is already reachable from this Worker (as the corpus was) rather than whether the owner will expose an API.
 - **Resolve the four-flagship framing.** KTHULHU and Overmind are the same product — the live auditor and its engine. That may be the right presentation, but it is currently an accident rather than a decision, and it is the owner's to make.
 - **Per-flagship liveness.** No card says whether its system is up right now. A flagship that is down and silent about it is worse than one that says so.

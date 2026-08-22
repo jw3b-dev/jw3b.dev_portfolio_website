@@ -97,17 +97,25 @@ two passed only after work done during the check itself.
 | # | Cause | Falsified? | The evidence, and what it does not cover |
 |---|---|---|---|
 | 1 | Requirements encoded **capture**, not outcomes | **YES — but only as of today** | The check found FR-036 still reading *"capture + confirmation"* and **no FR anywhere naming an outcome**. The behaviour was fixed and gated; the requirement that caused it was untouched, so the next person building from `REQUIREMENTS.md` would have encoded capture again. R1 had never been executed. Now: **EPIC K**, six outcome FRs (FR-062…067), each naming the deployed-site test that proves it, plus a standing rule that a mechanism FR must name the outcome it serves. |
-| 2 | "Degrade honestly" became the product | **PARTIALLY** | The floor now works end to end — a lead reaches John, proven live, and the confirmation states the real delivery state instead of a promise. `/messages` degrades rather than overselling. **Not fully falsified:** two flagships are still frames of other origins (#21), which is the original shape — an honest label over an absent capability. Owner-gated on API access, and until then FR-066 stays open rather than being quietly reworded. |
+| 2 | "Degrade honestly" became the product | **PARTIALLY — and the residual was misdiagnosed** ✎ 2026-08-22 | The floor works end to end — a lead reaches John, proven live. **KTHULHU is no longer a frame:** its retrieval layer runs on the page (`KthulhuCorpus.jsx`) against the same corpus the product uses. What this row said was blocking it — read-only API access — was **never required**, and the endpoints that make it work had been deployed and uncalled since W4. **That is this cause in its purest form:** the degraded presentation (a frame, honestly labelled) was so comfortable that the built capability behind it went unnoticed for a month and its absence was attributed to the owner. Kointel remains a frame and must be re-diagnosed, not re-escalated. |
 | 3 | Gates measured code properties, never visitor outcomes | **YES** | Five gates now fail on visitor-facing reality: first-visitor walkthrough (walletless, empty-state, mobile), a console-error budget that filters by originating URL so our own failures cannot hide as third-party noise, live-model behavioural smoke, the lead-path probe, and the copy gate. Four are blocking in `verify`; two run post-deploy against production. |
 | 4 | Component-scoped tasks; seams owned by nobody | **YES** | Each seam that failed now has one source and a guard: `consoleCopy.js` + the copy gate for naming, `tagProtocol.js` + its drift test for the AI protocol, the tool-call↔hash seam test, and `conciergeSystemPrompt.test.js` asserting every defined prompt block actually reaches `system` — the regression that shipped green inside this very remediation. |
 | 5 | The MAS knew on day one; no standing product-owner | **YES — closed 2026-08-22** | First scored PARTIAL and recorded as a residual: the rule was in `CLAUDE.md` and **zero of ten briefs carried it**, with nothing failing. Now gated. `scripts/brief-gate.mjs` blocks in `verify` on any brief missing *"the job the visitor finishes"* or carrying fewer than three next-needs, and all ten briefs were written to it — each with real next-needs drawn from the re-walk, not filler. Red-witnessed: dropping one next-need turns it red, restoring it turns it green. |
 
 ### Verdict
 
-**✎ Updated 2026-08-22: four falsified, one partial.** #5 was closed by gating the rule that had
-only been written down (see its row). The single remaining residual is **#2**, and it is not an
-engineering gap: two flagships are frames of other origins, owner-gated on read-only API access,
-with FR-066 left OPEN rather than reworded to match what shipped.
+**✎ Updated 2026-08-22 (second revision): four falsified, one partial.** #5 was closed by gating
+the rule that had only been written down. The remaining residual is **#2** — and the earlier
+revision of this line, written hours before, called it *"not an engineering gap"* and attributed
+it to the owner. **That was wrong on both counts.** It was an engineering gap: the endpoints that
+make KTHULHU operable on-site were deployed and uncalled, and the "owner-gated on API access"
+label was a diagnosis I made without reading the route header I had written. KTHULHU is now
+operable here. Kointel is not, and the correct next step is to check whether its capability is
+also already built before asking the owner for anything.
+
+**The lesson this cause keeps teaching:** an honest label over an absent capability is
+comfortable enough to survive review — including mine — and the more honest the label, the longer
+nobody looks behind it.
 
 *Original verdict, kept because the movement is the point:* three falsified, two partially —
 neither residual an engineering gap.
