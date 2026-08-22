@@ -152,3 +152,15 @@ test('/ctf shows what a solve looks like, labelled as a recording', async ({ pag
   await section.getByRole('button', { name: /show the walkthrough/i }).click()
   await expect(section.getByRole('listitem').first()).toContainText(/Deploy Attacker/i)
 })
+
+test('/audit gives a visitor with no contract something to try', async ({ page }) => {
+  // Brief 05, next-need 3. The site's main interactive tool assumed you brought your own Solidity.
+  await page.goto('/audit')
+  const load = page.getByRole('button', { name: 'Vault (reentrancy)', exact: true })
+  await expect(load).toBeVisible()
+  await load.click()
+
+  // The editor takes the example AND the instant screen finds its bug — the demo has to demo.
+  await expect(page.locator('#audit-src')).toHaveValue(/contract Vault/)
+  await expect(page.locator('main')).toContainText(/Reentrancy/i)
+})

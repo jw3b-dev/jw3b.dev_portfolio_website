@@ -28,6 +28,7 @@ import { Link } from 'react-router-dom'
 import { useAuditWorkspace } from '../../hooks/useAuditWorkspace.js'
 import { SEVERITY_META } from '../../lib/auditHeuristics.js'
 import { AUDIT_DISCLAIMER, SOURCE_CAP } from '../../lib/auditClient.js'
+import { AUDIT_EXAMPLES } from '../../lib/auditExamples.js'
 
 const chipBase =
   'rounded-md border px-2 py-1 font-mono text-[10px] uppercase tracking-label motion-safe:transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan'
@@ -111,6 +112,32 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
         <p id="audit-src-help" className="mt-0.5 mb-2 text-[11px] text-content-muted">
           {section('1').cost}
         </p>
+
+        {/*
+            A first-time visitor arriving with no contract to hand had nothing to try — the site's
+            main interactive tool assumed you brought your own Solidity, which most people reading
+            a security portfolio have not, at that moment.
+
+            Each example is deliberately vulnerable in ONE named way, and that claim is verified
+            rather than asserted: auditExamples.test.js runs the real engine over every one and
+            fails if it does not raise the finding it advertises, or raises one it does not.
+        */}
+        <div className="mb-2 flex flex-wrap items-center gap-1.5">
+          <span className="font-mono text-[10px] uppercase tracking-label text-content-muted">
+            Or load an example:
+          </span>
+          {AUDIT_EXAMPLES.map((ex) => (
+            <button
+              key={ex.id}
+              type="button"
+              onClick={() => w.setDraft(ex.source)}
+              title={ex.blurb}
+              className="rounded-sm border border-hairline px-2 py-0.5 font-mono text-[10px] text-content-secondary motion-safe:transition-colors hover:border-cyan/50 hover:text-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+            >
+              {ex.title}
+            </button>
+          ))}
+        </div>
         <textarea
           id="audit-src"
           aria-describedby="audit-src-help"
