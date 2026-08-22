@@ -13,6 +13,7 @@ import { handleKbSearch, handleKbRelated, handleKbStats } from './routes/kbSearc
 import { handleFuzz } from './routes/fuzz.js'
 import { handleTxExplain } from './routes/txExplain.js'
 import { handleStt, handleTts } from './routes/voice.js'
+import { track } from './funnel.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -77,17 +78,20 @@ export default {
         const b = await readJson(req)
         if (!b || typeof b.source !== 'string' || !b.source.trim()) return bad('source required', req, env)
         if (b.source.length > SOURCE_CAP) return bad(`source exceeds ${SOURCE_CAP} chars`, req, env, 413)
+        track(env, ctx, { surface: 'audit', event: 'tool_run' })
         return handleAudit(req, env, ctx, b, cors(req, env))
       }
       if (pathname === '/fuzz' && method === 'POST') {
         const b = await readJson(req)
         if (!b || typeof b.source !== 'string' || !b.source.trim()) return bad('source required', req, env)
         if (b.source.length > SOURCE_CAP) return bad(`source exceeds ${SOURCE_CAP} chars`, req, env, 413)
+        track(env, ctx, { surface: 'audit', event: 'tool_run' })
         return handleFuzz(req, env, ctx, b, cors(req, env))
       }
       if (pathname === '/tx-explain' && method === 'POST') {
         const b = await readJson(req)
         if (!b || !TXHASH.test(b.txHash || '')) return bad('valid 0x txHash (64 hex) required', req, env)
+        track(env, ctx, { surface: 'audit', event: 'tool_run' })
         return handleTxExplain(req, env, ctx, b, cors(req, env))
       }
       // ── Voice ───────────────────────────────────────────────────────────────────────────
@@ -148,11 +152,13 @@ export default {
       if (pathname === '/engagement' && method === 'POST') {
         const b = await readJson(req)
         const out = await handleEngagement(req, env, ctx, b)
+        if (!out.error) track(env, ctx, { surface: 'hire-me', event: 'request_submit' })
         return out.error ? bad(out.error, req, env, out.status) : json(out.body, req, env, out.status)
       }
       if (pathname === '/book-a-call' && method === 'POST') {
         const b = await readJson(req)
         const out = await handleBookACall(req, env, ctx, b)
+        if (!out.error) track(env, ctx, { surface: 'hire-me', event: 'request_submit' })
         return out.error ? bad(out.error, req, env, out.status) : json(out.body, req, env, out.status)
       }
 

@@ -53,6 +53,37 @@ up to the root `wrangler.jsonc` (the SPA config) and can't find the D1 binding.
 Retention: rate-limit rows (raw IPs) self-purge ~10 min; `engagement_requests` PII per the
 privacy notice; DSAR/erasure runbook in `docs/COMPLIANCE.md`.
 
+### Funnel digest (P5-02 · ADR-P5-01)
+
+Aggregate counters only — `(day, surface, event, count)`, no identifier of any kind, so there is
+nothing here to subject-access or erase.
+
+```bash
+# Last 14 days, by surface and event.
+npx wrangler@4 d1 execute jw3b_analytics --remote --config wrangler.toml --command \
+  "SELECT day, surface, event, count FROM funnel_counters
+    WHERE day >= date('now','-14 day') ORDER BY day DESC, surface, event;"
+
+# Conversion shape: tool runs vs requests submitted, per day.
+npx wrangler@4 d1 execute jw3b_analytics --remote --config wrangler.toml --command \
+  "SELECT day,
+          SUM(CASE WHEN event='tool_run'       THEN count ELSE 0 END) AS tool_runs,
+          SUM(CASE WHEN event='request_submit' THEN count ELSE 0 END) AS submits
+     FROM funnel_counters GROUP BY day ORDER BY day DESC LIMIT 30;"
+```
+
+**What is counted today, and what is not — read this before drawing a conclusion.**
+`tool_run` and `request_submit` are recorded **server-side**, so they are unforgeable: each one
+required someone to actually run a tool or submit a lead. `surface_view` and `cta_click` are
+declared in the vocabulary but **nothing emits them yet**, because they can only come from the
+browser, and a public counter-increment endpoint is trivially inflatable — a forgeable denominator
+is worse than no denominator, since it makes every ratio derived from it quietly wrong.
+
+So these numbers answer *"how much real activity happened"*, **not** *"what fraction of visitors
+converted"*. For the denominator use the zone's own request analytics (observability is enabled on
+the SPA worker) rather than trusting a client beacon. Wiring one properly needs an abuse-resistant
+design; it is scoped, not assumed.
+
 ## Rollback (prod)
 
 Worker: `npx wrangler@4 rollback --name jw3b-dev-site --version-id <prev>` (SPA) /
