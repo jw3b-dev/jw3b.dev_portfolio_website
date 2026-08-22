@@ -661,7 +661,7 @@ existing ~10-minute IP purge stays untouched.
 Compliance gets an explicit extra check this phase: **the site must still set zero cookies and
 zero tracking storage**, or ADR-P5-01 has been violated and the consent banner must go live.
 
-> ### ✗ P5-GATE FAILS — 2026-08-22. This check was written and never run.
+> ### ~~✗ P5-GATE FAILS~~ → ✓ PASSES — both on 2026-08-22. The check was written, never run, then failed on first run, and the owner closed it the same day (tag gateway off at the zone; `npm run e2e:zone` 3/3 green on the apex: 0 cookies, no tracking storage, no tag). The failure record stays below because a gate that was never run for a month is the finding.
 >
 > Measured on `https://jw3b.dev` (not workers.dev — see below), first visit, no interaction:
 >

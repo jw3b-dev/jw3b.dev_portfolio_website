@@ -23,9 +23,12 @@
  * It lives OUTSIDE `e2e/`, with its own config, and that separation is deliberate rather than
  * tidy. A GitHub runner is a datacenter IP; the zone challenges it; the runner would then measure
  * Cloudflare's challenge page and report ITS properties as the site's — no cookies, no Google tag,
- * all green. A test that passes by measuring the wrong document is worse than no test. It also
- * fails today on purpose, and a permanently-red CI on a known owner-gated finding only teaches
- * people to ignore red CI.
+ * all green. A test that passes by measuring the wrong document is worse than no test.
+ *
+ * ✎ RESOLVED 2026-08-22, same day: the owner disabled the Google tag gateway at the zone, and this
+ * suite went 3/3 green against the apex — no tag object, 0 cookies, `_gcl_ls` gone, only wallet
+ * keys in storage. It STAYS a manual gate for the runner-challenge reason above; run it after any
+ * zone-level change, because this file is the only check in the repo that can see one.
  *
  * If apex egress ever reaches CI, fold this into the post-deploy job and delete the separation.
  */
@@ -83,11 +86,25 @@ test.describe('the cookieless posture ADR-P5-01 claims, checked on the domain vi
      * `script-src 'self'` cannot tell Google's tag from ours when Cloudflare serves it from our
      * domain. So this asserts the outcome (no tag running) rather than the mechanism.
      */
+    /*
+     * ALLOWED same-origin extras, named individually and never by prefix.
+     *
+     * `/cdn-cgi/speculation` is Cloudflare Speed Brain: it returns
+     * `application/speculationrules+json` ({"tag":"cf-speed-brain","prefetch":…}) — declarative
+     * prefetch hints, not executable code, no storage, no third party.
+     *
+     * The prefix `/cdn-cgi/` is deliberately NOT allowed wholesale, because `/cdn-cgi/zaraz/*` is
+     * served from exactly there and IS a third-party tag injector. Allowing the family to make
+     * this test green would blind it to the successor of the thing it was written to catch.
+     */
+    const ALLOWED_SAME_ORIGIN = ['/cdn-cgi/speculation']
+
     const proxied = []
     page.on('request', (r) => {
       const u = new URL(r.url())
       if (u.origin !== new URL(ZONE).origin) return
       if (/^\/assets\//.test(u.pathname) || u.pathname === '/' || /\.(css|js|png|svg|webp|json|txt|xml|ico)$/.test(u.pathname)) return
+      if (ALLOWED_SAME_ORIGIN.includes(u.pathname)) return
       proxied.push(u.pathname)
     })
 
