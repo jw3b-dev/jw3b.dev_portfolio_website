@@ -12,7 +12,7 @@ on `/work` that I invented from a label list. It is a plausible pipeline; it is 
 Before the site describes the system it must describe the real one, and before it publishes a
 number it must know which tier produced it. Every claim below is cited to a file.
 
-Seven corrections to my own understanding are recorded inline, because each was wrong in a way that
+Eight corrections to my own understanding are recorded inline, because each was wrong in a way that
 would have shipped a false statement. The two largest came from verifying against the live API
 instead of the repo: the cloud tier is six workers in a different account, and the job queue has no
 consumer. **Revs 7 and 8 came from neither the repo nor the API but from KTHULHU's own ticket
@@ -421,6 +421,32 @@ for a flag that is read through a lookup table. Three shapes of one error in one
 **5. The findings-funnel numbers have no factory record either way.** §4's aggregates came from
 live Neon via `/kb/stats`; the board neither corroborates nor contradicts them. They stand on the
 database read, and should be re-measured rather than cited from here.
+
+### ✎ Rev 9 — KTH-0215 is already built, and half of what Rev 7 recommended is deferred by ruling
+
+Rev 7 recommended two things: delete the `TOOL_QUEUE.send`, **and** correct the stale `d1.ts:135`
+comment. The first is done — branch `factory/KTH-0215-consumerless-queue` exists, and the board
+records it shipping `queue.ts` alone, with the binding removed from `enqueueToolJob`'s success
+condition (the coupling Rev 7 flagged). The second was **deferred by ruling**, for a mechanical
+reason I had no way to see from outside:
+
+**Editing a comment pulls its file into the mutation gate's diff scope.** Touching `d1.ts` scored it
+`0.00%` — 145 mutants, none killed — dragging the aggregate to 32.57% and failing the gate. Not
+because the file is untested: `lib/db/schema/d1.test.ts` exists, passes 3 tests, and asserts the
+table name and 17 columns of **`tool_jobs`** — the exact table the ticket is about. The zero is a
+**harness artifact**: the gate's runner (`vitest.stryker-factory.config.ts`) includes only
+`tests/unit/**` and `tests/engine/**`, while that test lives under `lib/`. So the comment correction
+moves to KTH-0216's diff, and AC3 is recorded DEFERRED rather than silently unmet.
+
+**The recursion is the part worth carrying.** The tempting fix was to exclude `d1.ts` from the gate
+with the reason *"declaration-only, nothing asserts on table literals"*. That would have written a
+durable, authoritative claim about a state that is not the running one **into the config that
+governs the gate** — KTH-0215's own defect, reproduced one layer down and considerably harder to
+notice. The architect settled it by running the test nobody had run.
+
+For this audit the correction is narrow: Rev 7's recommendation was right about the code and naive
+about the process. "Also fix the stale comment" is free in a repo without a diff-scoped mutation
+gate and is a gate failure in one that has it.
 
 ### Confidence, stated per fact
 
