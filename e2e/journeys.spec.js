@@ -9,9 +9,15 @@ const ROUTES = ['/', '/work', '/audit', '/ctf', '/hire-me', '/messages', '/priva
 test.describe('every route renders in a real browser without console errors', () => {
   for (const route of ROUTES) {
     test(`${route} loads clean`, async ({ page }) => {
+      // Capture the SOURCE URL alongside the text. A generic "Failed to load resource" says
+      // nothing about whose resource failed, and filtering it by text alone silently excused
+      // our own 404s and 5xx — the budget could not fail on the class of defect it exists for.
       const errors = []
-      page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
-      page.on('pageerror', (e) => errors.push(String(e)))
+      page.on('console', (m) => {
+        if (m.type() !== 'error') return
+        errors.push({ text: m.text(), url: m.location()?.url || '' })
+      })
+      page.on('pageerror', (e) => errors.push({ text: String(e), url: '' }))
 
       // NOT networkidle: the wallet SDK holds long-lived connections, so idle never arrives
       // and the test times out rather than testing anything.
@@ -25,16 +31,30 @@ test.describe('every route renders in a real browser without console errors', ()
       // Real content, not an empty shell.
       await expect(page.locator('main')).not.toBeEmpty()
 
-      // Separate OUR failures from noise we neither ship nor control:
-      //  - wallet SDK chatter (WalletConnect/Reown/Coinbase)
-      //  - Cloudflare's own bot-detection script, which the zone INJECTS inline and our strict
-      //    CSP then blocks (tracked in docs/DEFERRED.md — the fix is a zone setting, not code;
-      //    weakening script-src to 'unsafe-inline' to silence it would be strictly worse)
-      //  - third-party analytics injected by the flagship iframes' own origins
-      const NOISE =
-        /walletconnect|reown|coinbase|Failed to load resource|cdn-cgi\/challenge-platform|__CF\$cv\$params|cloudflareinsights|googletagmanager|gtag|Executing inline script violates/i
-      const ours = errors.filter((e) => !NOISE.test(e))
-      expect(ours, `console errors on ${route}:\n${ours.join('\n')}`).toEqual([])
+      // Separate OUR failures from noise we neither ship nor control. Two different filters,
+      // because they answer two different questions.
+
+      // 1) WHOSE code produced it. Wallet SDK chatter (WalletConnect/Reown/Coinbase), the
+      //    flagship products' own origins and the analytics they inject, and Cloudflare's
+      //    zone-injected scripts. Matched on the ORIGINATING URL, not the message text.
+      const THIRD_PARTY_HOST =
+        /walletconnect|reown|coinbase|cloudflareinsights|cdn-cgi\/challenge-platform|googletagmanager|google-analytics|doubleclick|kthulhu\.co|kointel\.co\.za/i
+
+      // 2) Messages that carry no useful URL of their own. Kept deliberately narrow:
+      //    - `Executing inline script violates …` is the zone's injected bot-detection script
+      //      hitting our strict CSP. The fix is a zone setting, not code (docs/DEFERRED.md);
+      //      weakening script-src to 'unsafe-inline' to silence it would be strictly worse.
+      //      We ship no inline <script> of our own, so this cannot be masking ours.
+      //    - `__CF$cv$params` is that same script's global.
+      const KNOWN_TEXT = /__CF\$cv\$params|Executing inline script violates/i
+
+      // NOTE: a bare "Failed to load resource" is NO LONGER excused. If the URL that produced
+      // it is ours, it is our defect and this budget must fail on it.
+      const ours = errors.filter(
+        (e) => !THIRD_PARTY_HOST.test(e.url) && !THIRD_PARTY_HOST.test(e.text) && !KNOWN_TEXT.test(e.text),
+      )
+      const detail = ours.map((e) => `  ${e.text}${e.url ? `\n    ↳ ${e.url}` : ''}`).join('\n')
+      expect(ours, `console errors on ${route}:\n${detail}`).toEqual([])
     })
   }
 })

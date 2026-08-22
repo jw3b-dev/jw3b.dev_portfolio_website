@@ -173,10 +173,21 @@ Coverage thresholds are strict (100% lines/functions on the `src/lib` include-li
 **scoped**: a file joins `include` only when it lands *with* its tests. Adding a covered file to
 the list without tests breaks the gate for everyone.
 
-Still to be encoded as blocking (W5, open): the first-visitor walkthrough (walletless, empty
-state, mobile), a zero-unexpected-console-error budget, and a live-model behavioural smoke. Until
-those land, run them by hand before claiming a surface works — mocked tests structurally cannot
-catch model-behaviour or deployment-reality failures.
+The three gates the pipeline lacked are now wired (W5, 2026-08-22):
+
+| Gate | Where | Runs |
+|---|---|---|
+| First-visitor walkthrough — walletless, empty state, mobile | `e2e/first-visit.spec.js` | blocking, `e2e` job |
+| Zero same-origin console errors, every route | `e2e/journeys.spec.js` | blocking, `e2e` job |
+| Live-model behavioural smoke | `e2e/live.spec.js` | post-deploy `smoke` job |
+
+The console budget filters noise by the **originating URL**, not by message text: a bare "Failed
+to load resource" from our own origin is our defect and must fail the gate. Do not re-broaden it.
+
+The live smoke asserts *behaviour*, not reachability — that an informational question is answered
+in the chat without navigating, and that the answer carries a fact only the KB supplies. Mocked
+tests structurally cannot catch model-behaviour or deployment-reality failures, which is why the
+concierge fabricated page descriptions through a fully green pipeline.
 
 ---
 

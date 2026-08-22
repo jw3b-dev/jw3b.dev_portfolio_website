@@ -21,6 +21,45 @@ test('the LIVE concierge returns a real answer, not the recorded fallback', asyn
   await expect(dialog.locator('.bg-raised').last()).not.toHaveText('…', { timeout: 60_000 })
 })
 
+test('the LIVE concierge answers IN the chat and never navigates on its own', async ({ page }) => {
+  // P0 findings #4 and #6: the tool-call fired on informational questions, auto-navigated, and
+  // closed the chat — so the visitor's answer was destroyed before they could read it. Mocked
+  // tests cannot catch this; it is a property of what the deployed model decides to emit.
+  await page.goto('/')
+  const startUrl = page.url()
+  await page.getByRole('button', { name: /open concierge chat/i }).click()
+  const dialog = page.getByRole('dialog', { name: /ai concierge/i })
+
+  await dialog.getByRole('textbox').fill('What is on the audit page?')
+  await dialog.getByRole('button', { name: /^send$/i }).click()
+
+  await expect
+    .poll(async () => ((await dialog.textContent()) || '').length, { timeout: 60_000 })
+    .toBeGreaterThan(200) // something substantive arrived
+
+  // The three things that must all still be true after an INFORMATIONAL question.
+  await expect(dialog).toBeVisible() // the chat did not close
+  expect(page.url(), 'an informational question must not navigate').toBe(startUrl)
+  await expect(dialog.getByRole('button', { name: /Open Mission Control/i })).toHaveCount(0)
+})
+
+test('the LIVE concierge describes THIS site truthfully, not plausibly', async ({ page }) => {
+  // P0 finding #5: asked what the audit page did, the concierge invented a description. The KB
+  // now carries the real one. This asserts a fact only the KB supplies — the metering figure —
+  // so a fabricated-but-fluent answer fails where a "did it reply?" check passes.
+  await page.goto('/')
+  await page.getByRole('button', { name: /open concierge chat/i }).click()
+  const dialog = page.getByRole('dialog', { name: /ai concierge/i })
+
+  await dialog.getByRole('textbox').fill('How many AI analyses can I run per session on the audit page?')
+  await dialog.getByRole('button', { name: /^send$/i }).click()
+
+  await expect
+    .poll(async () => (await dialog.textContent()) || '', { timeout: 60_000 })
+    // "10" or "ten" — the figure, however the model words it. Anything else is invention.
+    .toMatch(/\b(10|ten)\b/i)
+})
+
 test('the LIVE audit route streams a model narrative, not just heuristics', async ({ request }) => {
   const res = await request.post('https://portfolio-agent.agilegypsy.workers.dev/audit', {
     headers: { 'Content-Type': 'application/json', Origin: 'https://jw3b.dev' },
