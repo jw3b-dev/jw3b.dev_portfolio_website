@@ -12,12 +12,13 @@ on `/work` that I invented from a label list. It is a plausible pipeline; it is 
 Before the site describes the system it must describe the real one, and before it publishes a
 number it must know which tier produced it. Every claim below is cited to a file.
 
-Six corrections to my own understanding are recorded inline, because each was wrong in a way that
+Seven corrections to my own understanding are recorded inline, because each was wrong in a way that
 would have shipped a false statement. The two largest came from verifying against the live API
 instead of the repo: the cloud tier is six workers in a different account, and the job queue has no
-consumer. **Rev 7 came from neither the repo nor the API but from KTHULHU's own ticket board**
-(`tickets/KTH-0215.md`) — which had cut this exact defect, measured it more completely, and named a
-coupling that made the cleanup I recommended dangerous.
+consumer. **Revs 7 and 8 came from neither the repo nor the API but from KTHULHU's own ticket
+board** — `KTH-0215`, which had cut the queue defect and named a coupling that made the cleanup I
+recommended dangerous, and `KTH-0214`, which had independently cut my own Rev 5 finding and
+disproved a sentence in it. Rev 8 also answers an open acceptance criterion of KTH-0214.
 
 ---
 
@@ -352,6 +353,58 @@ I did ask the running system, and the finding was right — but I recommended a 
 whose own issue tracker had already adjudicated it, including a hazard I had not found. See that
 document's addendum for the corollary this adds.
 
+### ✎ Rev 8 — verified the whole audit against the factory board; three corrections, one answer back
+
+Cross-checked every KTHULHU claim in this document against `tickets/` (219 tickets) and
+`docs/factory-queue.md`. The board had already cut **KTH-0214** for my own Rev 5 finding —
+independently, from the opposite direction, in the same hour.
+
+**1. Rev 6 is corroborated, not merely mine.** KTH-0214's AC3 records the identical census —
+35 rows, 7 audits, 21 `done` · 9 `skipped` · 5 `failed`, 2026-07-15 → 07-31, the last
+`managed_pro` audit. Two audits reached it separately. It also adds the detail that killed the
+"ran by another route" reading: `claude-0` is **empty** and there is **no discovery artifact of
+any kind** — `kthulhu-claude-config` is written by `box/dispatcher/claude-cli.mts:93` for whatever
+phase invokes Claude, which for that audit was the ensemble.
+
+**2. ✎ `LEDGER_PULL_STATIC` is live and load-bearing. My Rev 5 said the opposite.** Rev 5:
+*"It does **not** use `LEDGER_PULL_STATIC`; that is a separate mechanism."* KTH-0214's last open
+AC put it more carefully — *"either it is dead, or it is read somewhere neither audit looked"* —
+and it is the latter. Four production readers:
+
+| Reader | Gates |
+|---|---|
+| `queue.ts:83` → `LEDGER_PULL_FLAG['static-adjudication']`, indexed at `:94` | the **enqueue** of static-adjudication |
+| `overmind.ts:61` (`shouldGround`) | Phase-3 grounding inversion, with `GROUND_STAGE` + EVM language |
+| `overmind.ts:468` | the ledger branch's skip-GHA return |
+| `overmind.ts:668` | adjudicating the dispatcher's raw Slither |
+
+`types/api.ts:169` settles the relationship both audits got wrong: `STATIC_ADJ_ON_BOX` is
+*"orthogonal to `LEDGER_PULL_STATIC`, **which gates the ENQUEUE and must stay on**."* They are not
+alternatives — both are required, and they decide different things: one whether the job is
+enqueued at all, the other which side runs the LLM half.
+
+**✎ Why two independent audits both missed it, which is the transferable part.** The operative
+read is `env[flag]` — a **dynamic index** through the `LEDGER_PULL_FLAG` map. A literal
+`grep LEDGER_PULL_STATIC` over production source returns a type-union member and a map *value*,
+both of which read as declarations rather than readers, so the grep's own output argues for
+"vestigial". Same shape as the queue finding one rev earlier: **the grep agreed with a plausible
+wrong answer.** A flag indexed through a lookup table has no literal read site to find.
+
+**3. ✎ Three GHA workflow files are absent, and they are two facts, not one.** This document named
+only `claude-discovery.yml`. Also missing: `static-adjudication.yml` (`static_adjudication.ts:46`)
+and `fuzz-discovery.yml` (`fuzz_discovery.ts:23`). But those two kinds **do** run, with `done`
+ledger rows and artifacts — so their `GHA_WF` constants are **dead code left by a completed
+migration**, while `claude-discovery`'s is dead **by design** (`overmind.ts:435` returns before the
+dispatch). Collapsing the two classes is what kept the discovery case invisible.
+
+**4. Not covered by the factory — worth cutting.** No ticket exists for `kthulhu-scraper`:
+deployed 2026-07-06, scheduled `0 */6 * * *`, and with **no config anywhere in the repo**. It runs
+every six hours and is unreproducible from source. That is this audit's finding alone.
+
+**5. The findings-funnel numbers have no factory record either way.** §4's aggregates came from
+live Neon via `/kb/stats`; the board neither corroborates nor contradicts them. They stand on the
+database read, and should be re-measured rather than cited from here.
+
 ### Confidence, stated per fact
 
 | Fact | Verified how | Confidence |
@@ -363,6 +416,9 @@ document's addendum for the corollary this adds.
 | A send failure returns `null` for a committed job | `queue.ts:194` insert → `:200` send → `shadowEnqueue:210-217` catch-all; KTH-0215 | **Confirmed (source, both readings)** |
 | …and it undercounts rather than duplicating | `overmind.ts:328` consumes the ids as a count; `queue.ts:186` in-flight guard returns the existing id | **Confirmed (source)** |
 | Dropping the `TOOL_QUEUE` binding would take **all** box dispatch dark | `queue.ts:109` — binding is part of the success condition | **Confirmed (source).** Not found by this audit; supplied by KTH-0215 |
+| ~~`LEDGER_PULL_STATIC` is a separate mechanism static adjudication does not use~~ | **RETRACTED (Rev 8).** Four production readers: `queue.ts:83`+`:94`, `overmind.ts:61`, `:468`, `:668`; `types/api.ts:169` — "gates the ENQUEUE and must stay on" | **Refuted (source).** The literal grep returns only declarations because the read is `env[flag]` |
+| `static-adjudication.yml` and `fuzz-discovery.yml` are absent, but those kinds run | `static_adjudication.ts:46`, `fuzz_discovery.ts:23` vs `done` ledger rows + artifacts | **Confirmed.** Dead constants from a completed migration — a different class from discovery's |
+| `kthulhu-scraper` is deployed with no repo config | CF API (deployed 2026-07-06, cron `0 */6 * * *`); no `wrangler*.toml` names it | **Confirmed.** No factory ticket covers it |
 | `LEDGER_PULL_{FUZZ,SCENARIO,STATIC}`, `STATIC_ADJ_ON_BOX`, `SHADOW_DISPATCH` **exist** | REST worker settings → present as `secret_text` bindings | **Confirmed to exist** |
 | …their VALUES | — | **Unverified.** Secret values are unreadable; absent from config, so dashboard- or CLI-set. Do not treat as on |
 
