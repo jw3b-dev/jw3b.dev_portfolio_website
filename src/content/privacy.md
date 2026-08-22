@@ -30,6 +30,7 @@ This is kept in order to respond to your enquiry. Providing it is your choice; w
 ## Where the data goes
 
 - The backend is a Cloudflare Worker with a Cloudflare D1 database. AI features use Cloudflare Workers AI and, for some analysis, Anthropic's API — called only from the Worker, never from your browser. Voice features use Deepgram.
+- When you send an engagement request or book a call, a notification containing your enquiry — your contact detail, the options you chose, and your wallet address if you supplied one — is sent to John over Telegram so that he sees it promptly. Telegram is a third-party service and handles that message on its own infrastructure, which may be outside the UK and EU. Your request is written to the Cloudflare database first, and is kept there whether or not the notification reaches him.
 - Wallet connections are handled by your own wallet provider and WalletConnect, not by this site.
 - Your browser keeps a small queue in local storage so a book-a-call request can complete even if you are offline, and send when you reconnect. Once the request is delivered, that queued copy is removed.
 

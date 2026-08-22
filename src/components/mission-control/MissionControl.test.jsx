@@ -29,7 +29,19 @@ describe('MissionControl — 4-step configurator (P1-17 / FR-028)', () => {
     expect(cont).toBeEnabled()
   })
 
-  it('walks objective → assessment → engagement → loadout and shows a retainer.json tier + price provenance', () => {
+  /*
+   * Explicit 30s budget, with the reason measured rather than guessed.
+   *
+   * This walk is genuinely slow: the file costs ~6.1s of test time in isolation (`vitest run` on
+   * this file alone), most of it this one test driving 12 interaction steps through a
+   * framer-motion tree in jsdom. That fits inside the 15s global testTimeout when it runs alone,
+   * and intermittently does NOT under full-suite parallel contention — it went red in 2 of 3 full
+   * runs once 24 tests were added elsewhere, while passing in isolation every time.
+   *
+   * The budget was wrong, not the test. No assertion is relaxed here, only the clock — and 30s is
+   * ~5x the measured cost, so a future failure is a real regression rather than contention.
+   */
+  it('walks objective → assessment → engagement → loadout and shows a retainer.json tier + price provenance', { timeout: 30_000 }, () => {
     const onBook = vi.fn()
     render(<MissionControl onBook={onBook} />)
 
