@@ -88,3 +88,45 @@ static gates cannot see model behaviour.**
 
 R4 walks this table on live jw3b.dev. A row closes only as **fixed (re-verified live)** or
 **owner-blocked (named, with the unblocking ask)**. Anything else keeps the gate red.
+
+---
+
+## R4 — the full re-walk, 2026-08-22
+
+Rows 1–9 and 27 closed above on 2026-08-21. This walks **every remaining row**. Live verification is
+`npm run e2e:prod` against `https://jw3b.dev` — **41 passed, 0 failed**, covering the console-error
+budget on all nine routes, the first-visitor walkthrough, and three live-model behavioural checks.
+Code-only rows say so rather than claiming a live check they did not get.
+
+| # | Sev | Status | Evidence |
+|---|---|---|---|
+| 10 | P1 | **FIXED (live)** | `/audit`'s wrapper and console both render from `consoleCopy.js`; the "How it works" strip shows all four numbered sections. Pinned by `first-visit.spec.js`, green against production. |
+| 11 | P2 | **FIXED (live)** | Section 4 is visible on arrival — the spec asserts all four titles pre-run, so the workflow is learnable before any spend. |
+| 12 | P2 | **FIXED (code)** | No rendered copy contains "Live heuristic", "Heuristic pass" or "re-run the auditor". The four surviving matches are **code comments** recording why the term is banned — the intended end state, not a residue. |
+| 13 | P2 | **FIXED (code)** | "live /audit console" — 0 occurrences. |
+| 14 | P3 | **FIXED (code)** | "heuristic pre-screen" — 0 occurrences in rendered copy. |
+| 15 | P1 | **FIXED (code)** | `FuzzTool.jsx`: harness renders in a `<pre>` with fences stripped, plus **Copy** (`:75`), **Download** (`:78`), and the run instruction *"…and run `forge test`"* (`:87`). |
+| 16 | P2 | **FIXED (code)** | `TxExplainer.jsx`: an `EXAMPLES` array (`:22`) rendered as chips (`:68`) — triable without owning a transaction hash. |
+| 17 | — | **RETRACTED** | The finding was wrong; kept rather than deleted. |
+| 18 | P2 | **FIXED (code)** | `AuditConsole.jsx`: **Export report** (`:178`), finding→line via `jumpToLine` (`:69`, wired at `:221`), and a hire link from the findings panel (`:332`). All three takeaways exist. |
+| 19 | P1 | **FIXED (live)** | `/ctf` renders brief, target + explorer link and leaderboard **before** the wallet ask — and the spec asserts the ask sits *below* the brief by bounding box, so the ordering cannot silently regress. |
+| 20 | P2 | **FIXED (live)** | `/messages` is absent from the primary nav (asserted against production); the "← Back to the console" mislabel no longer exists in `Messages.jsx`. |
+| 21 | P1 | **OPEN — owner-gated** | `KthulhuEmbed.jsx` and `Kointel.jsx` still frame their own origins. **Ask: read-only API access** for each product. Until then the copy must not call them operable on this site. |
+| 22 | P2 | **FIXED (live)** | Both thesis pages carry a driven surface — `ClaimGraphWalk` (`#graph-walk`) and `ClaimsGateDemo` (`#gate-demo`). The spec clicks each and asserts the page **changes**, not merely that it rendered. |
+| 23 | P2 | **OPEN — owner-gated** | The zone's injected bot-detection script still violates our CSP. The console budget excuses it narrowly, by message text; **`'unsafe-inline'` remains forbidden**. **Ask: the Cloudflare zone RUM/insights toggle.** |
+| 24 | P3 | **CLOSED — not ours** | The 401s originate from the embedded products' own origins. Documented; no action. |
+| 25 | P1 | **OPEN — owner-gated** | CTF vault is v1-era. **Ask: keystore + gas for a v2 redeploy.** |
+| 26 | P1 | **OPEN — owner-gated** | Unlock locks are placeholders, escrow testnet-only. Both flags fail closed and degrade to the hire floor. **Ask: lock provisioning + mainnet funding.** |
+| 28 | P2 | **CLOSED — degrades honestly; owner-gated to go live** | Reclassified. XMTP is no longer absent: `@xmtp/browser-sdk` is a dependency, `useXMTP` + `xmtpFlow.js` are implemented, and `/messages` gates on `isEnabled('xmtp') && isEthAddress(XMTP_RECIPIENT)`. The flag is unset in `.env.production`, so the surface degrades rather than selling what it lacks. **Ask: a provisioned XMTP recipient address.** |
+
+### Verdict
+
+**21 of the 27 live findings fixed · 1 retracted · 1 closed as not-ours · 4 open, every one
+owner-gated with a named ask.** No row is open for an engineering reason. Per the disposition rule
+the gate is **green on the work and red on provisioning** — and the four gating asks are exactly the
+standing owner list, not new discoveries.
+
+**One caveat, stated rather than buried:** the deployed site verified above does **not** yet include
+the Overmind flagship rewrite — local commits are unpushed pending owner authorisation, because
+`v2` deploys to production on push. Row 21 is unaffected. The Overmind correction is verified
+locally only, and one line of this table needs re-walking after that deploy.
