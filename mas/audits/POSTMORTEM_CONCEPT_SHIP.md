@@ -88,6 +88,34 @@ the shipped product.
 
 ---
 
+## R4 — the falsification check, 2026-08-22
+
+This document declares itself R4's exit criteria: *"the rerun's exit gate fails unless the shipped
+site disproves all five causes."* Run honestly, that is a test three of the five pass outright and
+two passed only after work done during the check itself.
+
+| # | Cause | Falsified? | The evidence, and what it does not cover |
+|---|---|---|---|
+| 1 | Requirements encoded **capture**, not outcomes | **YES — but only as of today** | The check found FR-036 still reading *"capture + confirmation"* and **no FR anywhere naming an outcome**. The behaviour was fixed and gated; the requirement that caused it was untouched, so the next person building from `REQUIREMENTS.md` would have encoded capture again. R1 had never been executed. Now: **EPIC K**, six outcome FRs (FR-062…067), each naming the deployed-site test that proves it, plus a standing rule that a mechanism FR must name the outcome it serves. |
+| 2 | "Degrade honestly" became the product | **PARTIALLY** | The floor now works end to end — a lead reaches John, proven live, and the confirmation states the real delivery state instead of a promise. `/messages` degrades rather than overselling. **Not fully falsified:** two flagships are still frames of other origins (#21), which is the original shape — an honest label over an absent capability. Owner-gated on API access, and until then FR-066 stays open rather than being quietly reworded. |
+| 3 | Gates measured code properties, never visitor outcomes | **YES** | Five gates now fail on visitor-facing reality: first-visitor walkthrough (walletless, empty-state, mobile), a console-error budget that filters by originating URL so our own failures cannot hide as third-party noise, live-model behavioural smoke, the lead-path probe, and the copy gate. Four are blocking in `verify`; two run post-deploy against production. |
+| 4 | Component-scoped tasks; seams owned by nobody | **YES** | Each seam that failed now has one source and a guard: `consoleCopy.js` + the copy gate for naming, `tagProtocol.js` + its drift test for the AI protocol, the tool-call↔hash seam test, and `conciergeSystemPrompt.test.js` asserting every defined prompt block actually reaches `system` — the regression that shipped green inside this very remediation. |
+| 5 | The MAS knew on day one; no standing product-owner | **PARTIALLY** | `CLAUDE.md` now requires a product-owner pass in every brief (the job the visitor finishes + ≥3 next-needs), and EPIC K makes the question a requirement rather than a habit. **Not fully falsified:** that rule is documented, not *gated* — nothing fails a build when a brief omits it, which is precisely the weakness that let cause 1 survive as long as it did. Recorded as the residual rather than claimed. |
+
+### Verdict
+
+**Three falsified, two partially.** Neither residual is an engineering gap: #2 is owner-gated on
+flagship API access, and #5 is a process rule with no mechanical enforcement — an honest open item,
+not a pass.
+
+**The check earned its keep by failing.** Had R4 been a re-walk of the product register alone, cause
+1 would have read as closed: every visible symptom was fixed and gated. It was the *requirements
+layer* that was untouched, and only testing the cause rather than the symptoms found it. That is the
+same lesson as the addendum below — an instrument aimed at the wrong artifact returns a clean,
+confident, wrong answer.
+
+---
+
 ## Addendum — root cause 3, restated after it bit four more times
 
 Cause 3 was written as "gates measured code properties, never visitor outcomes". A day of work

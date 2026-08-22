@@ -127,8 +127,8 @@ Ingested verbatim-in-substance from `BRD §4 / 03_requirements §1`, then reconc
 | FR-033 | Execute on-chain escrow via **Simulate → Write → Wait** (`useSimulateContract` → write → `useWaitForTransactionReceipt`) in **USDC on Base**, **6-decimal BigInt**. | 01 | MUST | Repair |
 | **FR-034 ★** | Offer **Unlock only when a real lock address is deployed**; placeholder/undeployed ⇒ **hide Unlock, fall back to book-a-call** (no perpetually-disabled button). Unlock is **built now, activation gated on provisioning**. | 01 | MUST | Repair |
 | FR-035 | Provide the **full product-state set**: connect-prompt, checkout-loading, tx-pending, **success (receipt + next steps)**, error/retry, empty. | 01 | MUST | New |
-| FR-036 | Provide a **book-a-call floor** that completes an engagement request **with no wallet, no chain, no live Worker** (offline-capable capture + confirmation) — the **guaranteed, default, primary** terminal action. | 01 | MUST | New |
-| FR-037 | **Capture every engagement request** (objective, assessment, engagement, tier, indicative price, route, optional wallet, contact) to Worker + D1 and **show a confirmation**. | 01 | MUST | New |
+| FR-036 | Provide a **book-a-call floor** that completes an engagement request **with no wallet, no chain, no live Worker** (offline-capable capture + confirmation) — the **guaranteed, default, primary** terminal action. **✎ AMENDED 2026-08-22 → the outcome now lives in FR-062 (EPIC K).** "Capture + confirmation" is what this asked for and precisely what shipped: a lead written to a table nobody read, under a UI that said *"John will follow up"*. The requirement was satisfied and the product was broken. Capture is the **mechanism**; FR-062 owns the **outcome**. | 01 | MUST | Repair |
+| FR-037 | **Capture every engagement request** (objective, assessment, engagement, tier, indicative price, route, optional wallet, contact) to Worker + D1 and **show a confirmation**. **✎ The confirmation must state the ACTUAL delivery state** (delivered/alerted · delivered/recorded · queued for reconnect · rejected with a fallback), never a promise the system has not kept. | 01 | MUST | Repair |
 | FR-038 | **Remove** the dead no-op "ENQUIRE" button and the `/test-agent` dev scaffold before ship. | 01 | MUST | Repair |
 | **FR-039 ★** | **Build real XMTP E2E encrypted messaging** via **`@xmtp/browser-sdk`** (MLS successor; **NOT** `@xmtp/xmtp-js`); the "E2E encrypted channel / Priority Support in XMTP" claim renders **only alongside the working feature**. *(OWNER OD-02 resolves BRD's build-or-remove Decision → **BUILD NOW**.)* | 01,05 | MUST | New *(was Decision)* |
 
@@ -173,7 +173,33 @@ Ingested verbatim-in-substance from `BRD §4 / 03_requirements §1`, then reconc
 | FR-058 | Present **cookie/analytics consent** if legally required. `[NEEDS RESEARCH — §13]` | 05 | SHOULD | New |
 | FR-059 | Present **engagement/checkout terms** (scope, refund/cancellation) at any paid checkout. `[NEEDS RESEARCH — §13]` | 05 | SHOULD | New |
 
-**MoSCoW summary (post-fold):** MUST = **46** (was 45; **+FR-061**, and **FR-039** promoted Decision→MUST) · SHOULD = 9 · COULD = 3. Total FRs = **61** (was 60). Every FR carries an OBJ link; every objective is covered by ≥ 1 FR + ≥ 1 story (traceability in `04_user_stories.md §Matrix`, still valid; add US-052 for FR-061 — see §14). <!-- SOURCE: BRD §4; OWNER OD-01/02/05 -->
+### ✎ EPIC K — OUTCOME requirements (added 2026-08-22, R1)
+
+**Why this epic exists.** Every FR above specifies a *mechanism* — capture, render, expose, present.
+The MAS built each one correctly, every gate verified each one correctly, and the site could not
+convert, because **no requirement anywhere said what the visitor finishes.** FR-036 asked for
+"capture + confirmation" and got exactly that: a lead in a table nobody read, under a UI promising
+follow-up. That is root cause 1 in `audits/POSTMORTEM_CONCEPT_SHIP.md`, and amending the gates
+without amending the requirements would leave the cause in place for whoever builds next.
+
+**The rule this epic sets:** an outcome FR names the visitor-side result *and the test that proves
+it on the deployed site*. A mechanism FR is satisfied by code; an outcome FR is satisfied only by
+evidence from production.
+
+| FR | The visitor shall be able to… | Driving test (must run against the DEPLOYED site) | OBJ | MoSCoW |
+|---|---|---|---|---|
+| **FR-062 ★** | …submit an engagement and **have it reach John**, with the confirmation stating the real delivery state — never a promise the system has not kept. Capture (FR-036/037) is the mechanism; *reaching John* is the requirement. | `e2e/lead-path.spec.js` (route deployed, validating, alert channel configured) · write half proven live and recorded in `audits/PRODUCT_AUDIT_2026-08-21.md` | 01 | MUST |
+| **FR-063 ★** | …ask the concierge an informational question and get a **true answer, in the chat** — no navigation, no offer card; hire intent gets a consent card the visitor chooses. | `e2e/live.spec.js` — answers in-chat, does not navigate, states a fact only the KB supplies | 01,03 | MUST |
+| **FR-064 ★** | …learn the whole `/audit` workflow and what each step costs **before spending anything**, and leave with an artifact (exported report) and a path from a finding to hiring John. | `e2e/first-visit.spec.js` (four steps + costs pre-run) · `AuditConsole` export/jump/hire | 02 | MUST |
+| **FR-065 ★** | …read the CTF challenge — brief, target, leaderboard — **before any wallet is requested**, with the ask positioned after the brief. | `e2e/first-visit.spec.js` (bounding-box ordering assertion) | 02 | MUST |
+| **FR-066 ★** | …**operate** every surface that claims to be operable, or read copy that stops claiming it. A framed third-party product is not an on-site capability. | `e2e/first-visit.spec.js` (thesis surfaces asserted to CHANGE when driven) · **OPEN for KTHULHU/Kointel — owner-gated on API access** | 04 | MUST |
+| **FR-067 ★** | …load any route with **zero same-origin console errors**, walletless, on desktop and mobile. | `e2e/journeys.spec.js` — the budget filters by originating URL, so our own failures cannot be excused as third-party noise | 03 | MUST |
+
+**Standing rule for new FRs:** any FR creating or changing a visitor-facing loop must either be an
+outcome FR here, or name the outcome FR it serves. A mechanism with no outcome above it is the
+defect this epic exists to prevent.
+
+**MoSCoW summary (post-fold):** MUST = **52** (46 + the six EPIC K outcome FRs) · SHOULD = 9 · COULD = 3. Total FRs = **67** (was 61). Every FR carries an OBJ link; every objective is covered by ≥ 1 FR + ≥ 1 story (traceability in `04_user_stories.md §Matrix`, still valid; add US-052 for FR-061 — see §14). <!-- SOURCE: BRD §4; OWNER OD-01/02/05 -->
 
 ---
 
