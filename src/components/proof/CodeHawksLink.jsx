@@ -52,6 +52,23 @@ export default function CodeHawksLink({ className = '' }) {
         <Claim id="codehawks-124-exp" />
       </p>
 
+      {/*
+          The specific beats the aggregate. A rank is a number a reader has to trust; a NAMED
+          finding in a NAMED public contest is something they can go and read. This was added when
+          the public rank receipt broke — and it is the stronger evidence of the two.
+
+          "Validated submission", never "wrote". The contest report credits agilegypsy among the
+          validated submitters on H-01 and M-01, and Cyfrin published other researchers' write-ups
+          for both. Claiming authorship here would be exactly the misattribution that
+          mas/facts/PORTFOLIO_REFERENCE.md 1b had to be corrected for.
+      */}
+      <p className="mt-3 text-sm text-content-secondary">
+        <Claim id="codehawks-ff42-validated" /> — validated submissions in{' '}
+        <span className="text-content-primary">First Flight #42</span> (Jun 2025):{' '}
+        <span className="text-content-primary">H-01 Unrestricted NFT Minting</span> (High) and{' '}
+        <span className="text-content-primary">M-01 DoS on claim</span> (Medium).
+      </p>
+
       {/* No public receipt: show WHERE the record is evidenced rather than leaving three bare
           numbers. An attested figure with its provenance stated beats one with nothing at all. */}
       {!hasProfile && profileUrl && (

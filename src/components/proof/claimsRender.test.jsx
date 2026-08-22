@@ -21,12 +21,20 @@ describe('P1 credibility surfaces render claims through <Claim> (FR-043/046/047)
   it('CodeHawksLink: every figure is Claim-routed, none free-typed', () => {
     const { container } = renderSurface(<CodeHawksLink />)
     const claims = container.querySelectorAll('[data-claim]')
-    // rank · findings · exp — three cleared figures, each a provenance-hooked <Claim>.
-    expect(claims.length).toBe(3)
     const hooks = [...claims].map((n) => n.getAttribute('data-claim'))
+    // rank · findings · exp, plus the First Flight #42 validated-submissions figure added when the
+    // public rank receipt broke. The assertion is the RULE — every figure is Claim-routed — not a
+    // magic count: a hardcoded 3 fails the moment the surface honestly gains a fourth figure, which
+    // teaches the next person to edit the number rather than check the rule.
     expect(hooks).toEqual(
-      expect.arrayContaining(['codehawks-124-rank', 'codehawks-124-findings', 'codehawks-124-exp']),
+      expect.arrayContaining([
+        'codehawks-124-rank',
+        'codehawks-124-findings',
+        'codehawks-124-exp',
+        'codehawks-ff42-validated',
+      ]),
     )
+    expect(hooks.every((h) => h && h.length > 0)).toBe(true)
   })
 
   it('DeliveryAnchor: the record + credential are Claim-routed', () => {

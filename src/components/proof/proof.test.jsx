@@ -51,6 +51,20 @@ describe('CodeHawksLink — the CodeHawks #124 record (FR-044)', () => {
     }
   })
 
+  it('names the two validated findings — and never claims John WROTE the published write-ups', () => {
+    // The record's public receipt broke, so the specific replaced the aggregate: two named findings
+    // in a named contest. Cyfrin credits agilegypsy as a validated SUBMITTER on H-01 and M-01 and
+    // published nomadic_bear's and robercano's prose. Any wording implying authorship of those
+    // write-ups is a misattribution — mas/facts/PORTFOLIO_REFERENCE.md 1b was corrected for exactly
+    // that, and this is the guard that keeps it corrected.
+    render(<CodeHawksLink />)
+    const section = screen.getByRole('region', { name: /codehawks competitive audit/i })
+    expect(within(section).getByText(getClaim('codehawks-ff42-validated').value)).toBeInTheDocument()
+    expect(within(section).getByText(/validated submissions/i)).toBeInTheDocument()
+    expect(within(section).getByText(/H-01 Unrestricted NFT Minting/i)).toBeInTheDocument()
+    expect(section.textContent).not.toMatch(/\b(wrote|authored|my report|his report)\b/i)
+  })
+
   it('states where an attested record IS evidenced rather than showing bare numbers', () => {
     render(<CodeHawksLink />)
     if (tier() !== 'verified') {

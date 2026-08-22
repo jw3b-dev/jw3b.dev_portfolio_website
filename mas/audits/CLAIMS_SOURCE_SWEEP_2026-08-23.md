@@ -100,6 +100,45 @@ Current state: **7 linked receipts, all declaring what they must show, all passi
 
 ---
 
+---
+
+## Addendum — the replacement receipt, and what stopped it
+
+Acting on owner action 1 below (*publish the First Flight #42 report*) surfaced a **P0 in the
+evidence reference itself**, and the build was stopped before it shipped.
+
+`PORTFOLIO_REFERENCE §1b` said a full contest report was on file *"with two written findings"* and
+was *"publishable as a sample audit report."* Reading the actual files:
+
+- `John Wellard-Snowman-Merkle-Airdrop.md` — John's **personal** CodeHawks report — reads
+  **High: 0 · Medium: 0 · Low: 0**, and is dated **15 Jun 2025**, four days before the contest
+  closed. It is an empty mid-contest template.
+- The two write-ups §1b described are in the **contest-wide** report, where every finding lists
+  dozens of validated submitters and names one *"Selected submission by"*. For **H-01** that is
+  `nomadic_bear`; for **M-01**, `robercano`.
+
+**Publishing it as John's sample audit report would have put two other researchers' work on his
+portfolio under his name** — on the site of a security auditor, in the same week its whole subject
+was attribution. §1b is corrected.
+
+**What the report does establish, read directly:** `agilegypsy` appears in the validated-submitter
+list for **exactly two** findings and no others — **H-01 · Unrestricted NFT Minting in
+`Snowman.sol` (High)** and **M-01 · DoS to a user trying to claim a Snowman (Medium)**. A validated
+High in a public contest is real and specific. The substance was always right; the packaging was
+wrong.
+
+**Shipped instead:** a new claim `codehawks-ff42-validated` — *"2 validated findings — 1 High,
+1 Medium"* — rendered on the CodeHawks surface with both findings named, worded as **validated
+submissions** and never as authorship, with a test asserting the surface never says
+*wrote / authored*. **A named finding in a named contest is stronger evidence than the rank number
+that broke** — a reader can go and read it.
+
+Still open, and genuinely the owner's: John's own 13 write-ups in `ai/markdown/` are his work
+product against the same codebase. They could anchor an **auditor demo** (this is what my tooling
+found), but they are not contest-validated and must never be presented as if they were.
+
+---
+
 ## Owner actions
 
 1. **The CodeHawks receipt is the real loss** — it was the one independently checkable proof of the
