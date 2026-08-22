@@ -661,6 +661,34 @@ existing ~10-minute IP purge stays untouched.
 Compliance gets an explicit extra check this phase: **the site must still set zero cookies and
 zero tracking storage**, or ADR-P5-01 has been violated and the consent banner must go live.
 
+> ### ✗ P5-GATE FAILS — 2026-08-22. This check was written and never run.
+>
+> Measured on `https://jw3b.dev` (not workers.dev — see below), first visit, no interaction:
+>
+> | | Result |
+> |---|---|
+> | Cookies set | **0** ✓ |
+> | Tracking storage | **`_gcl_ls`** — Google tag load-state, written on every route including `/privacy` ✗ |
+> | Third-party tag executing | **Yes** — `window.dataLayer` / `google_tag_manager` present ✗ |
+>
+> **Mechanism.** The zone serves Google Tag Manager (property `G-BYN2TE5SEK`) from **our own
+> origin** at `/12am/` via Cloudflare's first-party tag proxy — a feature whose stated purpose is
+> to defeat the controls we rely on. `script-src 'self'` allows it because it *is* self. Our site
+> worker never sees the path (verified: our security headers are absent from that response), so
+> **this cannot be fixed in code.** The direct `googletagmanager.com` and `cloudflareinsights.com`
+> loads ARE blocked — those are the console errors the register logged as cosmetic P2 noise.
+>
+> **Why no gate caught it.** Every automated check runs against `jw3b-dev-site.agilegypsy.workers.dev`,
+> because the apex challenges GitHub runners. That origin has **no zone layer**, so zone-injected
+> anything is structurally invisible to CI. The workaround was correct and its consequence was
+> never written down. `e2e/zone-posture.spec.js` (`npm run e2e:zone`) now asserts this against the
+> real domain; it fails today, by design, and is a manual gate until CI egress can reach the apex.
+>
+> **Per this section's own rule, the decision is now live and it is John's.** Either the injection
+> goes (one zone setting — the better fix, and it restores the posture exactly as written), or the
+> consent banner ships and `/privacy` gains Google as a named recipient. Doing neither leaves the
+> site's privacy page describing a site that no longer exists.
+
 **Critical path:** `P5-01 → P5-02 → P5-03 → P5-04 → P5-GATE`, with P5-05/06/07 entering only
 as their provisioning lands.
 
