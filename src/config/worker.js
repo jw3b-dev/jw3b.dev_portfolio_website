@@ -32,6 +32,20 @@ export const AGENT_TTS_URL = `${WORKER_URL}/text-to-speech`
 export const AGENT_CTF_VERIFY_URL = `${WORKER_URL}/ctf/verify`
 export const AGENT_CTF_LEADERBOARD_URL = `${WORKER_URL}/ctf/leaderboard`
 
+/*
+ * Knowledge base — the public audit corpus (Solodit, Sherlock, DeFiHackLabs, a vulns DB),
+ * semantically searchable and traversable by relationship.
+ *
+ * These three routes shipped in the Worker, deployed and returning real data, and NOTHING in the
+ * client called them — not even these constants existed. That is the same failure the site keeps
+ * finding elsewhere (a lead written to a table nobody read, a walkthrough artifact rendered by
+ * nobody): a capability that exists and is unreachable is indistinguishable, to a visitor, from
+ * one that was never built.
+ */
+export const AGENT_KB_SEARCH_URL = `${WORKER_URL}/kb/search`
+export const AGENT_KB_RELATED_URL = `${WORKER_URL}/kb/related`
+export const AGENT_KB_STATS_URL = `${WORKER_URL}/kb/stats`
+
 // Conversion capture (book-a-call floor + engagement requests).
 export const AGENT_ENGAGEMENT_URL = `${WORKER_URL}/engagement`
 export const AGENT_BOOK_A_CALL_URL = `${WORKER_URL}/book-a-call`

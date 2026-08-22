@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react'
 import { RECORDED_RUNS } from '../../data/recorded-runs/index.js'
 import { isEnabled } from '../../config/features.js'
 import { framingOriginAllowed } from '../../config/embeds.js'
+import KthulhuCorpus from './KthulhuCorpus.jsx'
 
 // The live product host. Framing is allowed for https://jw3b.dev only (see file header).
 export const KTHULHU_URL = 'https://kthulhu.co'
@@ -111,6 +112,14 @@ export default function KthulhuEmbed({ url = KTHULHU_URL, embed = isEnabled('kth
           </a>
         </div>
       )}
+
+      {/*
+          The on-site half of this flagship. Above is KTHULHU's own origin in a frame — honest, and
+          still someone else's page. This is the product's retrieval layer running HERE, against
+          the same corpus, with no product API involved. It is what stops this card being a link
+          with a border (product-audit finding 21), and it renders whether or not the frame does.
+      */}
+      <KthulhuCorpus />
     </section>
   )
 }

@@ -82,6 +82,10 @@ export default defineConfig({
         'src/lib/meteringPolicy.js',
         'src/lib/notes.js',
         'src/lib/auditExamples.js',
+        // The KTHULHU corpus transport. Gated because its whole contract IS degradation: every
+        // failure the Worker can hand it must resolve to an honest empty rather than throw
+        // inside a flagship card, and an untested branch here is exactly the one that throws.
+        'src/lib/kbClient.js',
       ],
       // RAISED in the P5 expansion. Branches 85 -> 92 and statements 90 -> 98 for the pure
       // core, which the suite already clears — the old numbers had drifted well below actual
