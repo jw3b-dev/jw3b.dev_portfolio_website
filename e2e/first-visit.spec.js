@@ -164,3 +164,35 @@ test('/audit gives a visitor with no contract something to try', async ({ page }
   await expect(page.locator('#audit-src')).toHaveValue(/contract Vault/)
   await expect(page.locator('main')).toContainText(/Reentrancy/i)
 })
+
+test('the KTHULHU flagship does something ON this site, and attributes the corpus', async ({ page }) => {
+  /*
+   * FR-066 / finding 21. This card was a frame of kthulhu.co with an honest label, recorded for a
+   * month as owner-gated on API access it never needed. The corpus panel is the on-site half.
+   *
+   * Two things are asserted, in this order, because they fail differently:
+   *   1. ATTRIBUTION is visible before any interaction. These are other people's published
+   *      findings; a panel that could read as John's audit output is a claims violation on the
+   *      page whose argument is that claims here are governed.
+   *   2. Driving it NEVER dead-ends. This is the one test here that crosses the origin (the
+   *      corpus lives behind the Worker), and that is deliberate: the contract is that an
+   *      unreachable corpus produces a stated reason, never an empty box. Both outcomes pass,
+   *      which is what makes it safe in the build gate — it asserts the degrade, not the uptime.
+   */
+  await page.goto('/work')
+  const corpus = page.locator('section[aria-labelledby="kthulhu-corpus"]')
+  await expect(corpus).toBeVisible()
+
+  await expect(corpus).toContainText(/other people’s findings, published by their authors/i)
+  await expect(corpus).toContainText(/none of them is john’s audit work/i)
+
+  // An empty box is a dead end; the suggestions are the way in for someone with no query in mind.
+  const suggestion = corpus.getByRole('button', { name: 'reentrancy in withdraw', exact: true })
+  await expect(suggestion).toBeVisible()
+  await suggestion.click()
+
+  const live = corpus.locator('[aria-live="polite"]')
+  await expect
+    .poll(async () => ((await live.textContent()) || '').trim().length > 0, { timeout: 20_000 })
+    .toBe(true)
+})
