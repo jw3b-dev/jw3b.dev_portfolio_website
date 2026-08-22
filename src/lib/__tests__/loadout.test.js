@@ -7,6 +7,7 @@ import {
   resolveLoadout,
   OBJECTIVES,
   ENGAGEMENTS,
+  explainRecommendation,
 } from '../loadout.js'
 import RETAINER from '../../data/retainer.json'
 
@@ -130,5 +131,46 @@ describe('resolveLoadout — composes the final loadout', () => {
     expect(out.tier).toBeNull()
     expect(out.recommendedEngagement).toBe('project')
     expect(out.scope).toEqual([])
+  })
+})
+
+describe('explainRecommendation — the derivation the configurator used to discard', () => {
+  it('returns nothing for an unanswered assessment', () => {
+    expect(explainRecommendation({})).toEqual([])
+    expect(explainRecommendation()).toEqual([])
+  })
+
+  it('names every answer that carried weight, and toward which shape', () => {
+    const rows = explainRecommendation({ stage: 'shipped', urgency: 'exploring' })
+    expect(rows.length).toBeGreaterThanOrEqual(2)
+    for (const r of rows) {
+      expect(['project', 'retainer']).toContain(r.shape)
+      expect(r.weight).toBeGreaterThan(0)
+      expect(r.answer).toBeTruthy()
+    }
+  })
+
+  it('omits an answer that carries no weight — a row worth 0 explains nothing', () => {
+    // `surface: 'agentic'` has an empty vote map by design.
+    const rows = explainRecommendation({ surface: 'agentic' })
+    expect(rows).toEqual([])
+  })
+
+  it('is ordered heaviest-first and is stable for the same answers', () => {
+    const a = { stage: 'shipped', surface: 'both', urgency: 'exploring' }
+    const rows = explainRecommendation(a)
+    const weights = rows.map((r) => r.weight)
+    expect(weights).toEqual([...weights].sort((x, y) => y - x))
+    expect(explainRecommendation(a)).toEqual(rows)
+  })
+
+  it('the explanation AGREES with the recommendation it explains', () => {
+    // The rows must not argue for a shape the engine did not pick — that would be a derivation
+    // of a different answer, which is worse than no derivation.
+    const a = { stage: 'shipped', urgency: 'exploring' }
+    const { recommended } = recommendEngagement(a)
+    const totals = explainRecommendation(a).reduce((acc, r) => ({ ...acc, [r.shape]: (acc[r.shape] || 0) + r.weight }), {})
+    const winner = (totals.retainer || 0) > (totals.project || 0) ? 'retainer' : 'project'
+    expect(winner).toBe(recommended)
   })
 })

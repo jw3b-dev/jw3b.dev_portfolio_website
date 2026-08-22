@@ -87,6 +87,7 @@ export default defineConfig({
         // inside a flagship card, and an untested branch here is exactly the one that throws.
         'src/lib/kbClient.js',
         'src/lib/engagementState.js',
+        'src/lib/configuratorDraft.js',
         // The Kointel compliance rule. A detector under a claim about a real product's
         // engineering: an untested rule that silently stopped firing would leave the card
         // demonstrating a gate that passes everything.

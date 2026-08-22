@@ -11,6 +11,7 @@
  */
 import { useEffect, useState } from 'react'
 import { enqueue, flush, startAutoFlush } from '../../lib/engagementQueue.js'
+import { clearDraft } from '../../lib/configuratorDraft.js'
 import { SITE } from '../../constants/index.js'
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
@@ -65,6 +66,10 @@ export default function BookACall({ selection, loadout, onBack = () => {} }) {
     })
     setConfirmed(item) // optimistic — the floor completes regardless of network (BR-11)
     setDelivery({ state: 'sending' })
+    // The configuration has become a submission; the half-finished draft has no further purpose.
+    // Cleared HERE rather than on the step transition, so abandoning the form mid-booking still
+    // restores on reload — the draft only dies once the request actually exists.
+    clearDraft()
 
     // W1: report the REAL outcome. This surface used to say "John will follow up" the instant it
     // wrote to localStorage — on a path where the Worker kept the row and told nobody. Now the

@@ -96,6 +96,35 @@ export function recommendEngagement(assessment = {}) {
   return { recommended, scores, topSignal }
 }
 
+/*
+ * FR-029/FR-030 (brief 08, next-need 3) — WHY this recommendation, answer by answer.
+ *
+ * `recommendEngagement` already scored the assessment and `resolveLoadout` already built a one-line
+ * `rationale`; both were computed and then discarded by the UI, so the configurator presented a
+ * conclusion with no derivation. A visitor could not see which of their own answers moved it.
+ *
+ * Note what this does NOT explain: the PRICE. No tier in retainer.json is price-provisioned, so
+ * `priceLabel` honestly returns "sized on the call" and there is no figure to derive. Explaining a
+ * number that does not exist would be the opposite of the fix.
+ *
+ * Returns one row per answer that carried weight, heaviest first, with ties broken by the fixed
+ * key order so the same answers always render in the same sequence.
+ */
+export function explainRecommendation(assessment = {}) {
+  const rows = []
+  for (const key of ASSESSMENT_KEYS) {
+    const answer = assessment[key]
+    const votes = ENGAGEMENT_WEIGHTS[key]?.[answer]
+    if (!votes) continue
+    for (const [shape, weight] of Object.entries(votes)) {
+      if (!weight) continue
+      rows.push({ key, answer, shape, weight })
+    }
+  }
+  // Heaviest contribution first; ASSESSMENT_KEYS order is the stable tie-break.
+  return rows.sort((a, b) => b.weight - a.weight || ASSESSMENT_KEYS.indexOf(a.key) - ASSESSMENT_KEYS.indexOf(b.key))
+}
+
 /**
  * FR-029 — derive the indicative scope lines from the assessment. Order is stable
  * (surface → stage → urgency) so the same answers always render the same scope.

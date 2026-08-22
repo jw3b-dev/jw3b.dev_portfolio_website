@@ -105,7 +105,7 @@ export default function ChatWidget() {
         onMouseEnter={checkStatus}
         onFocus={checkStatus}
         aria-label={open ? 'Close concierge chat' : 'Open concierge chat'}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-cyan/40 bg-panel text-cyan shadow-lg motion-safe:transition-transform motion-safe:hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+        className="fixed bottom-5 right-5 z-overlay flex h-14 w-14 items-center justify-center rounded-full border border-cyan/40 bg-panel text-cyan shadow-lg motion-safe:transition-transform motion-safe:hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
       >
         <span aria-hidden="true" className="text-xl font-semibold">
           {open ? '×' : 'AI'}
@@ -134,7 +134,7 @@ export default function ChatWidget() {
         <section
           role="dialog"
           aria-label="AI concierge"
-          className="fixed bottom-24 right-5 z-50 flex h-[32rem] max-h-[70vh] w-[22rem] max-w-[92vw] flex-col overflow-hidden rounded-2xl border border-hairline bg-panel/95 backdrop-blur"
+          className="fixed bottom-24 right-5 z-overlay flex h-[32rem] max-h-[70vh] w-[22rem] max-w-[92vw] flex-col overflow-hidden rounded-2xl border border-hairline bg-panel/95 backdrop-blur"
         >
           <header className="flex items-start justify-between gap-2 border-b border-hairline px-4 py-3">
             <div>

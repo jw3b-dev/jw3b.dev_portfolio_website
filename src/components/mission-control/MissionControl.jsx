@@ -12,7 +12,8 @@
  * are printed ONLY from retainer.json (never free-typed); unprovisioned tiers say so honestly.
  */
 import { useEffect, useState } from 'react'
-import { resolveLoadout, recommendEngagement } from '../../lib/loadout.js'
+import { resolveLoadout, recommendEngagement, explainRecommendation } from '../../lib/loadout.js'
+import { loadDraft, saveDraft } from '../../lib/configuratorDraft.js'
 import ProgressRail from './ProgressRail.jsx'
 import CheckoutStateMachine from './CheckoutStateMachine.jsx'
 
@@ -123,12 +124,28 @@ function OptionCard({ selected, recommended, onClick, dot, text, title, desc }) 
 }
 
 export default function MissionControl({ className = '', onBook = () => {} }) {
-  const [step, setStep] = useState(0)
-  const [maxReached, setMaxReached] = useState(0)
-  const [objective, setObjective] = useState(null)
-  const [assessment, setAssessment] = useState({}) // { stage, surface, urgency }
-  const [engagement, setEngagement] = useState(null)
+  /*
+   * Restore a half-finished configuration (brief 08, next-need 1). Read ONCE, lazily, so the
+   * first render already has the answers — a useEffect restore would paint step 1 and then jump,
+   * which reads as a glitch rather than as "we kept your place".
+   *
+   * sessionStorage, answers only, no contact details — see configuratorDraft.js for why that
+   * keeps the site's no-consent-banner posture intact.
+   */
+  const restored = useState(() => loadDraft())[0]
+
+  const [step, setStep] = useState(restored.step ?? 0)
+  const [maxReached, setMaxReached] = useState(restored.step ?? 0)
+  const [objective, setObjective] = useState(restored.objective ?? null)
+  const [assessment, setAssessment] = useState(restored.assessment ?? {}) // { stage, surface, urgency }
+  const [engagement, setEngagement] = useState(restored.engagement ?? null)
   const [booking, setBooking] = useState(false)
+
+  // Persist on every change. Cheap (one small JSON write) and it means the draft is never stale
+  // relative to what is on screen.
+  useEffect(() => {
+    saveDraft({ objective, engagement, assessment, step })
+  }, [objective, engagement, assessment, step])
 
   /*
    * Honour the arrival hash. The concierge's hire tool-call has always routed to
@@ -164,6 +181,7 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
   // P1-18 engine owns the recommendation + price provenance. `recommended` (assessment-driven,
   // FR-029) flags the engagement Step 3; `loadout` composes the final Step 4.
   const recommended = objective ? recommendEngagement(assessment).recommended : null
+  const why = explainRecommendation(assessment)
   const loadout = objective && engagement ? resolveLoadout({ objective, engagement, assessment }) : null
   const tier = loadout?.tier ?? null
 
@@ -334,6 +352,32 @@ export default function MissionControl({ className = '', onBook = () => {} }) {
                   {/* FR-030/BR-12: price comes only from the engine, which copies retainer.json. */}
                   <p className="mt-1 font-mono text-sm text-content-primary">{loadout.price.text}</p>
                 </div>
+
+                {/*
+                    WHY this shape (brief 08, next-need 3). The engine already scored the answers
+                    and built a rationale; both were computed and thrown away, so the panel showed
+                    a conclusion with no derivation and read as a quote rather than a calculation.
+                    It explains the RECOMMENDATION, not the price — no tier is price-provisioned,
+                    so there is no figure to derive and inventing one would be the opposite of the fix.
+                */}
+                {why.length > 0 && (
+                  <details className="mt-4 border-t border-hairline pt-3">
+                    <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-label text-content-muted hover:text-content-secondary">
+                      Why a {loadout.recommendedEngagement}?
+                    </summary>
+                    <ul className="mt-2 flex flex-col gap-1">
+                      {why.map((r) => (
+                        <li key={`${r.key}-${r.shape}`} className="text-sm text-content-secondary">
+                          You said <span className="text-content-primary">&ldquo;{r.answer}&rdquo;</span> — that
+                          weighs {r.weight} toward <span className="text-content-primary">{r.shape}</span>.
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-xs text-content-muted">
+                      Nothing here is binding. The real scope is agreed on the call.
+                    </p>
+                  </details>
+                )}
               </div>
             ) : (
               <p className="mt-4 text-sm text-content-secondary">
