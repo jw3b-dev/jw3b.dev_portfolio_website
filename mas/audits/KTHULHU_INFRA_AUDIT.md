@@ -545,33 +545,42 @@ why the jw3b.dev route is counts-only and a test asserts it never names these ta
 
 ## 6. What jw3b.dev should say
 
-**✎ RETRACTED 2026-08-22 — this section fused two different products.** It said *"the `/work`
-Overmind stepper shows an invented 13-stage pipeline; it should show the real one"* and then
-described **KTHULHU's** four phases. But that stepper is not about KTHULHU. `overmindPipeline.js`
-models **Overmind** — the multi-agent orchestration engine in `MB-agentic`, a separate product —
-and its register claim carries `source_system: "Overmind"`. Rendering KTHULHU's phases there would
-have attributed one system's architecture to another and made the site *less* accurate.
+**✎ THE RETRACTION OF THIS SECTION IS ITSELF RETRACTED — 2026-08-22, owner-corrected.**
 
-The name is overloaded and that is what caught me: KTHULHU's product name is "KTHULHU Overmind",
-its orchestrator worker is `kthulhu-overmind`, and its Workflow class is `OvermindWorkflow` — while
-"Overmind" on `/work` is a different engine entirely. Same error class as the rest of this
-document: an instrument (here, a name) returned a confident match across a boundary it could not
-see.
+Earlier today I withdrew this section, arguing it had fused two products: that `/work`'s Overmind
+stepper models **MB-agentic** (a separate engine also called "Overmind"), so rendering KTHULHU's
+phases there would misattribute one system to another. **That was wrong, and it is the worst error
+in this document** — I acted on it and shipped MB-agentic's DSDM project-management lifecycle onto
+the card describing KTHULHU's audit engine. Real phases, wrong system.
 
-**What is still true, and is a separate finding:** the stepper's 13 stage names — `ingest`,
-`classify`, `retrieve`, `plan`, `draft`, `critique`, `revise`, `validate`, `test`, `govern`,
-`approve`, `record`, `deliver` — appear **nowhere** in Overmind's source. They are neither
-KTHULHU's nor Overmind's. Overmind's real model is DSDM/AgilePM:
-`.agents/orchestrator/lifecycle.ts:20` defines six project phases (`PRE_PROJECT`, `FEASIBILITY`,
-`FOUNDATIONS`, `EVOLUTIONARY`, `DEPLOYMENT`, `POST_PROJECT`), `products.ts:302` defines the
-baselined gate products for each, and `director.ts:94` defines the three-part timebox cycle
-(`INVESTIGATION → REFINEMENT → CONSOLIDATION`) inside evolutionary development. That is what the
-stepper should render, and it is tracked on the jw3b.dev side, not here.
+**What settled it, and was available the whole time.** The stepper's original `STAGE_DETAIL` is
+audit-domain, unmistakably:
 
-**And what KTHULHU's own surface should say**, which is what this section should have been about:
-`/work`'s KTHULHU panel should show **two lanes** — Cloudflare orchestration and box execution —
-with the real gates (kill-gate vote, review gate), the real deadlines, and FV honestly marked as
-the async step whose verdict may not land.
+| stage | emits / checks |
+|---|---|
+| `classify` | "Domain + **severity** labels" |
+| `draft` | "First-pass **findings**" |
+| `critique` | "Does any **finding fail to reproduce**?" |
+| `validate` | "Does every finding **cite real evidence**?" |
+| `test` | "Does the **exploit** actually run?" |
+| `approve` | "**Human-in-the-loop** decision — has a person signed this off?" |
+
+Severity, findings, exploits, human sign-off, "Report + API payload". That is this pipeline —
+`critique` → adversary/red-team pass, `validate` → the **kill-gate vote**, `test` → fuzzing and FV,
+`approve` → the **review gate**. The thirteen names were invented, but they were a paraphrase of
+**KTHULHU's** pipeline, not of anything in MB-agentic.
+
+**The error I made was the one this document is about.** I discriminated on the *name* "Overmind"
+— which genuinely denotes two systems in this portfolio — instead of on what the stages describe.
+A name is an instrument, and it returned a confident match across a boundary it could not see, the
+same shape as `wrangler.toml` vs `wrangler.overmind.toml`, the singular vs plural scraper, and a
+literal grep for a flag read through a lookup table. Four instances now, and this is the only one
+where I shipped the wrong answer before catching it.
+
+**So this section stands as originally written**, and is now built: `/work` renders KTHULHU's four
+phases and 21 recorded steps across **two lanes** — Cloudflare orchestration and box execution —
+with both real gates (kill-gate vote, review gate), the per-job deadline budgets, the watchdog
+re-enqueue, and FV honestly marked as the async step whose verdict may not land.
 
 "Multi-agent pipeline" is a claim every AI product makes. "Cloudflare Workers orchestrating
 containerised Foundry/Halmos/Medusa jobs on self-hosted infrastructure, with queue dispatch,

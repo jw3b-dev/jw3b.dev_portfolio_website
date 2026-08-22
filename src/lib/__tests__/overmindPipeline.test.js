@@ -1,150 +1,148 @@
 /*
- * FR-006 — Overmind's DSDM lifecycle model.
+ * FR-006 — KTHULHU Overmind's real pipeline.
  *
- * Rewritten 2026-08-22 with the model. Every expected value here is transcribed from Overmind's
- * own source (lifecycle.ts PROJECT_PHASES/PHASE_PLANS, products.ts PHASE_GATES/evaluatePhaseGate,
- * director.ts TIMEBOX_PHASES) — so these tests fail if the site's copy drifts from the engine it
- * describes, which is a failure the previous thirteen invented stage names could not produce.
+ * Rebuilt 2026-08-22 with the model, second pass. Every expected value is transcribed from
+ * `mas/audits/KTHULHU_INFRA_AUDIT.md` §2, which read them from KTHULHU's `lib/ui/display.ts`
+ * (PIPELINE_STEPS, STEP_META) and `lib/engine/phases/`. These fail if the site's copy drifts from
+ * the system it describes.
+ *
+ * The two-lane split gets its own assertions on purpose: it is the differentiating claim, and a
+ * model that silently collapsed every step onto one lane would still render and still step.
  */
 import { describe, it, expect } from 'vitest'
 import {
   OVERMIND_PHASES,
-  TOTAL_PHASES,
-  TIMEBOX_PHASES,
-  gateCount,
-  phaseGateProducts,
-  evaluatePhaseGate,
-  seedTasks,
-  baseline,
-  phaseStatus,
+  OVERMIND_STEPS,
+  TOTAL_STEPS,
+  LANES,
+  GATES,
+  DEADLINES_MIN,
+  stepStatus,
   advance,
   reset,
   isComplete,
   gatesPassed,
-  phaseDetail,
+  gateCount,
+  stepDetail,
+  laneSteps,
+  phaseProgress,
 } from '../overmindPipeline.js'
 
-const FOUNDATIONS = 2
-const EVOLUTIONARY = 3
-
-describe("FR-006: the phases are Overmind's, not a generic agent pipeline", () => {
-  it('is the six DSDM project phases in lifecycle order', () => {
-    expect(OVERMIND_PHASES.map((p) => p.id)).toEqual([
-      'pre-project', 'feasibility', 'foundations', 'evolutionary', 'deployment', 'post-project',
-    ])
-    expect(TOTAL_PHASES).toBe(6)
+describe('FR-006: the phases are KTHULHU’s, in order', () => {
+  it('is the four recorded phases', () => {
+    expect(OVERMIND_PHASES.map((p) => p.id)).toEqual(['triage', 'ensemble', 'verification', 'reporting'])
   })
 
-  it('carries the timebox cycle as a sub-structure, never as extra phases', () => {
-    expect(TIMEBOX_PHASES).toEqual(['Investigation', 'Refinement', 'Consolidation'])
-    // Exploration/Engineering are activities inside evolutionary development. If they ever leak
-    // into the spine, six phases silently becomes a longer list.
-    expect(OVERMIND_PHASES.map((p) => p.id)).not.toContain('exploration')
-    expect(OVERMIND_PHASES).toHaveLength(6)
+  it('carries ~20 recorded steps, with Ensemble the widest phase', () => {
+    expect(TOTAL_STEPS).toBe(21)
+    expect(OVERMIND_PHASES.find((p) => p.id === 'ensemble').steps).toHaveLength(14)
+    expect(OVERMIND_PHASES.find((p) => p.id === 'verification').steps).toHaveLength(3)
   })
 
-  it('gates exactly the three phases PHASE_GATES gates, with their real products', () => {
-    expect(gateCount()).toBe(3)
-    expect(phaseGateProducts(1)).toEqual(['feasibility-assessment'])
-    expect(phaseGateProducts(FOUNDATIONS)).toEqual(['foundations-summary', 'prl', 'delivery-plan'])
-    expect(phaseGateProducts(4)).toEqual(['project-review-report'])
-  })
-
-  it('gives every ungated phase a documented reason, so absent never reads as forgotten', () => {
-    for (const p of OVERMIND_PHASES) {
-      if (p.gateProducts.length === 0) expect(p.noGateReason).toBeTruthy()
-      else expect(p.noGateReason).toBeNull()
+  it('names the steps KTHULHU names, not paraphrases of them', () => {
+    const ids = OVERMIND_STEPS.map((s) => s.id)
+    for (const id of ['attack-surface-scoping', 'static-grounding', 'claude-discovery',
+      'static-adjudication', 'kill-gate-vote', 'scenario-decomposition', 'fv-dispatch', 'review-gate']) {
+      expect(ids).toContain(id)
+    }
+    // The v1 invention must never come back. Audit-domain semantics were right; these names were not.
+    for (const invented of ['ingest', 'classify', 'retrieve', 'draft', 'critique', 'revise', 'govern', 'approve']) {
+      expect(ids).not.toContain(invented)
+    }
+    // Nor the v2 error: MB-agentic's DSDM lifecycle is a DIFFERENT product also called "Overmind".
+    for (const wrongSystem of ['pre-project', 'feasibility', 'foundations', 'evolutionary', 'post-project']) {
+      expect(ids).not.toContain(wrongSystem)
     }
   })
+})
 
-  it('returns empty/null for an out-of-range phase rather than throwing', () => {
-    expect(phaseGateProducts(99)).toEqual([])
-    expect(seedTasks(99)).toEqual([])
-    expect(phaseDetail(99)).toBeNull()
+describe('FR-006: the two-lane split is the differentiating claim', () => {
+  it('every step declares a lane', () => {
+    for (const s of OVERMIND_STEPS) expect([LANES.CLOUD, LANES.BOX]).toContain(s.lane)
+  })
+
+  it('both lanes carry real work — a collapse to one lane is the failure to catch', () => {
+    expect(laneSteps(LANES.BOX).length).toBeGreaterThan(0)
+    expect(laneSteps(LANES.CLOUD).length).toBeGreaterThan(0)
+    expect(laneSteps(LANES.BOX).length + laneSteps(LANES.CLOUD).length).toBe(TOTAL_STEPS)
+  })
+
+  it('Verification runs entirely on the box; Reporting entirely in the cloud', () => {
+    const verification = OVERMIND_PHASES.find((p) => p.id === 'verification')
+    expect(verification.steps.every((s) => s.lane === LANES.BOX)).toBe(true)
+    const reporting = OVERMIND_PHASES.find((p) => p.id === 'reporting')
+    expect(reporting.steps.every((s) => s.lane === LANES.CLOUD)).toBe(true)
+  })
+
+  it('FV dispatch is marked async — its verdict may not land', () => {
+    expect(OVERMIND_STEPS.find((s) => s.id === 'fv-dispatch').async).toBe(true)
   })
 })
 
-describe('FR-006: the governance gate refuses, and names what is missing', () => {
-  it('refuses while any gate product is unbaselined, listing exactly those', () => {
-    expect(evaluatePhaseGate(FOUNDATIONS, [])).toEqual({
-      allowed: false, missing: ['foundations-summary', 'prl', 'delivery-plan'],
-    })
-    expect(evaluatePhaseGate(FOUNDATIONS, ['prl'])).toEqual({
-      allowed: false, missing: ['foundations-summary', 'delivery-plan'],
-    })
+describe('FR-006: the two real gates, transcribed not summarised', () => {
+  it('has exactly two gates: the kill-gate vote and the review gate', () => {
+    expect(gateCount()).toBe(2)
+    expect(OVERMIND_STEPS.filter((s) => s.gate).map((s) => s.id)).toEqual(['kill-gate-vote', 'review-gate'])
   })
 
-  it('allows only when EVERY gate product is baselined', () => {
-    const all = ['foundations-summary', 'prl', 'delivery-plan']
-    expect(evaluatePhaseGate(FOUNDATIONS, all)).toEqual({ allowed: true, missing: [] })
+  it('the kill gate is asymmetric and persists its refutation reason', () => {
+    expect(GATES.kill.outcome).toMatch(/dropped_fp/)
+    expect(GATES.kill.outcome).toMatch(/never silently lost/i)
+    expect(GATES.kill.asymmetry).toMatch(/false negative is far worse/i)
+    expect(GATES.kill.scope).toMatch(/deep tier only/i)
   })
 
-  it('an ungated phase always allows', () => {
-    expect(evaluatePhaseGate(EVOLUTIONARY, [])).toEqual({ allowed: true, missing: [] })
-    expect(evaluatePhaseGate(EVOLUTIONARY)).toEqual({ allowed: true, missing: [] })
+  it('the review gate DERIVES status, and holds delivery on an unconfirmed high', () => {
+    expect(GATES.review.mechanism).toMatch(/derived/i)
+    expect(GATES.review.outcome).toMatch(/awaiting_review/)
+    expect(GATES.review.outcome).toMatch(/HELD/i)
+    // awaiting_review means it FOUND something — the inversion that once understated findings 12x.
+    expect(GATES.review.asymmetry).toMatch(/found something serious/i)
   })
 
-  it('advance is BLOCKED by an unmet gate and carries the reason', () => {
-    expect(advance(1, [])).toEqual({ step: 1, advanced: false, missing: ['feasibility-assessment'] })
-  })
-
-  it('advance succeeds once the gate is satisfied', () => {
-    expect(advance(1, ['feasibility-assessment'])).toEqual({ step: 2, advanced: true, missing: [] })
-  })
-
-  it('advance through an ungated phase is never blocked', () => {
-    expect(advance(0, [])).toEqual({ step: 1, advanced: true, missing: [] })
-    expect(advance(0)).toEqual({ step: 1, advanced: true, missing: [] })
-  })
-
-  it('advance past the end is a no-op, not an overflow', () => {
-    expect(advance(TOTAL_PHASES, [])).toEqual({ step: TOTAL_PHASES, advanced: false, missing: [] })
+  it('counts gates only once passed', () => {
+    expect(gatesPassed(0)).toBe(0)
+    expect(gatesPassed(TOTAL_STEPS)).toBe(2)
   })
 })
 
-describe('FR-006: product baselining', () => {
-  it('seeds only the products not already baselined', () => {
-    expect(seedTasks(1, [])).toEqual(['feasibility-assessment'])
-    expect(seedTasks(1, ['feasibility-assessment'])).toEqual([])
-    expect(seedTasks(FOUNDATIONS, ['prl', 'sad'])).toEqual([
-      'business-case', 'dad', 'delivery-plan', 'mad', 'foundations-summary',
-    ])
-    expect(seedTasks(1)).toEqual(['feasibility-assessment'])
-  })
-
-  it('baseline is pure and idempotent', () => {
-    const before = ['prl']
-    const after = baseline(before, 'sad')
-    expect(after).toEqual(['prl', 'sad'])
-    expect(before).toEqual(['prl']) // not mutated
-    expect(baseline(after, 'sad')).toBe(after) // re-baselining does not duplicate
+describe('FR-006: deadlines and the watchdog', () => {
+  it('carries the per-job budgets, longest to shortest', () => {
+    expect(DEADLINES_MIN.fv).toBe(90)
+    expect(DEADLINES_MIN.medusa).toBe(90)
+    expect(DEADLINES_MIN.slither).toBe(20)
+    expect(DEADLINES_MIN.builder).toBe(15)
+    expect(Math.max(...Object.values(DEADLINES_MIN))).toBe(90)
   })
 })
 
 describe('FR-006: stepper mechanics', () => {
-  it('reports passed / active / pending around the current step', () => {
-    expect(phaseStatus(0, 1)).toBe('passed')
-    expect(phaseStatus(1, 1)).toBe('active')
-    expect(phaseStatus(2, 1)).toBe('pending')
+  it('reports done / running / pending around the current step', () => {
+    expect(stepStatus(0, 1)).toBe('done')
+    expect(stepStatus(1, 1)).toBe('running')
+    expect(stepStatus(2, 1)).toBe('pending')
   })
 
-  it('counts only the gates actually cleared', () => {
-    expect(gatesPassed(0)).toBe(0)
-    expect(gatesPassed(2)).toBe(1)            // feasibility behind us
-    expect(gatesPassed(TOTAL_PHASES)).toBe(3) // all three
-  })
-
-  it('completes only after the final phase', () => {
-    expect(isComplete(TOTAL_PHASES - 1)).toBe(false)
-    expect(isComplete(TOTAL_PHASES)).toBe(true)
-  })
-
-  it('reset returns to the first phase', () => {
+  it('advances, clamps at the end, and resets', () => {
+    expect(advance(0)).toBe(1)
+    expect(advance(TOTAL_STEPS)).toBe(TOTAL_STEPS)
     expect(reset()).toBe(0)
+    expect(isComplete(TOTAL_STEPS - 1)).toBe(false)
+    expect(isComplete(TOTAL_STEPS)).toBe(true)
   })
 
-  it('phaseDetail carries the index and whether the phase is gated', () => {
-    expect(phaseDetail(FOUNDATIONS)).toMatchObject({ id: 'foundations', index: FOUNDATIONS, hasGate: true })
-    expect(phaseDetail(EVOLUTIONARY)).toMatchObject({ id: 'evolutionary', hasGate: false })
+  it('stepDetail carries the phase, the lane and the gate body', () => {
+    const killIdx = OVERMIND_STEPS.findIndex((s) => s.id === 'kill-gate-vote')
+    const d = stepDetail(killIdx)
+    expect(d).toMatchObject({ id: 'kill-gate-vote', phase: 'ensemble', lane: LANES.CLOUD })
+    expect(d.gateDetail.label).toBe('Kill gate')
+    expect(stepDetail(999)).toBeNull()
+    expect(stepDetail(0).gateDetail).toBeNull()
+  })
+
+  it('phaseProgress tracks position within a phase', () => {
+    expect(phaseProgress('triage', 0)).toEqual({ done: 0, total: 2, active: true })
+    expect(phaseProgress('triage', TOTAL_STEPS)).toEqual({ done: 2, total: 2, active: false })
+    expect(phaseProgress('nope', 0)).toBeNull()
   })
 })
