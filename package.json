@@ -17,6 +17,8 @@
     "reachability-gate": "node scripts/reachability-gate.mjs",
     "drift-gate": "node scripts/drift-gate.mjs",
     "claims-lock": "node scripts/claims-lock.mjs",
+    "receipt-check": "node scripts/receipt-check.mjs",
+    "receipt-check:net": "node scripts/receipt-check.mjs --net",
     "e2e:zone": "playwright test --config config/playwright.zone.config.js",
     "seed:kv": "node scripts/seed-kv-runs.mjs",
     "gen:knowledge": "node scripts/gen-knowledge.mjs",

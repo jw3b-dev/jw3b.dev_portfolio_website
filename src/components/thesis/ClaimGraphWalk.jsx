@@ -16,6 +16,9 @@
 import { useMemo, useState } from 'react'
 import { buildClaimGraph, neighbours, graphStats, NODE_KIND } from '../../lib/claimGraph.js'
 
+/** A pointer is only a receipt if it is a URL — mirrors claimsRegister.evidenceKind. */
+const isUrl = (p) => typeof p === 'string' && /^https?:\/\//i.test(p.trim())
+
 const NODE_BTN =
   'w-full rounded-md border border-hairline px-3 py-2 text-left motion-safe:transition-colors hover:border-cyan/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan'
 
@@ -61,7 +64,15 @@ export default function ClaimGraphWalk() {
           {current.value ? `${current.value} — ` : ''}
           {current.label}
         </p>
-        {current.evidence && (
+        {/*
+            An attested pointer is PROSE, not a URL — and this rendered it into an href regardless,
+            producing an anchor that navigates to a relative path built out of a sentence. It went
+            unnoticed while every pointer happened to be a URL; the moment a broken receipt was
+            downgraded to attestation (CLAIMS_SOURCE_SWEEP_2026-08-23), the walk started offering
+            links that go nowhere. On a page arguing that evidence should be checkable, that is the
+            worst possible place for a fake link. Same rule as <Claim>: only a URL gets an anchor.
+        */}
+        {current.evidence && isUrl(current.evidence) && (
           <a
             href={current.evidence}
             target="_blank"
@@ -70,6 +81,12 @@ export default function ClaimGraphWalk() {
           >
             {current.evidence}
           </a>
+        )}
+        {current.evidence && !isUrl(current.evidence) && (
+          <p className="mt-1 break-words font-mono text-[11px] text-content-muted">
+            <span className="text-caution" title="attested, not independently checkable">&dagger;</span>{' '}
+            {current.evidence}
+          </p>
         )}
       </div>
 

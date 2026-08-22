@@ -70,6 +70,17 @@ jobs:
       - name: Claims lock (a cleared figure may not change silently)
         run: npm run claims-lock
 
+      # claims-gate proves a rendered figure matches the register; claims-lock proves the register
+      # has not drifted. NEITHER can tell you the URL a claim cites actually shows the claim — and
+      # that gap shipped: three CodeHawks claims linked a profile reading "Ranking: Unranked ·
+      # Total Findings High 0 Med 0 Low 0", four KTHULHU ledger figures linked a marketing page
+      # showing none of them. Eight receipts, all HTTP 200, none evidencing anything.
+      # The blocking half is deterministic (every linked receipt must declare what it has to show);
+      # the fetching half is `receipt-check:net`, deliberately out of the blocking path because a
+      # third party's outage is not our regression.
+      - name: Receipt check (a 200 is not a receipt)
+        run: npm run receipt-check
+
       # Product-audit findings 12/13/14 were one defect: a rename that swept the console but not
       # the surfaces describing it. Fixed by hand, with nothing stopping the old names returning.
       - name: Copy gate (permanent naming ban)

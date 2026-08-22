@@ -49,11 +49,47 @@ describe('ClaimGraphWalk — a graph you can actually walk', () => {
   })
 
   it('ends at checkable evidence — a walk that proves nothing is decoration', () => {
+    // ✎ STRENGTHENED 2026-08-23. This asserted `links[0]` was a URL, which passed only because
+    // every pointer happened to be one. The component rendered `current.evidence` into an href
+    // unconditionally, so the first ATTESTED pointer turned the walk's payoff into an anchor
+    // pointing at a relative path made of a sentence — on the page arguing evidence is checkable.
+    // The invariant is now the one that was actually broken: nothing prose-shaped may be a link.
     render(<ClaimGraphWalk />)
+    // queryAll, not getAll: the opening node may legitimately be an attested claim with no link,
+    // and "there are zero fake links" is a pass, not a missing element.
+    const links = screen.queryAllByRole('link')
+    for (const a of links) {
+      expect(a.getAttribute('href')).toMatch(/^https?:\/\//)
+      expect(a).toHaveAttribute('rel', expect.stringContaining('noopener'))
+    }
+  })
+
+  it('walks to a URL-backed claim and offers the receipt as a real link', () => {
+    render(<ClaimGraphWalk />)
+    const list = screen.getByText(/start from another claim/i).closest('details')
+    const target = within(list)
+      .getAllByRole('button')
+      .find((b) => /Neo4j Certified Professional/i.test(b.textContent))
+    expect(target).toBeDefined()
+    fireEvent.click(target)
     const links = screen.getAllByRole('link')
-    expect(links.length).toBeGreaterThan(0)
-    expect(links[0].getAttribute('href')).toMatch(/^https?:\/\//)
-    expect(links[0]).toHaveAttribute('rel', expect.stringContaining('noopener'))
+    expect(links.some((a) => /^https?:\/\//.test(a.getAttribute('href')))).toBe(true)
+  })
+
+  it('walks to an ATTESTED claim and marks it rather than faking a link', () => {
+    // The CodeHawks record is attested since its public receipt started contradicting the claim
+    // (mas/audits/CLAIMS_SOURCE_SWEEP_2026-08-23.md). The walk must say so, not link to prose.
+    render(<ClaimGraphWalk />)
+    const list = screen.getByText(/start from another claim/i).closest('details')
+    const target = within(list)
+      .getAllByRole('button')
+      .find((b) => /#124/.test(b.textContent))
+    expect(target).toBeDefined()
+    fireEvent.click(target)
+    expect(screen.getByText(/owner-attested/i)).toBeInTheDocument()
+    for (const a of screen.queryAllByRole('link')) {
+      expect(a.getAttribute('href')).toMatch(/^https?:\/\//)
+    }
   })
 
   it('lets you jump to any claim, so the walk is not a single guided rail', () => {

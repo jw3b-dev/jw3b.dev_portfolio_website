@@ -5,24 +5,27 @@
       "value": "#124",
       "label": "CodeHawks — competitive-audit rank",
       "status": "cleared",
-      "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy",
-      "source_system": "CodeHawks / Cyfrin"
+      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising) + the full First Flight #42 contest report on file (contest: codehawks.cyfrin.io/c/2025-06-snowman-merkle-airdrop)",
+      "source_system": "CodeHawks / Cyfrin",
+      "reconciliation_note": "Downgraded from a URL receipt 2026-08-23. The pointer was https://profiles.cyfrin.io/u/agilegypsy, which renders as a clickable 'View the receipt' link. That page today shows 'Ranking: Unranked', 'Total Findings High 0 Med 0 Low 0' and '0 USDC' to a logged-out visitor — it CONTRADICTS the claim it was cited for. codehawks.cyfrin.io/profile/agilegypsy redirects to /contests, /u/agilegypsy 404s, and profiles.cyfrin.io/u/agilegypsy/codehawks redirects to /login, so Cyfrin appears to gate or to have dropped public competition stats. The CREDENTIAL is unaffected and documented (mas/facts/PORTFOLIO_REFERENCE.md 1b: two dated stats cards showing the trend, plus a written contest report). Only the receipt was broken, and a broken receipt on an auditor's headline credential is worse than no receipt. Restore the URL the moment Cyfrin shows the record publicly again."
     },
     {
       "id": "codehawks-124-findings",
       "value": "17 findings",
       "label": "CodeHawks #124 — findings (8 High · 5 Medium · 4 Low)",
       "status": "cleared",
-      "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy",
-      "source_system": "CodeHawks / Cyfrin"
+      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising) + the full First Flight #42 contest report on file (contest: codehawks.cyfrin.io/c/2025-06-snowman-merkle-airdrop)",
+      "source_system": "CodeHawks / Cyfrin",
+      "reconciliation_note": "Downgraded from a URL receipt 2026-08-23. The pointer was https://profiles.cyfrin.io/u/agilegypsy, which renders as a clickable 'View the receipt' link. That page today shows 'Ranking: Unranked', 'Total Findings High 0 Med 0 Low 0' and '0 USDC' to a logged-out visitor — it CONTRADICTS the claim it was cited for. codehawks.cyfrin.io/profile/agilegypsy redirects to /contests, /u/agilegypsy 404s, and profiles.cyfrin.io/u/agilegypsy/codehawks redirects to /login, so Cyfrin appears to gate or to have dropped public competition stats. The CREDENTIAL is unaffected and documented (mas/facts/PORTFOLIO_REFERENCE.md 1b: two dated stats cards showing the trend, plus a written contest report). Only the receipt was broken, and a broken receipt on an auditor's headline credential is worse than no receipt. Restore the URL the moment Cyfrin shows the record publicly again."
     },
     {
       "id": "codehawks-124-exp",
       "value": "1,430 EXP",
       "label": "CodeHawks #124 — competitive-audit EXP",
       "status": "cleared",
-      "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy",
-      "source_system": "CodeHawks / Cyfrin"
+      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising) + the full First Flight #42 contest report on file (contest: codehawks.cyfrin.io/c/2025-06-snowman-merkle-airdrop)",
+      "source_system": "CodeHawks / Cyfrin",
+      "reconciliation_note": "Downgraded from a URL receipt 2026-08-23. The pointer was https://profiles.cyfrin.io/u/agilegypsy, which renders as a clickable 'View the receipt' link. That page today shows 'Ranking: Unranked', 'Total Findings High 0 Med 0 Low 0' and '0 USDC' to a logged-out visitor — it CONTRADICTS the claim it was cited for. codehawks.cyfrin.io/profile/agilegypsy redirects to /contests, /u/agilegypsy 404s, and profiles.cyfrin.io/u/agilegypsy/codehawks redirects to /login, so Cyfrin appears to gate or to have dropped public competition stats. The CREDENTIAL is unaffected and documented (mas/facts/PORTFOLIO_REFERENCE.md 1b: two dated stats cards showing the trend, plus a written contest report). Only the receipt was broken, and a broken receipt on an auditor's headline credential is worse than no receipt. Restore the URL the moment Cyfrin shows the record publicly again."
     },
     {
       "id": "graphrag-retriever-uplift",
@@ -90,8 +93,9 @@
       "value": "112+ merged PRs",
       "label": "KTHULHU — merged pull requests (CR-07)",
       "status": "cleared",
-      "evidence_pointer": "https://kthulhu.co",
-      "source_system": "KTHULHU"
+      "evidence_pointer": "owner-attested — KTHULHU repository (closed source; not publicly countable)",
+      "source_system": "KTHULHU",
+      "reconciliation_note": "Downgraded from https://kthulhu.co 2026-08-23: the repo is closed, so a merged-PR count cannot be publicly checked and the homepage does not show it."
     },
     {
       "id": "kthulhu-paying-users",
@@ -226,32 +230,36 @@
       "value": "20+ plants · 7 countries",
       "label": "Two decades of water-infrastructure delivery across 7 countries",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — named industrial-plant register (docs/PORTFOLIO_REFERENCE §2)",
-      "source_system": "Total Water Solutions / Designed Bio Solutions"
+      "evidence_pointer": "owner-attested — named industrial-plant register (mas/facts/PORTFOLIO_REFERENCE.md 2)",
+      "source_system": "Total Water Solutions / Designed Bio Solutions",
+      "reconciliation_note": "Path corrected 2026-08-23: the pointer cited docs/PORTFOLIO_REFERENCE, which is not a file in this repo. The register lives at mas/facts/PORTFOLIO_REFERENCE.md."
     },
     {
       "id": "kthulhu-audits-run",
       "value": "75 audits",
       "label": "KTHULHU — audits run to a terminal state (CR-11)",
       "status": "cleared",
-      "evidence_pointer": "https://kthulhu.co",
-      "source_system": "KTHULHU"
+      "evidence_pointer": "owner-attested — KTHULHU production ledger read, transcribed in mas/audits/KTHULHU_INFRA_AUDIT.md (2,056 findings across 75 audits)",
+      "source_system": "KTHULHU",
+      "reconciliation_note": "Downgraded from https://kthulhu.co 2026-08-23. These are internal-ledger figures; the product homepage does not display any of them, so the URL rendered a 'View the receipt' link to a page that does not evidence the number. Verified instead against the ledger read in mas/audits/KTHULHU_INFRA_AUDIT.md, which is the actual source."
     },
     {
       "id": "kthulhu-fv-proven",
       "value": "76 findings",
       "label": "KTHULHU — findings whose exploit REPRODUCED under formal verification (fv_verdict='proven') across 75 audits (CR-12)",
       "status": "cleared",
-      "evidence_pointer": "https://kthulhu.co",
-      "source_system": "KTHULHU"
+      "evidence_pointer": "owner-attested — KTHULHU production ledger read, transcribed in mas/audits/KTHULHU_INFRA_AUDIT.md (2,056 findings across 75 audits)",
+      "source_system": "KTHULHU",
+      "reconciliation_note": "Downgraded from https://kthulhu.co 2026-08-23. These are internal-ledger figures; the product homepage does not display any of them, so the URL rendered a 'View the receipt' link to a page that does not evidence the number. Verified instead against the ledger read in mas/audits/KTHULHU_INFRA_AUDIT.md, which is the actual source."
     },
     {
       "id": "kthulhu-fp-dropped",
       "value": "438 false positives",
       "label": "KTHULHU — candidate findings the engine dropped as false positives before review, from 2,056 raised (CR-13)",
       "status": "cleared",
-      "evidence_pointer": "https://kthulhu.co",
-      "source_system": "KTHULHU"
+      "evidence_pointer": "owner-attested — KTHULHU production ledger read, transcribed in mas/audits/KTHULHU_INFRA_AUDIT.md (2,056 findings across 75 audits)",
+      "source_system": "KTHULHU",
+      "reconciliation_note": "Downgraded from https://kthulhu.co 2026-08-23. These are internal-ledger figures; the product homepage does not display any of them, so the URL rendered a 'View the receipt' link to a page that does not evidence the number. Verified instead against the ledger read in mas/audits/KTHULHU_INFRA_AUDIT.md, which is the actual source."
     }
   ],
   "forbidden": [
