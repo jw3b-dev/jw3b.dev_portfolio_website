@@ -35,8 +35,16 @@ jobs:
             "https://api.cloudflare.com/client/v4/zones?name=jw3b.dev" \
             | python3 -c 'import json,sys; d=json.load(sys.stdin); print("success:", d.get("success")); print("zones:", [(z["name"], z["id"]) for z in (d.get("result") or [])]); print("errors:", [e.get("message") for e in d.get("errors",[])])'
 
+          ZONE=a8c04dc89ab52c84845a005e1d2f9bb9
+
           echo
-          echo "== account-level tag management visible? (read probe, no mutation) =="
+          echo "== every zone setting, id + value (looking for the tag/analytics injector) =="
           curl -sS -m 30 -H "Authorization: Bearer ${CF_TOKEN}" \
-            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/tag_management/configuration" \
-            | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result"); print("success:", d.get("success")); print("errors:", [e.get("message") for e in d.get("errors",[])]); print("result keys:", sorted(r.keys()) if isinstance(r,dict) else type(r).__name__)'
+            "https://api.cloudflare.com/client/v4/zones/${ZONE}/settings" \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); print("success:", d.get("success")); print("errors:", [e.get("message") for e in d.get("errors",[])]); [print(" ", s.get("id"), "=", json.dumps(s.get("value"))[:70], "| editable:", s.get("editable")) for s in (d.get("result") or [])]'
+
+          echo
+          echo "== Zaraz config readable? =="
+          curl -sS -m 30 -o /tmp/z.json -w "http %{http_code}\n" -H "Authorization: Bearer ${CF_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/zones/${ZONE}/settings/zaraz/config" || true
+          python3 -c 'import json; d=json.load(open("/tmp/z.json")); print("success:", d.get("success")); print("errors:", [e.get("message") for e in d.get("errors",[])]); r=d.get("result") or {}; print("zaraz tools:", [ (t.get("name"), t.get("type")) for t in (r.get("tools") or {}).values() ] if isinstance(r.get("tools"), dict) else r.get("tools"))' || true
