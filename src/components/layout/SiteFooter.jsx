@@ -50,6 +50,12 @@ export default function SiteFooter() {
             Zero-trust
           </Link>
           <Link
+            to="/evidence"
+            className="font-mono text-[11px] uppercase tracking-label text-content-secondary motion-safe:transition-colors hover:text-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+          >
+            Evidence
+          </Link>
+          <Link
             to="/privacy"
             className="font-mono text-[11px] uppercase tracking-label text-content-secondary motion-safe:transition-colors hover:text-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
           >

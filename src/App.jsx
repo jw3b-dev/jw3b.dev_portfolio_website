@@ -27,6 +27,7 @@ const Messages = lazy(() => import('./pages/Messages'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const SystemsAreGraphs = lazy(() => import('./pages/thesis/SystemsAreGraphs'))
 const ZeroTrustValidator = lazy(() => import('./pages/thesis/ZeroTrustValidator'))
+const Evidence = lazy(() => import('./pages/Evidence'))
 const NoteIndex = lazy(() => import('./pages/notes/NoteIndex'))
 const Note = lazy(() => import('./pages/notes/Note'))
 
@@ -103,6 +104,7 @@ const router = createBrowserRouter([
       { path: '/hire-me', element: <HireMe /> },
       { path: '/messages', element: <Messages /> },
       { path: '/privacy', element: <Privacy /> },
+      { path: '/evidence', element: <Evidence /> },
       { path: '/thesis/systems-are-graphs', element: <SystemsAreGraphs /> },
       { path: '/thesis/zero-trust-validator', element: <ZeroTrustValidator /> },
       /* P5-04: the notes routes exist ONLY when a note does. With src/content/notes/ empty the
