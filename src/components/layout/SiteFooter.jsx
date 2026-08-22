@@ -49,6 +49,19 @@ export default function SiteFooter() {
           >
             Zero-trust
           </Link>
+          {/*
+              /messages left the primary nav (finding 20) and then was linked from NOWHERE, while
+              staying a route and a sitemap <loc> — advertised to crawlers, reachable by no
+              visitor. Linked here with its state on the label, because the honest options were
+              "link it truthfully" or "drop it from the sitemap", and silently orphaning it was
+              neither.
+          */}
+          <Link
+            to="/messages"
+            className="font-mono text-[11px] uppercase tracking-label text-content-muted motion-safe:transition-colors hover:text-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+          >
+            Messages <span className="text-content-muted/70">(not live)</span>
+          </Link>
           <Link
             to="/evidence"
             className="font-mono text-[11px] uppercase tracking-label text-content-secondary motion-safe:transition-colors hover:text-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"

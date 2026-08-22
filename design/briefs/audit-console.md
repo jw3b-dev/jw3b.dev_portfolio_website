@@ -115,6 +115,6 @@ what it costs does not ship.
 
 **Next needs:**
 
-- **Keyboard-first operation.** This is a tool for people who live in an editor. Every control is currently mouse-first; run, re-run, next-finding and jump-to-line should all have keys.
-- **Diff the re-screen.** Applying a fix re-screens and reports a verdict, but does not show what changed between the two finding sets — the delta is the interesting part and it is computed and then discarded.
-- **Surface the budget before it bites.** The metered tier states 10 per session up front (good), but the counter is not visible while working, so the limit is learned by hitting it.
+- **Keyboard-first operation.** This is a tool for people who live in an editor. Every control is mouse-first; run, re-run, next-finding and jump-to-line should all have keys.
+- **Diff the re-screen.** Applying a fix re-screens and reports a verdict but does not show what changed between the two finding sets — the delta is the interesting part and it is computed and then discarded.
+- ~~Surface the budget before it bites.~~ **✎ DONE 2026-08-22** — the header now reads from `meteringPolicy`, counts down while runs remain, and on exhaustion says what is still free rather than rendering a bare "0 of 10".

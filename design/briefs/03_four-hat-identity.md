@@ -71,6 +71,6 @@ never fully hides** (FR-003, BR-07). The section must read as *one person*, not 
 
 **Next needs:**
 
-- **A way back to all four.** Filters dim rather than hide (the IA rule), but there is no reset affordance — a visitor who filters to Auditor has no obvious route back to the whole picture.
-- **Traversable hat → work mapping.** Selecting a hat should surface the flagships, projects and claims that sit under it. Today the hats colour cards; they do not navigate.
+- **Traversable hat → work mapping.** Selecting a hat dims the cards; it does not surface the flagships, projects and claims that sit under it. The hats colour the page, they do not navigate it.
 - **Tie the delivery record to the PM hat.** FR-060 keeps the 20-plants/7-countries anchor deliberately separate from the flagships, which is right — but it currently floats free of the hat it evidences.
+- ~~A way back to all four.~~ **✎ WRONG WHEN WRITTEN, corrected 2026-08-22.** `FourHats.jsx` already has an explicit reset (`setActive(null)`) and clicking the active hat clears the filter. This next-need described a defect that did not exist — checked against the component this time.

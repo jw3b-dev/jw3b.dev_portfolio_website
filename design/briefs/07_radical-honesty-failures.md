@@ -70,6 +70,6 @@ real fix (FR-045). Nothing fabricated, nothing dramatized. Honesty is the produc
 
 **Next needs:**
 
-- **Make every failure replayable.** The console accepts `?case=` and exactly one failure is wired to it. A failure you can load into the tool and re-run is evidence; a failure in prose is a story.
-- **Date them.** Undated failures read as either ancient or ongoing, and a reader cannot tell which. The honesty is undercut by the ambiguity.
-- **Link each failure to its fix.** Several of these have since been closed. Showing the failure without the resolution understates the work and, worse, leaves a visitor unsure whether it is still live.
+- **There is exactly ONE failure artifact.** `FAILURES` holds a single entry, so a section built to demonstrate a habit currently demonstrates an instance. The surface is finished; the corpus is not.
+- **A failure that is still open has no way to say so.** Every artifact renders a `fix`, which implies each one is closed — there is no state for a failure John is still living with, and those are the most credible kind.
+- ~~Make every failure replayable · date them · link each to its fix.~~ **✎ ALL THREE WRONG WHEN WRITTEN, corrected 2026-08-22.** `FailuresSurface.jsx` already renders `captured {capturedAt}`, the `fix` field, and a `?case=` replay link — and the single artifact is wired. I wrote three next-needs without reading the component. Kept visible because a brief full of already-done work sends the next person to fix what is not broken, which is the same rot this project keeps finding elsewhere.

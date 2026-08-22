@@ -87,6 +87,6 @@ Anthropic is down (Tier-1/2 replay behind it).
 
 **Next needs:**
 
-- **Carry the source into the full console.** The hero screen produces findings and then dead-ends — a visitor who is interested has to paste their contract a second time on `/audit`. The run should hand off with its source intact.
-- **Know whether anyone runs it.** The entire claim of this section is 'a visitor runs a real screen in under 10s' and nothing counts how many do. Blocked on P5-02, which is exactly why P5-02 moved to the top of the reconciled list.
-- **Make the four hats operable from the hero.** They are named here and filterable further down the page; naming without affordance teaches a visitor the words but not that they can act on them.
+- **The hero screen is the one surface P5-02 cannot see.** Its whole claim is "a visitor runs a real screen in under 10s", and the instant screen runs entirely client-side — so `tool_run` counts `/audit` and never counts this. The measurement gap is precisely on the claim.
+- **The four hats are display-only here.** They are rendered as a strip in the hero and are filterable further down the page, so a visitor learns the vocabulary in one place and discovers it is actionable in another.
+- ~~Carry the source into the full console.~~ **✎ DONE 2026-08-22** — the screened contract now travels to `/audit` in router state; `e2e/first-visit.spec.js` asserts it end to end. Kept struck through so the next reader can see what moved.

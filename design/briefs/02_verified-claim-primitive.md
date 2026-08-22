@@ -73,6 +73,6 @@ the gate are the same contract: if you can see a number, it has a receipt.
 
 **Next needs:**
 
-- **Make the evidence pointer reachable.** The register stores an `evidence_pointer` for every cleared claim and the UI renders only the value. A claim you cannot inspect is still a promise — which is the exact posture this primitive exists to end.
-- **Distinguish owner-attested from independently verified.** The register knows the difference and the rendering does not, so a CodeHawks rank and a self-reported metric currently look equally hard.
-- **A register view.** `ClaimGraphWalk` traverses the evidence graph on one thesis page; there is no plain list of every cleared claim and its source for someone who wants to audit the audit.
+- **The register has no history.** An entry can be edited or re-cleared with no record of what it said before, so "this figure changed" is invisible to a reader and to review. The claims gate checks the current state only.
+- **Nothing renders the blocklist inline.** The gate demo lets a visitor test a phrase, but the list of claims this site refuses to make is never simply shown — and it is one of the more persuasive things here.
+- ~~Make the evidence pointer reachable · distinguish attested from verified · a register view.~~ **✎ ALL DONE 2026-08-22** — `evidenceKind()` splits the two, `<Claim>` marks and exposes attested provenance, and `/evidence` lists all 31 with the verified/attested split stated up front.

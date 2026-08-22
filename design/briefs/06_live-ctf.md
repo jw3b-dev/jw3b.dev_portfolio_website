@@ -68,6 +68,6 @@ Chain/Worker down → **labelled recorded solve** (Tier-1/2), never a broken flo
 
 **Next needs:**
 
-- **Show what a solve looks like.** The leaderboard is honestly empty and says which kind of empty it is — but nothing demonstrates success. A recorded solve playback turns an empty board from a discouragement into a walkthrough.
 - **The vault is v1-era.** Owner-gated on keystore + gas for a redeploy (finding 25). Until then the challenge is readable and not fully attemptable, and the copy must keep saying so.
-- **A learning path, not only a competition.** Progressive hints for a visitor who wants to understand reentrancy rather than race for a rank — the CTF currently serves the second audience only.
+- **A learning path, not only a competition.** Progressive hints for a visitor who wants to understand reentrancy rather than race for a rank — the CTF still serves the second audience only.
+- ~~Show what a solve looks like.~~ **✎ DONE 2026-08-22** — the shipped `vault-drain.json` walkthrough now renders on the pre-wallet brief, labelled as a dated recording, with its fallback preamble deliberately dropped.
