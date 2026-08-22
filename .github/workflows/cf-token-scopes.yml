@@ -1,0 +1,47 @@
+# TEMPORARY, READ-ONLY probe — delete after use.
+#
+# Question it answers: does the CLOUDFLARE_API_TOKEN deploy secret carry enough permission to turn
+# off the zone's Google tag gateway (product-audit finding 23)? The local wrangler OAuth token is
+# `zone (read)` and cannot, and the secret's scopes are invisible outside CI.
+#
+# It makes NO changes. It calls the token-verify and permission-group endpoints and prints the
+# permission NAMES only — never the token, never a header, never a full API response that could
+# echo one back.
+name: CF token scopes (read-only probe)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify the token and list what it may do
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -u
+          if [ -z "${CF_TOKEN}" ]; then echo "::error::CLOUDFLARE_API_TOKEN is empty"; exit 1; fi
+
+          echo "== token status =="
+          curl -sS -m 30 -H "Authorization: Bearer ${CF_TOKEN}" \
+            https://api.cloudflare.com/client/v4/user/tokens/verify \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); print("success:", d.get("success")); print("status:", (d.get("result") or {}).get("status")); print("errors:", [e.get("message") for e in d.get("errors",[])])'
+
+          echo
+          echo "== can it READ the zone? =="
+          curl -sS -m 30 -H "Authorization: Bearer ${CF_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/zones?name=jw3b.dev" \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); print("success:", d.get("success")); print("zones:", [(z["name"], z["id"]) for z in (d.get("result") or [])]); print("errors:", [e.get("message") for e in d.get("errors",[])])'
+
+          echo
+          echo "== account-level tag management visible? (read probe, no mutation) =="
+          curl -sS -m 30 -H "Authorization: Bearer ${CF_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/tag_management/configuration" \
+            | python3 -c 'import json,sys
+d=json.load(sys.stdin)
+print("success:", d.get("success"))
+print("errors:", [e.get("message") for e in d.get("errors",[])])
+r=d.get("result")
+print("result keys:", sorted(r.keys()) if isinstance(r,dict) else type(r).__name__)'
