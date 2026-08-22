@@ -7,8 +7,9 @@
  * under motion-safe (NFR-05). Semantic tokens only — hat accents from HATS (constants/index).
  */
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { HATS } from '../../constants/index.js'
+import { workForHat } from '../../lib/hatWork.js'
 
 export default function FourHats({ className = '' }) {
   // A hero chip arrives here with the hat it named in router state; honour it as the initial
@@ -16,6 +17,7 @@ export default function FourHats({ className = '' }) {
   const location = useLocation()
   const fromHero = HATS.some((h) => h.key === location.state?.hat) ? location.state.hat : null
   const [active, setActive] = useState(fromHero) // null = no filter, all at full weight
+  const work = workForHat(active)
 
   /*
    * The hero chips link to this same route, so React Router does NOT remount this component —
@@ -78,6 +80,36 @@ export default function FourHats({ className = '' }) {
           )
         })}
       </ul>
+
+      {/*
+          The missing edge (brief 03, next-need 1). Selecting a hat used to dim the other cards and
+          stop there — the hats COLOURED the page, they did not navigate it. A visitor who chose
+          "Auditor" learned which cards mattered less and got no route to the ones that mattered
+          more. This surfaces the work that evidences the selected hat.
+
+          It appears only WITH a selection: rendering all four lists at once is a sitemap, and the
+          point of a filter is that choosing one thing removes the others from consideration.
+      */}
+      {active && work.length > 0 && (
+        <div className="mt-5 border-t border-hairline pt-4">
+          <h3 className="font-mono text-[10px] uppercase tracking-label text-content-muted">
+            {HATS.find((h) => h.key === active)?.label} — the work behind it
+          </h3>
+          <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {work.map((item) => (
+              <li key={item.href}>
+                <Link
+                  to={item.href}
+                  className="block rounded-md border border-hairline px-3 py-2 motion-safe:transition-colors hover:border-cyan/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+                >
+                  <span className="text-sm font-medium text-content-primary">{item.label} →</span>
+                  <span className="mt-0.5 block text-xs leading-snug text-content-secondary">{item.detail}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   )
 }

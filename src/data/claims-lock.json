@@ -1,0 +1,129 @@
+{
+  "$comment": "A LOCKFILE FOR CLEARED CLAIMS (brief 02, next-need 1). The register records what is true NOW; it kept no record of what it said before, so a figure could change and neither a reader nor a review would see it — and the claims gate only ever checked current state. It has happened: commit 4c6f758 changed a cleared value from a candidate count to the FV-proven number. That was a correct change, and it was also invisible. Now any change to a cleared value or its evidence must update this file in the SAME commit, which puts the before and after in the diff where review can see them. Regenerate with: npm run claims-lock -- --update",
+  "claims": {
+    "agilepm-foundation": {
+      "value": "AgilePM® v2 Foundation",
+      "evidence_pointer": "owner-attested — APMG certificate PDF + Credly badge + results letter"
+    },
+    "agilepm-practitioner": {
+      "value": "AgilePM® v2 Practitioner",
+      "evidence_pointer": "owner-attested — APMG certificate PDF + Credly badge + results letter"
+    },
+    "apm-pfq": {
+      "value": "APM Project Fundamentals Qualification",
+      "evidence_pointer": "owner-attested — APM certificate PDF (P0528947)"
+    },
+    "chainlink-fundamentals": {
+      "value": "Chainlink Fundamentals",
+      "evidence_pointer": "owner-attested — Chainlink certificate CLF-9XSZOBM7L2SPS"
+    },
+    "codehawks-124-exp": {
+      "value": "1,430 EXP",
+      "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy"
+    },
+    "codehawks-124-findings": {
+      "value": "17 findings",
+      "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy"
+    },
+    "codehawks-124-rank": {
+      "value": "#124",
+      "evidence_pointer": "https://profiles.cyfrin.io/u/agilegypsy"
+    },
+    "cyfrin-foundry": {
+      "value": "Foundry Fundamentals",
+      "evidence_pointer": "owner-attested — Cyfrin Updraft certificate IUY789PSN004"
+    },
+    "cyfrin-solidity": {
+      "value": "Solidity Smart Contract Development",
+      "evidence_pointer": "owner-attested — Cyfrin Updraft certificate RJA259ONK621"
+    },
+    "cyfrin-wallet-security-advanced": {
+      "value": "Advanced Web3 Wallet Security",
+      "evidence_pointer": "owner-attested — Cyfrin Updraft certificate 1KG922MS21NX"
+    },
+    "cypher-fundamentals": {
+      "value": "Cypher Fundamentals",
+      "evidence_pointer": "https://graphacademy.neo4j.com/c/f375dd5d-ce9a-4688-98b1-f5a765e07117"
+    },
+    "dapp-university-bootcamp": {
+      "value": "Blockchain Bootcamp 2.0",
+      "evidence_pointer": "owner-attested — Dapp University certificate cert_4653nh2z"
+    },
+    "delivery-plants-countries": {
+      "value": "20+ plants · 7 countries",
+      "evidence_pointer": "owner-attested — named industrial-plant register (docs/PORTFOLIO_REFERENCE §2)"
+    },
+    "graphrag-chunks": {
+      "value": "77k chunks",
+      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark"
+    },
+    "graphrag-entities": {
+      "value": "9,828 entities",
+      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark"
+    },
+    "graphrag-memory-recovery": {
+      "value": ">2× memory-miss recovery",
+      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark"
+    },
+    "graphrag-retriever-uplift": {
+      "value": "+18 pts",
+      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark"
+    },
+    "kthulhu-audits-run": {
+      "value": "75 audits",
+      "evidence_pointer": "https://kthulhu.co"
+    },
+    "kthulhu-fp-dropped": {
+      "value": "438 false positives",
+      "evidence_pointer": "https://kthulhu.co"
+    },
+    "kthulhu-fv-proven": {
+      "value": "76 findings",
+      "evidence_pointer": "https://kthulhu.co"
+    },
+    "kthulhu-merged-prs": {
+      "value": "112+ merged PRs",
+      "evidence_pointer": "https://kthulhu.co"
+    },
+    "kthulhu-paying-users": {
+      "value": "Live, paying users",
+      "evidence_pointer": "https://kthulhu.co"
+    },
+    "neo4j-certified-professional": {
+      "value": "Neo4j Certified Professional",
+      "evidence_pointer": "https://graphacademy.neo4j.com/c/e235aec4-a1e6-4bab-ad1b-2777f199d60c"
+    },
+    "neo4j-fundamentals": {
+      "value": "Neo4j Fundamentals",
+      "evidence_pointer": "https://graphacademy.neo4j.com/c/d306fc2c-5687-4d58-a821-33b0c10c7b33"
+    },
+    "neo4j-genai-certification": {
+      "value": "Neo4j & Generative AI Certification",
+      "evidence_pointer": "https://graphacademy.neo4j.com/c/1b9f3905-0d1e-455a-bd35-06c32e0e2128"
+    },
+    "neo4j-genai-fundamentals": {
+      "value": "Neo4j & GenerativeAI Fundamentals",
+      "evidence_pointer": "https://graphacademy.neo4j.com/c/adfa7ccd-a347-4c09-8e62-0b236af41216"
+    },
+    "neo4j-mcp-tools": {
+      "value": "Developing with Neo4j MCP Tools",
+      "evidence_pointer": "https://graphacademy.neo4j.com/c/b2cf5245-74e2-4864-a9b0-e16e27701262"
+    },
+    "overmind-corpus": {
+      "value": "192,000+",
+      "evidence_pointer": "owner-attested — Overmind GenAI engine"
+    },
+    "overmind-governance-tests": {
+      "value": "1,345 tests · 100% coverage",
+      "evidence_pointer": "owner-attested — Overmind GenAI engine"
+    },
+    "overmind-pipeline": {
+      "value": "13-phase pipeline",
+      "evidence_pointer": "owner-attested — Overmind GenAI engine"
+    },
+    "prince2-foundation": {
+      "value": "PRINCE2® Foundation",
+      "evidence_pointer": "owner-attested — PeopleCert result sheet (passed)"
+    }
+  }
+}

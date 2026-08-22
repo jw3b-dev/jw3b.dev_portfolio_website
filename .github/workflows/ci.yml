@@ -63,6 +63,13 @@ jobs:
       - name: Claims gate (blocks uncleared/forbidden claims — ADR-09)
         run: npm run claims-gate
 
+      # The register records what is true NOW and kept no record of what it said before, so a
+      # cleared figure could move and neither a reader nor a review would see it. It has happened
+      # (4c6f758 changed a cleared value — correctly, and invisibly). The lock forces the before
+      # and after into the diff.
+      - name: Claims lock (a cleared figure may not change silently)
+        run: npm run claims-lock
+
       # Product-audit findings 12/13/14 were one defect: a rename that swept the console but not
       # the surfaces describing it. Fixed by hand, with nothing stopping the old names returning.
       - name: Copy gate (permanent naming ban)

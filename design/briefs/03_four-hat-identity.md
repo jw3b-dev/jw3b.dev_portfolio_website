@@ -71,6 +71,6 @@ never fully hides** (FR-003, BR-07). The section must read as *one person*, not 
 
 **Next needs:**
 
-- **Traversable hat → work mapping.** Selecting a hat dims the cards; it does not surface the flagships, projects and claims that sit under it. The hats colour the page, they do not navigate it.
-- **Tie the delivery record to the PM hat.** FR-060 keeps the 20-plants/7-countries anchor deliberately separate from the flagships, which is right — but it currently floats free of the hat it evidences.
+- ~~Traversable hat → work mapping.~~ **✎ DONE 2026-08-22.** `hatWork.js` is the missing edge, as data: selecting a hat now surfaces the work that evidences it, as links. Two rules are enforced by test rather than asserted — every canonical hat MUST have work behind it (a hat with none is an identity claim with nothing under it), and every link target must be an id actually rendered or a route actually registered, so a renamed section fails the build instead of becoming a scroll to nowhere. Red-witnessed.
+- ~~Tie the delivery record to the PM hat.~~ **✎ DONE 2026-08-22 — the same edge.** The PM hat now carries the delivery record. FR-060's separation is preserved exactly: the anchor stays out of the flagship set, it is simply no longer floating free of the hat it exists to evidence. A test pins it.
 - ~~A way back to all four.~~ **✎ WRONG WHEN WRITTEN, corrected 2026-08-22.** `FourHats.jsx` already has an explicit reset (`setActive(null)`) and clicking the active hat clears the filter. This next-need described a defect that did not exist — checked against the component this time.

@@ -90,6 +90,7 @@ export default defineConfig({
         'src/lib/configuratorDraft.js',
         'src/lib/livenessClient.js',
         'src/lib/funnelBeacon.js',
+        'src/lib/hatWork.js',
         'src/lib/runPermalink.js',
         // The Kointel compliance rule. A detector under a claim about a real product's
         // engineering: an untested rule that silently stopped firing would leave the card
