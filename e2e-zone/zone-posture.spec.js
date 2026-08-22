@@ -20,11 +20,14 @@
  *
  *     npm run e2e:zone
  *
- * It is deliberately NOT in the CI suite. A GitHub runner gets challenged by the zone, and a test
- * that reports the challenge page's properties as though they were the site's would be worse than
- * no test — it would go green while asserting nothing. If the bot protection is ever relaxed for
- * CI egress, move it into the post-deploy job; until then it is a manual gate, named and scripted
- * so it is a step someone can run rather than a paragraph someone must remember.
+ * It lives OUTSIDE `e2e/`, with its own config, and that separation is deliberate rather than
+ * tidy. A GitHub runner is a datacenter IP; the zone challenges it; the runner would then measure
+ * Cloudflare's challenge page and report ITS properties as the site's — no cookies, no Google tag,
+ * all green. A test that passes by measuring the wrong document is worse than no test. It also
+ * fails today on purpose, and a permanently-red CI on a known owner-gated finding only teaches
+ * people to ignore red CI.
+ *
+ * If apex egress ever reaches CI, fold this into the post-deploy job and delete the separation.
  */
 import { test, expect } from '@playwright/test'
 
