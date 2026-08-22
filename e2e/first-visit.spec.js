@@ -113,3 +113,24 @@ test.describe('a first-time visitor, walletless, on an empty state', () => {
     await expect(primaryNav.getByRole('link', { name: /messages/i })).toHaveCount(0)
   })
 })
+
+test('the hero screen hands its contract to the full console — no second paste', async ({ page }) => {
+  // Brief 01, next-need 1: the hero produced findings and then ended. An interested visitor had
+  // to retype their contract on /audit, which is a dead end wearing a result. Asserted end to end
+  // in a real browser because the handoff rides router state — jsdom can prove the wiring, only a
+  // browser proves the navigation actually carries it.
+  await page.goto('/')
+  const editor = page.locator('#hero-audit-src')
+  await expect(editor).toBeVisible()
+
+  const marker = 'contract HandoffProbe { function drain() public {} }'
+  await editor.fill(marker)
+
+  const handoff = page.getByRole('link', { name: /open in the full console/i })
+  await expect(handoff).toBeVisible()
+  await handoff.click()
+
+  await expect(page).toHaveURL(/\/audit$/)
+  // The console's editor must already hold what was typed upstairs.
+  await expect(page.locator('textarea').first()).toHaveValue(marker)
+})

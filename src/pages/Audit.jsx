@@ -11,7 +11,7 @@
  * keyboard-operable — this console is the site's own proof of care.
  */
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import Seo from '../components/seo/Seo.jsx'
 import { FAILURES } from '../data/recorded-runs/failures/index.js'
 import AuditConsole from '../components/audit/AuditConsole.jsx'
@@ -66,6 +66,17 @@ export default function Audit() {
   // instruction — you run the real tool on the real input and watch it miss the bug yourself.
   const [params] = useSearchParams()
   const replay = FAILURES.find((f) => f.id === params.get('case') && f.surface === 'audit')
+
+  // A visitor arriving from the hero's instant screen brings the contract they were editing, in
+  // router STATE rather than storage or a query string — in memory, so it costs no cookie (the
+  // no-consent-banner position depends on that) and is not capped by URL length.
+  //
+  // `?case=` wins when both are present: it is an explicit instruction in the URL, usually a
+  // "reproduce this failure" link, and silently overriding it with carried-over state would make
+  // that link behave differently depending on where the visitor had been.
+  const { state } = useLocation()
+  const handoffSource = typeof state?.source === 'string' && state.source.trim() ? state.source : undefined
+  const seedSource = replay?.input ?? handoffSource
 
   // Left/Right arrows move between tabs, matching the WAI-ARIA tabs pattern.
   const onKeyDown = (e) => {
@@ -145,7 +156,7 @@ export default function Audit() {
         >
           {/* Mounted only when active so a hidden tool never fires a request or holds state. */}
           {t.id === active && t.id === 'screen' && (
-            <AuditConsole key={replay?.id || 'default'} initialSource={replay?.input} />
+            <AuditConsole key={replay?.id || (handoffSource ? 'handoff' : 'default')} initialSource={seedSource} />
           )}
           {t.id === active && t.id === 'fuzz' && <FuzzTool />}
           {t.id === active && t.id === 'tx' && <TxExplainer />}

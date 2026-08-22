@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion'
 import { duration, ease, prefersReducedMotion } from '../../styles/motion.js'
 import Claim from '../Claim.jsx'
@@ -174,10 +175,28 @@ function Console() {
         </div>
       </div>
 
-      {/* AI disclosure (amber) — compliance: heuristic output disclosed as such */}
-      <p className="border-t border-hairline bg-raised px-3 py-1.5 font-mono text-[10px] text-caution/90">
-        Deterministic pattern screen — a fast pre-screen, not a full audit or financial advice.
-      </p>
+      {/*
+          Disclosure + the handoff, on one line and OUTSIDE the findings conditional.
+          It first sat inside the has-findings branch, where a clean contract produced no findings
+          and therefore no way onward — the E2E caught that; the jsdom tests could not, because
+          they seeded a contract that happens to trip a detector. A clean screen is still worth
+          continuing in the full console.
+          The source travels in router STATE, in memory rather than storage: this site's
+          no-consent-banner position rests on setting no cookie and no tracking storage
+          (ADR-P5-01), and a convenience handoff is not worth spending that on.
+      */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-hairline bg-raised px-3 py-1.5">
+        <p className="font-mono text-[10px] text-caution/90">
+          Deterministic pattern screen — a fast pre-screen, not a full audit or financial advice.
+        </p>
+        <Link
+          to="/audit"
+          state={{ source }}
+          className="ml-auto font-mono text-[10px] uppercase tracking-label text-cyan no-underline hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+        >
+          Open in the full console →
+        </Link>
+      </div>
     </div>
   )
 }

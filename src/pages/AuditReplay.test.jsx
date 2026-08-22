@@ -47,3 +47,56 @@ describe('/audit replay of a captured failure', () => {
     expect(screen.queryByText(/replaying a captured miss/i)).not.toBeInTheDocument()
   })
 })
+
+/*
+ * The hero → console handoff (brief 01, next-need 1).
+ *
+ * The hero's instant screen used to end in a result and nothing else, so an interested visitor
+ * had to paste their contract a second time. These pin the seam: the source arrives via router
+ * STATE (not storage — the no-consent-banner position depends on setting none), and `?case=`
+ * still wins, because that link must behave the same wherever the visitor came from.
+ */
+describe('Audit — hero handoff via router state', () => {
+  const CARRIED = 'contract Carried { function f() public {} }'
+
+  it('seeds the console with the source carried from the hero', async () => {
+    render(
+      <HelmetProvider>
+        <MemoryRouter initialEntries={[{ pathname: '/audit', state: { source: CARRIED } }]}>
+          <Audit />
+        </MemoryRouter>
+      </HelmetProvider>,
+    )
+    const box = await screen.findByRole('textbox')
+    expect(box).toHaveValue(CARRIED)
+  })
+
+  it('?case= WINS over carried state — an explicit URL must not depend on history', async () => {
+    const failure = FAILURES.find((f) => f.surface === 'audit')
+    render(
+      <HelmetProvider>
+        <MemoryRouter initialEntries={[{ pathname: '/audit', search: `?case=${failure.id}`, state: { source: CARRIED } }]}>
+          <Audit />
+        </MemoryRouter>
+      </HelmetProvider>,
+    )
+    const box = await screen.findByRole('textbox')
+    expect(box).toHaveValue(failure.input)
+    expect(box).not.toHaveValue(CARRIED)
+  })
+
+  it('ignores empty or non-string state rather than seeding a blank console', async () => {
+    for (const bad of [{ source: '   ' }, { source: 42 }, {}]) {
+      const { unmount } = render(
+        <HelmetProvider>
+          <MemoryRouter initialEntries={[{ pathname: '/audit', state: bad }]}>
+            <Audit />
+          </MemoryRouter>
+        </HelmetProvider>,
+      )
+      const box = await screen.findByRole('textbox')
+      expect(box.value.trim().length).toBeGreaterThan(0) // fell back to the console default
+      unmount()
+    }
+  })
+})
