@@ -706,11 +706,19 @@ over from the stub.
 |---|---|---|
 | **P5-01** Close the booking loop | **DELIVERED — by a different mechanism.** The loop was closed by W1's Telegram rail, not a scheduler. `scheduler_url` *is* surfaced (`engagement.js:126`) and `schedulerLink.js` exists, so the stub's own wiring shipped; Cal.com was dropped (finding #27). `SCHEDULER_URL` stays unset and the confirmation degrades honestly. **The scheduler is now an optional extra, not the mechanism.** | FR-062 |
 | **P5-03** A concierge that closes | **DELIVERED.** W2's consent card is precisely this stub's stated work — *"offer the booking action inline, one tap, without leaving the conversation"*. Its dependency on P5-01 is moot. | FR-063 |
-| **P5-05** Metered tools | **PARTIALLY DELIVERED.** Metering is live: `BUDGETS.audit` = 10/session with a client mirror and a parity note (`autoRunPolicy.js:21`). What does **not** exist is the pure free/paid **policy module**. Activation stays blocked on funding — do not light a paid path against a testnet contract. | FR-064 |
-| **P5-02** Funnel instrumentation | **OPEN — executable now, and now first.** No `funnel_counters` migration exists (0001–0005 verified). ADR-P5-01 is already written and constrains it to cookieless aggregate counters. | measures **every** loop |
-| **P5-04** Content pipeline | **OPEN — executable now.** `src/content/` holds only `privacy.md` + `terms.md`; there is no `src/lib/notes.js` and no notes route. Serves no outcome loop; cheap, and lets John publish without a component edit. | — |
+| **P5-05** Metered tools | **✎ POLICY LAYER DELIVERED 2026-08-22.** Metering was already live (`BUDGETS.audit` = 10/session, client mirror, parity note at `autoRunPolicy.js:21`); the missing piece — the pure policy module — is now `src/lib/meteringPolicy.js`, and the console header reads from it. Activation stays blocked on funding — do not light a paid path against a testnet contract. | FR-064 |
+| **P5-02** Funnel instrumentation | **✎ DELIVERED 2026-08-22 — this row said OPEN after it had shipped.** `migrations/0006_funnel_counters.sql` and `workers/portfolio-agent/src/funnel.js` exist; `track()` fires from `index.js` on the audit and hire-me surfaces. Cookieless per ADR-P5-01: closed event/surface vocabularies, day-granularity, no identifier, `ctx.waitUntil`, fails open. **What is still missing is a READER** — nothing reports the counters, so the justification for doing this first ("make the next prioritisation evidence-based") is not yet cashed in. | measures **every** loop |
+| **P5-04** Content pipeline | **✎ DELIVERED 2026-08-22 — this row said OPEN after it had shipped.** `src/lib/notes.js`, `src/lib/notesIndex.js` and the `/notes` routes exist; publishing is adding a file, and with zero notes no route registers. Serves no outcome loop; cheap, and lets John publish without a component edit. | — |
 | **P5-06** Live ecosystem data | **OPEN — owner-gated.** The same item as FR-066 and product-audit finding #21. The read-only JSON contract can be specified now; no unsourced figure renders regardless. | FR-066 |
 | **P5-07** On-chain roadmap | **BLOCKED** on a funded Base mainnet wallet. Unchanged. | — |
+
+> **✎ 2026-08-22 — this table was stale, and that is the finding.** Three rows above said OPEN
+> for work that had already shipped. The table was written to reconcile two plans precisely so an
+> orphaned backlog could not appear, and it then drifted from the tree inside a day — the same
+> shape as briefs asking for finished work, and as finding 21 recording an owner ask for a
+> capability that was already deployed. `scripts/drift-gate.mjs` now fails CI on any "there is no
+> `<path>`" claim in `mas/` or `design/briefs/` whose file exists, so this specific class of
+> staleness cannot survive a push again.
 
 ### The reprioritised order, and why it changed
 

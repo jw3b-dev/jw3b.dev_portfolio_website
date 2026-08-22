@@ -81,6 +81,13 @@ jobs:
       - name: Reachability gate (FR-038 — no unreachable endpoint)
         run: npm run reachability-gate
 
+      # Three times now a record that was true when written went stale and was then acted on:
+      # PLAN.md's P5 table said OPEN for shipped work, briefs asked for finished work, and
+      # finding 21 asked the owner for access to an already-deployed capability. Each was caught
+      # by a person reading carefully — a detection method with a demonstrated failure rate.
+      - name: Drift gate (a plan may not claim an existing file is absent)
+        run: npm run drift-gate
+
       - name: Build
         run: npm run build
 

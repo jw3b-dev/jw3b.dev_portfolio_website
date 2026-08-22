@@ -142,6 +142,30 @@ export default {
         const out = await handleLiveness(req, env, ctx)
         return json(out.body, req, env, out.status)
       }
+      /*
+       * Client-reported funnel events (brief 01, next-need 1).
+       *
+       * `track()` only ever saw what reached the Worker, so the HERO'S INSTANT SCREEN — the one
+       * surface whose whole claim is "a visitor runs a real screen in under 10 seconds" — was the
+       * single thing the funnel could not count. The measurement gap sat exactly on the claim.
+       *
+       * ADR-P5-01 is preserved: the body carries nothing but a surface and an event, both checked
+       * against closed vocabularies by `normalizeEvent`. No identifier, no cookie, no free text —
+       * a rejected body simply increments nothing.
+       */
+      if (pathname === '/funnel' && method === 'POST') {
+        let payload = null
+        try {
+          payload = await req.json()
+        } catch {
+          payload = null
+        }
+        // 204 either way: a beacon must never tell a caller whether it counted, and the client
+        // must never branch on it.
+        track(env, ctx, { surface: payload?.surface, event: payload?.event })
+        return new Response(null, { status: 204, headers: cors(req, env) })
+      }
+
       if (pathname === '/health' && method === 'GET') {
         return json(
           {

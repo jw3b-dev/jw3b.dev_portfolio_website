@@ -21,6 +21,7 @@ export const BUDGETS = {
   ctf: 15, // on-chain verify
   kb_search: 20, // one bge-m3 embedding per call
   light: 60, // leaderboard / engagement / book-a-call — never throttle the conversion floor hard
+  funnel: 30, // beacons are cheap, but an unauthenticated counter deserves a ceiling
 }
 export const DEFAULT_BUDGET = 30
 
@@ -112,6 +113,11 @@ export const ROUTE_LIMITS = {
   'GET /kb/related': { endpoint: 'light', sse: false },
   'GET /kb/stats': { endpoint: 'light', sse: false },
   'GET /health': { endpoint: 'light', sse: false },
+  'GET /liveness': { endpoint: 'light', sse: false },
+  // Client-reported funnel events. Its own budget, tighter than 'light': the counters are
+  // aggregate and unauthenticated, so the only harm is inflating John's own numbers — but a
+  // metric nobody can trust is worse than no metric.
+  'POST /funnel': { endpoint: 'funnel', sse: false },
   'POST /engagement': { endpoint: 'light', sse: false },
   'POST /book-a-call': { endpoint: 'light', sse: false },
 }

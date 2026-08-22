@@ -36,7 +36,16 @@ export function dayKey(nowMs) {
  * Exported so the whole decision surface is testable without a database.
  * @returns {{day:string, surface:string, event:string}|null}
  */
-export function normalizeEvent({ surface, event } = {}, nowMs = Date.now()) {
+export function normalizeEvent(input, nowMs = Date.now()) {
+  /*
+   * Takes `input` whole rather than destructuring in the signature. A default parameter only
+   * applies to `undefined`, so `normalizeEvent(null)` used to THROW — in a function whose entire
+   * contract is "return null for anything invalid". Harmless while every caller passed a literal
+   * from our own code; the moment `/funnel` began feeding it a parsed request body, the contract
+   * had to actually hold. Found by a boundary test written for that route.
+   */
+  if (!input || typeof input !== 'object') return null
+  const { surface, event } = input
   if (typeof surface !== 'string' || typeof event !== 'string') return null
   const s = surface.trim().toLowerCase()
   const e = event.trim().toLowerCase()

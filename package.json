@@ -15,6 +15,7 @@
     "copy-gate": "node scripts/copy-gate.mjs",
     "brief-gate": "node scripts/brief-gate.mjs",
     "reachability-gate": "node scripts/reachability-gate.mjs",
+    "drift-gate": "node scripts/drift-gate.mjs",
     "e2e:zone": "playwright test --config config/playwright.zone.config.js",
     "seed:kv": "node scripts/seed-kv-runs.mjs",
     "gen:knowledge": "node scripts/gen-knowledge.mjs",

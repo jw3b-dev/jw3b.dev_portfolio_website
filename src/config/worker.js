@@ -50,6 +50,10 @@ export const AGENT_KB_STATS_URL = `${WORKER_URL}/kb/stats`
 // headers, so the browser cannot read a status from them directly.
 export const AGENT_LIVENESS_URL = `${WORKER_URL}/liveness`
 
+// Client-reported funnel events (brief 01). The hero's instant screen runs entirely in the
+// browser, so it was the one surface the Worker-side counters could never see.
+export const AGENT_FUNNEL_URL = `${WORKER_URL}/funnel`
+
 // Conversion capture (book-a-call floor + engagement requests).
 export const AGENT_ENGAGEMENT_URL = `${WORKER_URL}/engagement`
 export const AGENT_BOOK_A_CALL_URL = `${WORKER_URL}/book-a-call`

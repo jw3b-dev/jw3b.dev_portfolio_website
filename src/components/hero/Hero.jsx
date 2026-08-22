@@ -5,6 +5,7 @@ import { duration, ease, prefersReducedMotion } from '../../styles/motion.js'
 import Claim from '../Claim.jsx'
 import { HATS } from '../../constants/index.js'
 import { auditSolidity, SAMPLE_CONTRACT, SEVERITY_META } from '../../lib/auditHeuristics.js'
+import { reportFunnel } from '../../lib/funnelBeacon.js'
 
 /*
  * P1-09 — Operable, proof-first hero (brief 01, ★ make-or-break).
@@ -75,6 +76,21 @@ function Console() {
   const [phase, setPhase] = useState('settled') // 'checking' → 'settled'
   const result = useMemo(() => auditSolidity(source), [source])
   const edited = source !== SAMPLE_CONTRACT
+
+  /*
+   * Count the hero screen (brief 01, next-need 1). This surface's claim is "a visitor runs a real
+   * screen in under ten seconds", and it was the one thing the funnel could not see — the screen
+   * runs entirely client-side, so `tool_run` only ever counted /audit. The measurement gap sat
+   * exactly on the claim.
+   *
+   * Reported when the visitor has EDITED the sample, not on mount: arriving at a page that
+   * happens to render a pre-filled result is not "running a screen", and counting it would
+   * inflate the very number this exists to make honest. Deduped in memory per page load, so a
+   * keystroke-driven surface reports once. Fire-and-forget by construction.
+   */
+  useEffect(() => {
+    if (edited) reportFunnel('home', 'tool_run')
+  }, [edited])
 
   useEffect(() => {
     if (prefersReducedMotion()) {

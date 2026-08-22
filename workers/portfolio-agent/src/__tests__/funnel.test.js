@@ -109,3 +109,34 @@ describe('P5-02: it fails open, always', () => {
     await expect(track(d, {}, { surface: 'audit', event: 'tool_run' }, T)).resolves.toBe(true)
   })
 })
+
+/*
+ * Client-reported events (brief 01, next-need 1).
+ *
+ * The route exists so the hero's client-side screen can be counted at all. Its safety rests
+ * entirely on `normalizeEvent` — the body is attacker-controlled, so anything not on the closed
+ * vocabularies must increment nothing. These pin that at the boundary rather than trusting the
+ * caller, because the caller is a stranger.
+ */
+describe('funnel ingest — the body is untrusted input', () => {
+  it('accepts a valid surface/event pair', () => {
+    expect(normalizeEvent({ surface: 'home', event: 'tool_run' })).toMatchObject({ surface: 'home', event: 'tool_run' })
+  })
+
+  it('rejects a surface or event outside the closed set', () => {
+    expect(normalizeEvent({ surface: 'evil', event: 'tool_run' })).toBeNull()
+    expect(normalizeEvent({ surface: 'home', event: 'exfiltrate' })).toBeNull()
+  })
+
+  it('rejects anything that is not a pair of strings — including an injected object', () => {
+    expect(normalizeEvent({ surface: { toString: () => 'home' }, event: 'tool_run' })).toBeNull()
+    expect(normalizeEvent({ surface: 'home' })).toBeNull()
+    expect(normalizeEvent(null)).toBeNull()
+    expect(normalizeEvent({})).toBeNull()
+  })
+
+  it('carries no field a caller could use as an identifier', () => {
+    const out = normalizeEvent({ surface: 'home', event: 'tool_run', visitor: 'abc', ip: '1.2.3.4' })
+    expect(Object.keys(out).sort()).toEqual(['day', 'event', 'surface'])
+  })
+})
