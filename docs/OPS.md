@@ -150,3 +150,40 @@ Zone: `jw3b.dev` = `a8c04dc89ab52c84845a005e1d2f9bb9`. Account: `AgileGypsy` =
 at `/:account/tag-management/`, so a zone-only token will not reach it). The deploy token is
 deliberately narrow — widen a *new* token instead of that one, so a leaked deploy credential can
 never reconfigure the zone.
+
+## D1 migrations are NOT applied by CI — apply them by hand, before the code that needs them
+
+Found 2026-08-22, the hard way. `migrations/0006_funnel_counters.sql` was written, committed and
+deployed; the **table was never created in production**. The Worker shipped, `recordEvent` threw
+`no such table: funnel_counters` on every call, and `track()` swallowed it — it fails open by
+design, so the counters silently counted nothing while `mas/PLAN.md` recorded P5-02 as delivered.
+Nothing anywhere said a migration needed applying.
+
+**The gap:** `.github/workflows/ci.yml` deploys the Worker and the SPA. It never runs
+`wrangler d1 migrations apply`. A migration therefore ships as dead code, and because every
+analytics write fails open, there is no symptom to notice.
+
+```bash
+cd workers/portfolio-agent
+
+# What is pending? (--config is required: wrangler v4 prefers the repo-root wrangler.jsonc,
+# which describes the SPA, not this worker.)
+npx wrangler d1 migrations list jw3b_analytics --remote --config wrangler.toml
+
+# Apply, BEFORE deploying code that reads the new schema.
+npx wrangler d1 migrations apply jw3b_analytics --remote --config wrangler.toml
+
+# Prove it: send an event and read the counter back.
+curl -s -X POST -H 'Content-Type: application/json' \
+  -d '{"surface":"home","event":"tool_run"}' \
+  https://portfolio-agent.agilegypsy.workers.dev/funnel
+npx wrangler d1 execute jw3b_analytics --remote --config wrangler.toml \
+  --command "SELECT day, surface, event, count FROM funnel_counters ORDER BY count DESC;"
+```
+
+**Why this is not automated yet, stated rather than left as a silent omission.** Adding
+`migrations apply` to the deploy job is the right fix and needs the `CLOUDFLARE_API_TOKEN` secret
+to carry **D1 edit**. That token is a deploy credential whose scopes are documented above as
+Workers-only-plus-zone-read; adding a step that mutates production schema on a token whose D1
+permission is unverified would trade a silent failure for a broken pipeline. **Owner decision:
+confirm (or widen) the token's D1 scope, then the step goes in ahead of `deploy-backend`.**
