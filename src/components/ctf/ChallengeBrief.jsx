@@ -18,6 +18,7 @@
 import { useEffect, useState } from 'react'
 import { CTF } from '../../config/contracts.js'
 import { AGENT_CTF_LEADERBOARD_URL } from '../../config/worker.js'
+import RecordedSolve from './RecordedSolve.jsx'
 import { framingOriginAllowed } from '../../config/embeds.js'
 
 const BASESCAN = 'https://sepolia.basescan.org/address/'
@@ -163,6 +164,7 @@ export default function ChallengeBrief() {
       </section>
 
       <Leaderboard />
+      <RecordedSolve />
     </div>
   )
 }

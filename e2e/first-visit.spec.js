@@ -134,3 +134,21 @@ test('the hero screen hands its contract to the full console — no second paste
   // The console's editor must already hold what was typed upstairs.
   await expect(page.locator('textarea').first()).toHaveValue(marker)
 })
+
+test('/ctf shows what a solve looks like, labelled as a recording', async ({ page }) => {
+  // Brief 06, next-need 1. The leaderboard is honestly empty; nothing demonstrated success, so an
+  // empty board read as "nobody has done this" rather than as an invitation. The walkthrough
+  // artifact already shipped in the bundle and was rendered by nobody.
+  await page.goto('/ctf')
+  const section = page.locator('section[aria-labelledby="ctf-recorded"]')
+  await expect(section).toBeVisible()
+
+  // Labelled BEFORE any step is visible — a walkthrough mistakable for a live result is worse
+  // than the empty board it replaces.
+  await expect(section).toContainText(/Recorded/i)
+  await expect(section).toContainText(/not a live result/i)
+  await expect(section).toContainText(/not your solve/i)
+
+  await section.getByRole('button', { name: /show the walkthrough/i }).click()
+  await expect(section.getByRole('listitem').first()).toContainText(/Deploy Attacker/i)
+})
