@@ -53,6 +53,27 @@ up to the root `wrangler.jsonc` (the SPA config) and can't find the D1 binding.
 Retention: rate-limit rows (raw IPs) self-purge ~10 min; `engagement_requests` PII per the
 privacy notice; DSAR/erasure runbook in `docs/COMPLIANCE.md`.
 
+### Dependabot alert dispositions (2026-08-22)
+
+Three open alerts were audited for **reachability in the shipped product**, not just presence in
+the lockfile. All three were dismissed as not-exploitable, with the evidence below. A dismissal is
+reversible — re-open from the Security tab, or
+`gh api -X PATCH repos/<repo>/dependabot/alerts/<n> -f state=open`.
+
+| Package | Sev | Path | Why it cannot be reached |
+|---|---|---|---|
+| `adm-zip` | high | `@huggingface/transformers` → `onnxruntime-node` | The browser build runs on **onnxruntime-web**. `config/vite.config.js` aliases `onnxruntime-node` to `src/lib/empty.js`. Verified empirically: **0 occurrences** of `adm-zip`/`onnxruntime-node` in `dist/assets/*.js`. |
+| `sharp` | high | `@huggingface/transformers` → `sharp` | Native Node image library, aliased to the same stub and impossible to run in a browser. **0 occurrences** in `dist/assets/*.js`. |
+| `uuid` | medium | `wagmi` → `@wagmi/connectors` → MetaMask | The advisory is *"missing buffer bounds check in **v3/v5/v6** when `buf` is provided"*. The MetaMask packages import **`uuid.v4`** only — a grep for any v3/v5/v6 usage across them returns nothing. The vulnerable code paths are never called. |
+
+**Why these cannot simply be upgraded.** All three are transitive dependencies of majors this
+project pins on purpose (`@huggingface/transformers`, and the wagmi 2.x / RainbowKit 2.x wallet
+stack — see CLAUDE.md's dependency constraints). Forcing them via `overrides` risks the wallet UI
+for vulnerabilities that no shipped code path can reach.
+
+**Re-audit this when** the wallet stack majors move, or when transformers is used from Node rather
+than the browser — that second condition is the one that would make `adm-zip` and `sharp` live.
+
 ### Funnel digest (P5-02 · ADR-P5-01)
 
 Aggregate counters only — `(day, surface, event, count)`, no identifier of any kind, so there is
