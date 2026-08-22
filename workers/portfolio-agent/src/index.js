@@ -15,6 +15,7 @@ import { handleFuzz } from './routes/fuzz.js'
 import { handleTxExplain } from './routes/txExplain.js'
 import { handleStt, handleTts } from './routes/voice.js'
 import { track } from './funnel.js'
+import { runDigest } from './digest.js'
 
 const TXHASH = /^0x[0-9a-fA-F]{64}$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -50,6 +51,15 @@ async function readJson(req) {
 }
 
 export default {
+  /*
+   * Weekly funnel digest. P5-02 was prioritised first on the argument that nobody knew whether
+   * the loops converted; the counters then shipped and were read by nobody, which is the same
+   * gap wearing a different hat. Push beats pull — a query in a runbook requires remembering.
+   */
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runDigest(env))
+  },
+
   async fetch(req, env, ctx) {
     const url = new URL(req.url)
     const { pathname } = url

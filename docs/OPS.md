@@ -187,3 +187,20 @@ to carry **D1 edit**. That token is a deploy credential whose scopes are documen
 Workers-only-plus-zone-read; adding a step that mutates production schema on a token whose D1
 permission is unverified would trade a silent failure for a broken pipeline. **Owner decision:
 confirm (or widen) the token's D1 scope, then the step goes in ahead of `deploy-backend`.**
+
+
+### The weekly digest (added 2026-08-22)
+
+The queries above are pull — they require remembering to run them, which is how a metric ends up
+unread. `workers/portfolio-agent/src/digest.js` pushes a summary every **Monday 08:00 UTC** over
+the same Telegram rail the lead alerts use (`[triggers] crons` in `wrangler.toml`).
+
+It fails silent by design: no Telegram secrets, no D1 binding, a missing table, or a week with no
+events all send nothing. A cron has nobody waiting on it, and a weekly "0" trains its reader to
+ignore the channel.
+
+```bash
+# Fire it by hand without waiting for Monday:
+cd workers/portfolio-agent && npx wrangler dev --test-scheduled
+curl "http://localhost:8787/__scheduled?cron=0+8+*+*+1"
+```

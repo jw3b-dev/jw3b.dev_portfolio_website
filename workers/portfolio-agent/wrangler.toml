@@ -72,3 +72,9 @@ CTF_RPC_URL = "https://sepolia.base.org"        # public Base Sepolia RPC (no ke
 # (see auditRag.js), NOT a Cloudflare Vectorize index — the corpus already exists on Neon, so
 # there is nothing to stand up here. The query embeds with bge-m3 (1024-dim) to match the
 # corpus. Concierge KB is untouched (curated cleared-claims grounding, P1-03).
+
+# Weekly funnel digest — Mondays 08:00 UTC. The counters exist to make the next prioritisation
+# evidence-based; a table nobody reads cannot do that, so the summary is pushed to the rail that
+# already reaches John. A quiet week sends nothing rather than a "0" that trains him to ignore it.
+[triggers]
+crons = ["0 8 * * 1"]
