@@ -74,3 +74,22 @@ export function section(n) {
  */
 export const INSTANT_SCREEN_BRIDGE =
   'The instant screen is the deterministic pattern (heuristic) pass — it runs in your browser as you type, free.'
+
+/**
+ * The permanent naming ban, enforced in CI by `scripts/copy-gate.mjs`.
+ *
+ * These phrases were swept out of the rendered copy once (product-audit findings 12, 13, 14) and
+ * nothing stopped them returning — a rename is only finished when re-introducing the old name
+ * fails a build. The module that owns the names owns the bans, and the gate DERIVES its list from
+ * here rather than restating it, so this stays the single source. (Restating a banned string
+ * inside its own checker is how the claims gate once failed on itself.)
+ *
+ * `why` is printed on failure: a gate that says only "banned" gets argued with.
+ */
+export const BANNED_VOCABULARY = Object.freeze([
+  { phrase: 'Live heuristic', why: '"live" already means "from the live model, not a recording" on this screen — that collision is why section 2 is called "Instant screen".' },
+  { phrase: 'Heuristic pass', why: 'the old section name. Say "Instant screen"; the one permitted bridge is INSTANT_SCREEN_BRIDGE.' },
+  { phrase: 'heuristic pre-screen', why: 'same rename — say "Instant screen".' },
+  { phrase: 're-run the auditor', why: '"the auditor" is John. The control re-runs an AI analysis.' },
+  { phrase: 'live /audit console', why: 'the ban covers /work describing the console, not just /audit.' },
+])

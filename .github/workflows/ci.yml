@@ -63,6 +63,11 @@ jobs:
       - name: Claims gate (blocks uncleared/forbidden claims — ADR-09)
         run: npm run claims-gate
 
+      # Product-audit findings 12/13/14 were one defect: a rename that swept the console but not
+      # the surfaces describing it. Fixed by hand, with nothing stopping the old names returning.
+      - name: Copy gate (permanent naming ban)
+        run: npm run copy-gate
+
       - name: Build
         run: npm run build
 

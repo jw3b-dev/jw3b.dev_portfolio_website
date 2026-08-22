@@ -53,7 +53,7 @@ const stubStream = (text) => vi.stubGlobal('fetch', vi.fn(async () => sseRespons
 
 afterEach(() => vi.unstubAllGlobals())
 
-describe('AuditConsole — the live heuristic screen (FR-011)', () => {
+describe('AuditConsole — the instant screen (FR-011)', () => {
   it('screens the preloaded sample with no button press, and carries the disclaimer (FR-014)', () => {
     renderConsole()
     expect(screen.getByText('Reentrancy — external call before state update')).toBeInTheDocument()
