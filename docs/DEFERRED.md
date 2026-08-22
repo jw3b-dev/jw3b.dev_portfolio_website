@@ -59,9 +59,15 @@ Dispositions:
    chainId so the TESTNET badge can never silently claim mainnet.
 2. **Unlock locks** — still need real lock addresses (`UNLOCK_LOCKS` + `retainer.json`); also
    blocked on mainnet gas. The P3-04 terms gate is already wired in front of both paid rails.
-3. **`main` branch** — carries unrelated v1 history and a stale `deploy.yml` targeting the
-   deleted Pages project `jw3b-dev-portfolio`. Options: leave as an archive (current state),
-   or force-replace with v2. Owner's call; nothing depends on it now that `v2` is the default.
+3. ~~**`main` branch** — carries unrelated v1 history and a stale `deploy.yml` targeting the
+   deleted Pages project `jw3b-dev-portfolio`. Owner's call.~~ **✎ RESOLVED — already done; this
+   entry had rotted (verified 2026-08-22).** `git ls-remote` returns exactly one branch, `v2`.
+   `main` is gone, archived as the tag `v1-archive`, so there is no `deploy.yml` and no branch to
+   decide about. **There are no Cloudflare Pages deploys at all** — `wrangler pages project list`
+   on this account returns only `kointel` and `nano-bot-trader-dash`, different products. The SPA
+   has been a Worker (`jw3b-dev-site`, `wrangler.jsonc`) since 2026-08-21. Struck through rather
+   than deleted, because an entry that outlived its own resolution is worth seeing once: it sat
+   on the owner's decision list asking for a call that had already been made.
 4. **Cloudflare bot protection on the `jw3b.dev` zone** 403s datacenter IPs. Harmless for real
    users and verified crawlers (every UA incl. Googlebot returns 200 from a residential IP),
    but worth a Search Console check after the new sitemap is submitted.
