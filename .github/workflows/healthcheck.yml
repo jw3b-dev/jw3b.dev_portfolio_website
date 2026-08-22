@@ -36,8 +36,20 @@ jobs:
         run: npm ci || (sleep 15 && npm ci) || (sleep 45 && npm ci)
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      # ✎ FIXED 2026-08-22. This ran `npm run e2e:prod`, which targets the APEX — and the apex
+      # 403s datacenter IPs, including every GitHub runner. The `probe` job below documents that
+      # ("confirmed 2026-08-21"), and ci.yml's post-deploy `smoke` job already solved it by
+      # targeting the *.workers.dev origin. The lesson was applied there and never swept here, so
+      # this job failed on EVERY scheduled run — four red X's a day for a reason that had nothing
+      # to do with the site's health. A permanently-red check is worse than no check: it trains
+      # everyone to ignore the alert it exists to raise.
+      #
+      # Same deployed worker, same code, reachable from a runner. The apex stays covered by
+      # `probe`, which accepts a 403 as proof the edge is up and deciding.
       - name: E2E against production
-        run: npm run e2e:prod
+        run: npx playwright test
+        env:
+          E2E_BASE_URL: https://jw3b-dev-site.agilegypsy.workers.dev
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
