@@ -663,3 +663,38 @@ zero tracking storage**, or ADR-P5-01 has been violated and the consent banner m
 
 **Critical path:** `P5-01 → P5-02 → P5-03 → P5-04 → P5-GATE`, with P5-05/06/07 entering only
 as their provisioning lands.
+
+---
+
+## ✎ P5 RECONCILED — 2026-08-22 (rerun R1 · MAS Phase 2)
+
+P5 was scoped 2026-08-21 and the rerun's W1–W5 then ran *across* it, delivering some stubs by
+another route and leaving others untouched. Two plans describing the same work is how an orphaned
+backlog appears, so this reconciles them into one, **prioritised against the EPIC K outcome FRs**
+rather than the original stub order. Every state below was verified against the tree, not carried
+over from the stub.
+
+| Stub | True state, verified | Serves |
+|---|---|---|
+| **P5-01** Close the booking loop | **DELIVERED — by a different mechanism.** The loop was closed by W1's Telegram rail, not a scheduler. `scheduler_url` *is* surfaced (`engagement.js:126`) and `schedulerLink.js` exists, so the stub's own wiring shipped; Cal.com was dropped (finding #27). `SCHEDULER_URL` stays unset and the confirmation degrades honestly. **The scheduler is now an optional extra, not the mechanism.** | FR-062 |
+| **P5-03** A concierge that closes | **DELIVERED.** W2's consent card is precisely this stub's stated work — *"offer the booking action inline, one tap, without leaving the conversation"*. Its dependency on P5-01 is moot. | FR-063 |
+| **P5-05** Metered tools | **PARTIALLY DELIVERED.** Metering is live: `BUDGETS.audit` = 10/session with a client mirror and a parity note (`autoRunPolicy.js:21`). What does **not** exist is the pure free/paid **policy module**. Activation stays blocked on funding — do not light a paid path against a testnet contract. | FR-064 |
+| **P5-02** Funnel instrumentation | **OPEN — executable now, and now first.** No `funnel_counters` migration exists (0001–0005 verified). ADR-P5-01 is already written and constrains it to cookieless aggregate counters. | measures **every** loop |
+| **P5-04** Content pipeline | **OPEN — executable now.** `src/content/` holds only `privacy.md` + `terms.md`; there is no `src/lib/notes.js` and no notes route. Serves no outcome loop; cheap, and lets John publish without a component edit. | — |
+| **P5-06** Live ecosystem data | **OPEN — owner-gated.** The same item as FR-066 and product-audit finding #21. The read-only JSON contract can be specified now; no unsourced figure renders regardless. | FR-066 |
+| **P5-07** On-chain roadmap | **BLOCKED** on a funded Base mainnet wallet. Unchanged. | — |
+
+### The reprioritised order, and why it changed
+
+**`P5-02 → P5-05 (policy layer) → P5-04 → [owner-gated: P5-06, P5-07]`.**
+
+P5-02 moves to first. The original order was by conversion impact; the rerun has already delivered
+the conversion mechanics, so the binding constraint is no longer *does the loop work* but **does
+anyone know whether it converts.** FR-062 asserts a lead reaches John, and nothing counts how many
+visitors reach the form and leave. Instrumenting the loops is what makes the next prioritisation
+evidence-based rather than another guess — and under ADR-P5-01 it costs no cookie and no identifier.
+
+P5-01 and P5-03 leave the list as **delivered**. P5-05 splits into a shippable policy layer and a
+funding-gated activation. P5-04 and P5-07 serve no outcome FR and are marked so rather than being
+justified after the fact — a task with no loop above it is exactly what EPIC K's standing rule
+exists to surface.
