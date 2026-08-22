@@ -21,3 +21,24 @@ export function allClaims() {
 }
 
 export const forbiddenList = register.forbidden || []
+
+/**
+ * What KIND of evidence backs a claim.
+ *
+ * The register has always recorded this and the UI never showed it: 17 of the 31 cleared claims
+ * carry a prose pointer ("owner-attested — …") rather than a URL, and every one rendered exactly
+ * like a CodeHawks rank a reader can click through and check. Portfolio-evidence's rule is that
+ * owner-attested figures are allowed but must be *marked as attested with their provenance, never
+ * dressed up as independently verified* — so the distinction has to reach the reader, not sit in
+ * the JSON.
+ *
+ * @returns {'verified'|'attested'|'unsourced'}
+ *   verified  — the pointer is a URL the reader can open and check
+ *   attested  — a pointer exists, but it is a statement rather than a checkable source
+ *   unsourced — no pointer at all (the claims gate blocks a cleared claim in this state)
+ */
+export function evidenceKind(claim) {
+  const p = claim && claim.evidence_pointer
+  if (typeof p !== 'string' || !p.trim()) return 'unsourced'
+  return /^https?:\/\//i.test(p.trim()) ? 'verified' : 'attested'
+}

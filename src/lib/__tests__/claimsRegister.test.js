@@ -4,7 +4,7 @@
  * on — and despite an explicit rule that no unsourced figure may render.
  */
 import { describe, it, expect } from 'vitest'
-import { getClaim, isClaimCleared, allClaims, forbiddenList } from '../claimsRegister.js'
+import { getClaim, isClaimCleared, allClaims, forbiddenList, evidenceKind } from '../claimsRegister.js'
 
 describe('claims register', () => {
   it('exposes a non-empty register of claims', () => {
@@ -43,5 +43,46 @@ describe('claims register', () => {
 
   it('isClaimCleared is defensive about malformed input', () => {
     for (const bad of [null, undefined, {}, 'x']) expect(() => isClaimCleared(bad)).not.toThrow()
+  })
+})
+
+/*
+ * evidenceKind — the distinction the register always recorded and the UI never showed.
+ * Portfolio-evidence: an owner-attested figure is allowed, but must be marked as attested and
+ * never dressed up as independently verified. These pin the classifier that makes that possible.
+ */
+describe('evidenceKind — verified vs attested vs unsourced', () => {
+  it('classifies a URL pointer as verified, scheme-insensitively', () => {
+    expect(evidenceKind({ evidence_pointer: 'https://profiles.cyfrin.io/u/agilegypsy' })).toBe('verified')
+    expect(evidenceKind({ evidence_pointer: 'http://example.com/x' })).toBe('verified')
+    expect(evidenceKind({ evidence_pointer: 'HTTPS://EXAMPLE.COM' })).toBe('verified')
+    expect(evidenceKind({ evidence_pointer: '  https://example.com  ' })).toBe('verified')
+  })
+
+  it('classifies a prose pointer as attested — a statement is not a checkable source', () => {
+    expect(evidenceKind({ evidence_pointer: 'owner-attested — Overmind GenAI engine' })).toBe('attested')
+    expect(evidenceKind({ evidence_pointer: 'CodeHawks profile' })).toBe('attested')
+    // Not a URL just because it mentions one — the pointer must BE the link, not describe it.
+    expect(evidenceKind({ evidence_pointer: 'see https://example.com' })).toBe('attested')
+  })
+
+  it('classifies a missing or blank pointer as unsourced', () => {
+    expect(evidenceKind({ evidence_pointer: '' })).toBe('unsourced')
+    expect(evidenceKind({ evidence_pointer: '   ' })).toBe('unsourced')
+    expect(evidenceKind({ evidence_pointer: null })).toBe('unsourced')
+    expect(evidenceKind({})).toBe('unsourced')
+    expect(evidenceKind(null)).toBe('unsourced')
+    expect(evidenceKind(undefined)).toBe('unsourced')
+  })
+
+  it('NO cleared claim in the shipped register is unsourced', () => {
+    const bad = allClaims().filter((c) => isClaimCleared(c) && evidenceKind(c) === 'unsourced')
+    expect(bad.map((c) => c.id), 'cleared claims with no evidence pointer').toEqual([])
+  })
+
+  it('the register genuinely contains both kinds — otherwise this distinction is untested in situ', () => {
+    const kinds = new Set(allClaims().filter(isClaimCleared).map(evidenceKind))
+    expect(kinds.has('verified')).toBe(true)
+    expect(kinds.has('attested')).toBe(true)
   })
 })

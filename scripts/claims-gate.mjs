@@ -22,6 +22,11 @@ const allIds = new Set(register.claims.map((c) => c.id))
 
 // 2) Walk src/ for <Claim id> integrity + forbidden copy. Exclude the claims infra + tests.
 const EXCLUDE = ['src/lib', 'src/data', 'scripts', '__tests__', 'node_modules', 'dist']
+// Colocated tests too. `__tests__` above only catches the DIRECTORY form, so a test sitting next
+// to its component (Claim.test.jsx) was still scanned — and a test asserting that an unknown id
+// renders nothing must necessarily contain an unknown id. Tests ship to nobody; this gate's job
+// is rendered code. Same gap the copy gate had, fixed the same way.
+const TEST_FILE = /\.(test|spec)\.[jt]sx?$/
 function walk(dir) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name)
@@ -29,7 +34,7 @@ function walk(dir) {
     if (EXCLUDE.some((x) => rel.startsWith(x) || rel.includes(`/${x}/`))) continue
     const st = statSync(p)
     if (st.isDirectory()) walk(p)
-    else if (/\.(jsx?|tsx?)$/.test(name)) scanFile(p)
+    else if (/\.(jsx?|tsx?)$/.test(name) && !TEST_FILE.test(name)) scanFile(p)
   }
 }
 function scanFile(p) {

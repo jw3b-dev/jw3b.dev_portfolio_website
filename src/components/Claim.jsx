@@ -5,7 +5,7 @@
  * Wears the mono/tabular verdict treatment; one tap to its receipt (evidence pointer).
  * Styling is token-class only (no raw hex).
  */
-import { getClaim, isClaimCleared } from '../lib/claimsRegister.js'
+import { getClaim, isClaimCleared, evidenceKind } from '../lib/claimsRegister.js'
 
 export default function Claim({
   id,
@@ -24,7 +24,8 @@ export default function Claim({
   if (!record || !isClaimCleared(record)) return fallback
 
   const receipt = record.evidence_pointer
-  const hasLink = typeof receipt === 'string' && receipt.startsWith('http')
+  const kind = evidenceKind(record)
+  const hasLink = kind === 'verified'
 
   return (
     <span
@@ -51,6 +52,26 @@ export default function Claim({
         >
           ↗
         </a>
+      )}
+      {/*
+          An ATTESTED figure must not look like a verified one. 17 of the 31 cleared claims have a
+          prose pointer rather than a URL, and until now every one rendered identically to a rank
+          a reader could click through and check — which is precisely the "dressed up as
+          independently verified" failure the evidence register exists to prevent.
+
+          Deliberately muted, not alarming: attested is allowed. It is simply a different kind of
+          evidence, and the reader is entitled to know which one they are looking at. The pointer
+          text itself is exposed (title + screen-reader text) so the claim is INSPECTABLE rather
+          than merely labelled.
+      */}
+      {kind === 'attested' && (
+        <span
+          className="ml-1 align-super text-[0.6em] uppercase tracking-label text-content-muted"
+          title={receipt}
+        >
+          <span aria-hidden="true">attested</span>
+          <span className="sr-only">{` — owner-attested, not independently verified. Source: ${receipt}`}</span>
+        </span>
       )}
     </span>
   )
