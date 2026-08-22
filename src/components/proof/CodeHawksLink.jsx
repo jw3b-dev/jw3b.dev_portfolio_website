@@ -16,6 +16,14 @@
  */
 import Claim from '../Claim.jsx'
 import { getClaim, isClaimCleared, evidenceKind } from '../../lib/claimsRegister.js'
+import { CONTESTS } from '../../data/codehawks-contests.js'
+
+// Severity carries the reserved failure tone only where a real High was found.
+const SEVERITY_TONE = {
+  High: 'text-failed',
+  Medium: 'text-caution',
+  Low: 'text-content-muted',
+}
 
 export default function CodeHawksLink({ className = '' }) {
   const rank = getClaim('codehawks-124-rank')
@@ -57,17 +65,41 @@ export default function CodeHawksLink({ className = '' }) {
           finding in a NAMED public contest is something they can go and read. This was added when
           the public rank receipt broke — and it is the stronger evidence of the two.
 
-          "Validated submission", never "wrote". The contest report credits agilegypsy among the
-          validated submitters on H-01 and M-01, and Cyfrin published other researchers' write-ups
-          for both. Claiming authorship here would be exactly the misattribution that
-          mas/facts/PORTFOLIO_REFERENCE.md 1b had to be corrected for.
+          "Validated submission", never "wrote". Cyfrin credits every researcher who validly
+          reported a finding, then publishes ONE of them as the "Selected submission" — and for all
+          seven of these it was someone else. Claiming authorship here would be exactly the
+          misattribution mas/facts/PORTFOLIO_REFERENCE.md §1b had to be corrected for.
+
+          Rows come from src/data/codehawks-contests.js, parsed out of Cyfrin's own reports, so the
+          list and the register's summary string cannot drift apart.
       */}
-      <p className="mt-3 text-sm text-content-secondary">
-        <Claim id="codehawks-ff42-validated" /> — validated submissions in{' '}
-        <span className="text-content-primary">First Flight #42</span> (Jun 2025):{' '}
-        <span className="text-content-primary">H-01 Unrestricted NFT Minting</span> (High) and{' '}
-        <span className="text-content-primary">M-01 DoS on claim</span> (Medium).
-      </p>
+      <div className="mt-4 border-t border-hairline pt-3">
+        <p className="text-sm text-content-secondary">
+          <Claim id="codehawks-validated-findings" /> — validated submissions. CodeHawks credits
+          every researcher who validly reports a finding; the published write-up for each of these
+          is another researcher's.
+        </p>
+
+        <ul className="mt-3 space-y-2.5">
+          {CONTESTS.map((c) => (
+            <li key={c.flight}>
+              <p className="font-mono text-[11px] uppercase tracking-label text-content-muted">
+                First Flight #{c.flight} · {c.name} · {c.ended}
+              </p>
+              <ul className="mt-1 space-y-0.5">
+                {c.findings.map((f) => (
+                  <li key={f.id} className="flex items-baseline gap-2 text-[13px]">
+                    <span className={`font-mono text-[11px] ${SEVERITY_TONE[f.severity]}`}>
+                      {f.id} {f.severity}
+                    </span>
+                    <span className="text-content-secondary">{f.title}</span>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* No public receipt: show WHERE the record is evidenced rather than leaving three bare
           numbers. An attested figure with its provenance stated beats one with nothing at all. */}

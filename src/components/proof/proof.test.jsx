@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import DeliveryAnchor from './DeliveryAnchor.jsx'
 import CodeHawksLink from './CodeHawksLink.jsx'
 import { getClaim, evidenceKind } from '../../lib/claimsRegister.js'
+import { CONTESTS, VALIDATED, summary } from '../../data/codehawks-contests.js'
 
 describe('DeliveryAnchor — PM/Founder seniority anchor (FR-060)', () => {
   it('renders the delivery record and AgilePM cert straight from cleared claims', () => {
@@ -51,7 +52,7 @@ describe('CodeHawksLink — the CodeHawks #124 record (FR-044)', () => {
     }
   })
 
-  it('names the two validated findings — and never claims John WROTE the published write-ups', () => {
+  it('names every validated finding — and never claims John WROTE the published write-ups', () => {
     // The record's public receipt broke, so the specific replaced the aggregate: two named findings
     // in a named contest. Cyfrin credits agilegypsy as a validated SUBMITTER on H-01 and M-01 and
     // published nomadic_bear's and robercano's prose. Any wording implying authorship of those
@@ -59,9 +60,27 @@ describe('CodeHawksLink — the CodeHawks #124 record (FR-044)', () => {
     // that, and this is the guard that keeps it corrected.
     render(<CodeHawksLink />)
     const section = screen.getByRole('region', { name: /codehawks competitive audit/i })
-    expect(within(section).getByText(getClaim('codehawks-ff42-validated').value)).toBeInTheDocument()
+    expect(within(section).getByText(getClaim('codehawks-validated-findings').value)).toBeInTheDocument()
     expect(within(section).getByText(/validated submissions/i)).toBeInTheDocument()
-    expect(within(section).getByText(/H-01 Unrestricted NFT Minting/i)).toBeInTheDocument()
+
+    // Every finding in the data module must reach the screen — a record that silently renders a
+    // subset is the aggregate problem again, one level down.
+    for (const f of VALIDATED) {
+      expect(within(section).getByText(f.title)).toBeInTheDocument()
+    }
+    for (const c of CONTESTS) {
+      // The claims' sr-only provenance notes also name the contests, so require a VISIBLE row —
+      // a sighted reader must see the contest, not only a screen-reader user.
+      const visible = within(section)
+        .getAllByText(new RegExp(`First Flight #${c.flight}`))
+        .filter((el) => !el.className.includes('sr-only'))
+      expect(visible.length).toBeGreaterThan(0)
+    }
+
+    // The register's summary string is generated from the same rows, so a finding added to the
+    // data module without re-generating the claim would desync silently. Pin them together.
+    expect(getClaim('codehawks-validated-findings').value).toBe(summary())
+
     expect(section.textContent).not.toMatch(/\b(wrote|authored|my report|his report)\b/i)
   })
 

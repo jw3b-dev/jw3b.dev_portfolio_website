@@ -19,15 +19,15 @@
     },
     "codehawks-124-exp": {
       "value": "1,430 EXP",
-      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: the First Flight #42 report credits agilegypsy as a validated submitter on H-01 and M-01 (contest: codehawks.cyfrin.io/c/2025-06-snowman-merkle-airdrop)"
+      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: Cyfrin's official reports for First Flights #42, #49 and #52 credit agilegypsy as a validated submitter on seven findings (see codehawks-validated-findings)"
     },
     "codehawks-124-findings": {
       "value": "17 findings",
-      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: the First Flight #42 report credits agilegypsy as a validated submitter on H-01 and M-01 (contest: codehawks.cyfrin.io/c/2025-06-snowman-merkle-airdrop)"
+      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: Cyfrin's official reports for First Flights #42, #49 and #52 credit agilegypsy as a validated submitter on seven findings (see codehawks-validated-findings)"
     },
     "codehawks-124-rank": {
       "value": "#124",
-      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: the First Flight #42 report credits agilegypsy as a validated submitter on H-01 and M-01 (contest: codehawks.cyfrin.io/c/2025-06-snowman-merkle-airdrop)"
+      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: Cyfrin's official reports for First Flights #42, #49 and #52 credit agilegypsy as a validated submitter on seven findings (see codehawks-validated-findings)"
     },
     "cyfrin-foundry": {
       "value": "Foundry Fundamentals",
@@ -125,9 +125,9 @@
       "value": "PRINCE2® Foundation",
       "evidence_pointer": "owner-attested — PeopleCert result sheet (passed)"
     },
-    "codehawks-ff42-validated": {
-      "value": "2 validated findings — 1 High, 1 Medium",
-      "evidence_pointer": "owner-attested — CodeHawks First Flight #42 contest report (1 Jul 2025) lists agilegypsy among the validated submitters on H-01 and M-01"
+    "codehawks-validated-findings": {
+      "value": "7 validated findings across 3 First Flights — 3 High, 3 Medium, 1 Low",
+      "evidence_pointer": "owner-attested — Cyfrin's official contest reports for First Flights #42, #49 and #52 list agilegypsy in the validated-submitter set for each finding named on the surface"
     }
   }
 }

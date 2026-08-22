@@ -31,7 +31,7 @@ describe('P1 credibility surfaces render claims through <Claim> (FR-043/046/047)
         'codehawks-124-rank',
         'codehawks-124-findings',
         'codehawks-124-exp',
-        'codehawks-ff42-validated',
+        'codehawks-validated-findings',
       ]),
     )
     expect(hooks.every((h) => h && h.length > 0)).toBe(true)

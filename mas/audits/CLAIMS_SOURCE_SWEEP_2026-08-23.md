@@ -133,6 +133,34 @@ submissions** and never as authorship, with a test asserting the surface never s
 *wrote / authored*. **A named finding in a named contest is stronger evidence than the rank number
 that broke** — a reader can go and read it.
 
+### Then the owner supplied his contest list, and the record turned out to be 3.5× bigger
+
+Asked whether any of his First Flights matched, and given the catalogue: **eight** of them have
+local contest directories — **#42, #43, #48, #49, #50, #51, #52, #53** — against a site that knew
+about **one**.
+
+Three of those eight have Cyfrin's **official results** on disk. Parsing each finding's
+`_Submitted by …_` set for `agilegypsy`:
+
+| Contest | Validated findings |
+|---|---|
+| **#42 · Snowman Merkle Airdrop** (Jun 2025) | H-01 Unrestricted NFT Minting **(High)** · M-01 claim DoS (Medium) |
+| **#49 · Bid Beasts** (Sep 2025) | H-01 Unauthorized withdrawal in `withdrawAllFailedCredits()` **(High)** · L-01 wrong event emission (Low) |
+| **#52 · BriVault** (Nov 2025) | H-01 Repeat `joinEvent` inflates `totalWinnerShares` **(High)** · M-01 ghost state on `cancelParticipation()` (Medium) · M-02 `joinEvent` DoS (Medium) |
+
+**Seven validated findings across three contests — three Highs, in three different codebases.**
+That is a materially stronger record than the aggregate the site had been leaning on, and unlike
+`#124` it is composed of things a reader can go and read.
+
+**The remaining five contests are deliberately NOT claimed.** They hold only John's own tooling
+output — no Cyfrin results — and an unverified contest is worth less than the space it takes.
+Downloading those five results reports is the highest-value thing left on this thread: on the
+observed rate it would likely add another five to ten validated findings.
+
+The claim value is **generated** by `summary()` in `src/data/codehawks-contests.js` and pinned to
+the register by a test, so a finding added to the rows without regenerating the string fails rather
+than desyncing quietly.
+
 Still open, and genuinely the owner's: John's own 13 write-ups in `ai/markdown/` are his work
 product against the same codebase. They could anchor an **auditor demo** (this is what my tooling
 found), but they are not contest-validated and must never be presented as if they were.
