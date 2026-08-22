@@ -12,10 +12,12 @@ on `/work` that I invented from a label list. It is a plausible pipeline; it is 
 Before the site describes the system it must describe the real one, and before it publishes a
 number it must know which tier produced it. Every claim below is cited to a file.
 
-Five corrections to my own understanding are recorded inline, because each was wrong in a way that
+Six corrections to my own understanding are recorded inline, because each was wrong in a way that
 would have shipped a false statement. The two largest came from verifying against the live API
 instead of the repo: the cloud tier is six workers in a different account, and the job queue has no
-consumer.
+consumer. **Rev 7 came from neither the repo nor the API but from KTHULHU's own ticket board**
+(`tickets/KTH-0215.md`) — which had cut this exact defect, measured it more completely, and named a
+coupling that made the cleanup I recommended dangerous.
 
 ---
 
@@ -298,14 +300,69 @@ discovery case is precisely the precedent for a tier or plan condition explainin
 submissions, and whether anything advances `queued` for that plan. If they are a tier the pipeline
 does not serve, this is the discovery finding again. If they are `managed_pro`, they are stuck.
 
+### ✎ Rev 7 — the factory had already cut this ticket, and it names a trap my fix would have sprung
+
+**Source:** KTHULHU's own board — `tickets/KTH-0215.md` and `docs/factory-queue.md:71`, cut
+2026-08-21, P2, status `ready`. Owner-supplied. Same defect, measured independently, and more
+completely than this audit had it. Four corrections follow; the third is the one that matters.
+
+**1. "Dead weight" understates it — there is a live fail-mode.** Rev 3 concluded *"nothing fails, a
+side-channel is simply dead weight."* Wrong on the first half. The insert at `queue.ts:194` precedes
+the send at `:200`, and `shadowEnqueue` (`:210-217`) is the only caller and catches everything. So a
+send failure returns `null` for a job whose row **is committed and will run** — the Worker records a
+failed dispatch for work that happens. Traced downstream: on the two highest-volume kinds the return
+value is consumed at `overmind.ts:328` as `[staticJobId, fuzzJobId].filter(Boolean).length`, a
+*count* of dispatched jobs. A `null` is filtered out, so the Worker undercounts its own dispatch
+while the box executes normally.
+
+**2. But the blast radius is bounded, which I did not establish.** The in-flight check at `:186`
+returns the existing row's id for any non-terminal `(auditId, kind)`, so a retry after a false
+negative reuses the job rather than duplicating it. The ledger self-heals; only the Worker's record
+of what it dispatched is wrong. Undercount, never double-spend.
+
+**3. ✎ The fix I recommended is a trap, and the ticket names it.** I proposed deleting the send *and
+retiring the `TOOL_QUEUE` binding with it*. `queue.ts:109` makes the binding part of the enqueue's
+**success condition**:
+
+```ts
+if (!kindEnqueueEnabled(env, job.kind) || !env.TOOL_QUEUE) return null;
+```
+
+Dropping the producer binding — which is exactly what "remove the dead queue" looks like — silently
+disables **every box dispatch**, even though the box reads D1 and would be unaffected. It would
+present as a flag problem, on the path that carries all the real work. KTH-0215's AC5 sequences the
+`wrangler.overmind.toml` change **after** the code change for this reason; AC2 requires the coupling
+be broken first. My recommendation had the order unstated, which is the same as having it wrong.
+
+**4. Two of my open items are closed by measurement.** The caveat I left — *"whether anything outside
+this repo consumes `kthulhu-tool-jobs`"* — was already answered by two instruments: no push-consumer
+worker, no HTTP pull consumer, `Number of Consumers: 0`. And my suggestion to *"re-add a
+consumer-first implementation if the cutover is revived"* contradicts a **measured non-goal**: the
+consumer side was removed deliberately, and `dispatch.sh:30-36` records the cost it avoided —
+`npx wrangler` at *"~50% of one core, continuously, forever, to ask whether the queue is empty"* on a
+box that *"sits at 96 C and has already hard-frozen once."* Reinstating it re-imposes exactly that.
+
+**Scale, restated from the ledger:** 382 `tool_jobs` rows since 2026-07-13 across **seven** kinds —
+every one also sent a descriptor that was retained 24h and discarded. This supersedes Rev 3's
+flag-derived "four job kinds"; Rev 4's table already showed seven.
+
+**✎ Process note — this is the addendum rule running backwards.** The five instances in
+`POSTMORTEM_CONCEPT_SHIP.md` are all *consulted a repo artifact instead of the running system*. Here
+I did ask the running system, and the finding was right — but I recommended a change to a system
+whose own issue tracker had already adjudicated it, including a hazard I had not found. See that
+document's addendum for the corollary this adds.
+
 ### Confidence, stated per fact
 
 | Fact | Verified how | Confidence |
 |---|---|---|
 | Queue: 1 producer, 0 consumers | REST `GET /queues` + owner's `wrangler queues` | **Confirmed** (independently, twice) |
 | Retention 86400s | REST `GET /accounts/{a}/queues/{id}` → `settings.message_retention_period` | **Confirmed via REST.** The owner's `queues info` does not surface it — the CLI is the weaker instrument here |
-| 4 kinds actively enqueued | Owner read `kindEnqueueEnabled` + the `"true"` flags in config | **Confirmed** |
+| ~~4~~ **7** kinds actively enqueued; 382 sends | Rev 3 inferred 4 from the config flags; the `tool_jobs` ledger shows seven kinds with rows, and a row implies the gate passed | **Confirmed (ledger).** The flag-derived figure is superseded |
 | Box drains D1, not the queue | `dispatch.sh` header | **Confirmed** |
+| A send failure returns `null` for a committed job | `queue.ts:194` insert → `:200` send → `shadowEnqueue:210-217` catch-all; KTH-0215 | **Confirmed (source, both readings)** |
+| …and it undercounts rather than duplicating | `overmind.ts:328` consumes the ids as a count; `queue.ts:186` in-flight guard returns the existing id | **Confirmed (source)** |
+| Dropping the `TOOL_QUEUE` binding would take **all** box dispatch dark | `queue.ts:109` — binding is part of the success condition | **Confirmed (source).** Not found by this audit; supplied by KTH-0215 |
 | `LEDGER_PULL_{FUZZ,SCENARIO,STATIC}`, `STATIC_ADJ_ON_BOX`, `SHADOW_DISPATCH` **exist** | REST worker settings → present as `secret_text` bindings | **Confirmed to exist** |
 | …their VALUES | — | **Unverified.** Secret values are unreadable; absent from config, so dashboard- or CLI-set. Do not treat as on |
 

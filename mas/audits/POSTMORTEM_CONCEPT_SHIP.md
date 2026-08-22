@@ -111,6 +111,25 @@ running process, the deployed endpoint, the actual database. A file, a grep or a
 evidence about the repo; it is evidence about production only once something has proven the two
 agree.
 
+**✎ The rule has a second half, learned 2026-08-22 by breaking it.** Asking the running system is
+necessary and not sufficient. I traced a KTHULHU defect against live source and the deployed
+account, got the finding right, and recommended a fix — deleting the dead `TOOL_QUEUE.send` *and its
+binding*. KTHULHU's own board had already cut that ticket (`KTH-0215`, 2026-08-21) with the same
+measurements plus one I never found: `queue.ts:109` makes the binding part of the enqueue's success
+condition, so removing it takes **every box dispatch dark** on the path that carries all the real
+work, presenting as a flag problem. The ticket sequences the binding removal after the code change
+for exactly that reason.
+
+> **Before recommending a change to a system, read that system's own record of itself.** A ticket
+> board, a decision log, an ADR — these are not repo artifacts of the kind the rule above warns
+> about, because they record *adjudications*, not descriptions. The failure above was consulting a
+> file that described the system. This one was not consulting the file that had already judged it.
+
+Note the asymmetry that makes both live: `d1.ts:135` — a comment *describing* the dispatcher — was
+wrong for a month and nearly propagated. `KTH-0215` — a ticket *adjudicating* the same code — was
+right and would have prevented a dangerous recommendation. Same repo, opposite reliability. The
+discriminator is whether the artifact was written to explain the system or to decide about it.
+
 **Corollary: state confidence per fact, not per document.** "Confirmed (live API)", "confirmed to
 exist, value unreadable" and "plausible, unverified" are three different claims. Collapsing them is
 how a report becomes wrong while every sentence in it still feels true. See
