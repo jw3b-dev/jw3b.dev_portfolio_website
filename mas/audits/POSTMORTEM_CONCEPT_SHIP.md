@@ -113,9 +113,24 @@ label was a diagnosis I made without reading the route header I had written. KTH
 operable here. Kointel is not, and the correct next step is to check whether its capability is
 also already built before asking the owner for anything.
 
+**✎ Third revision, same day — cause #2 is now FALSIFIED.** Kointel was re-diagnosed rather than
+escalated, and it was the same shape twice over: its differentiator is a build-failing CI gate,
+a pure rule needing no product access at all, and it now runs on the card (`KointelGate.jsx`).
+**All four flagships operate on this site. FR-066 is met and finding 21 is closed.** Cause #2 goes
+from PARTIAL to falsified, making it **five of five** — but only because the residual was
+challenged instead of accepted, which is the opposite of what happened for the month before.
+
 **The lesson this cause keeps teaching:** an honest label over an absent capability is
 comfortable enough to survive review — including mine — and the more honest the label, the longer
-nobody looks behind it.
+nobody looks behind it. Both flagships sat behind *correct* degradation notices. Neither notice
+was ever wrong; each simply described a wall nobody tried to walk through.
+
+**And the second-order lesson, which is the expensive one.** The Kointel gap was found only
+because the KTHULHU gap was corrected — the second diagnosis was never re-examined on its own
+merits, it inherited the first one's verdict. An owner-gated item is a *conclusion*, and
+conclusions filed against the person who can unblock them are the ones least likely to be
+re-opened. Every remaining owner-gated row (23, 25, 26) deserves the same challenge before it is
+presented as a decision waiting on John.
 
 *Original verdict, kept because the movement is the point:* three falsified, two partially —
 neither residual an engineering gap.

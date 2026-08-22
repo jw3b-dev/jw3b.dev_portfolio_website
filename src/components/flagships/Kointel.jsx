@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from 'react'
 import { HATS } from '../../constants/index.js'
 import { isEnabled } from '../../config/features.js'
 import { framingOriginAllowed } from '../../config/embeds.js'
+import KointelGate from './KointelGate.jsx'
 
 export const KOINTEL_URL = 'https://kointel.co.za'
 
@@ -95,6 +96,15 @@ export default function Kointel({ url = KOINTEL_URL, embed = isEnabled('kointelE
           </li>
         ))}
       </ul>
+
+      {/*
+          The on-site half. Kointel refuses framing, so this card was a description and a link —
+          the weakest of the four, and the last one asserting a capability the visitor could not
+          reach. The compliance gate is the product's documented differentiator and is a pure
+          rule, so it runs here. Same lesson as the KTHULHU corpus: the demonstrable thing was
+          never behind an API.
+      */}
+      <KointelGate />
     </section>
   )
 }

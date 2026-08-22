@@ -196,3 +196,27 @@ test('the KTHULHU flagship does something ON this site, and attributes the corpu
     .poll(async () => ((await live.textContent()) || '').trim().length > 0, { timeout: 20_000 })
     .toBe(true)
 })
+
+test('the Kointel flagship runs its rule, and says it is not the product', async ({ page }) => {
+  /*
+   * FR-066 / finding 21, the other half. Kointel's origin sends X-Frame-Options: DENY, so this
+   * card never even reached an iframe — it was a description and a link, the weakest of the four.
+   * Its documented differentiator is a build-failing CI gate, which is a pure rule, so it runs
+   * here. Fully deterministic: no network, no wallet, no model.
+   */
+  await page.goto('/work')
+  const gate = page.locator('section[aria-labelledby="kointel-gate"]')
+  await expect(gate).toBeVisible()
+
+  // The disclaimer is the load-bearing part — this demonstrates the rule, it is not the product.
+  await expect(gate).toContainText(/not kointel’s source code/i)
+  await expect(gate).toContainText(/does not trace dataflow/i)
+
+  // Opens on a passing module…
+  await expect(gate.getByRole('status')).toContainText(/build passes/i)
+
+  // …and the verdict must actually respond to the code, not just render once.
+  await gate.getByRole('textbox').fill('await wallet.sendTransaction(tx)')
+  await expect(gate.getByRole('status')).toContainText(/build fails/i)
+  await expect(gate).toContainText(/line 1/i)
+})
