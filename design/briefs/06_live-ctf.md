@@ -68,6 +68,6 @@ Chain/Worker down → **labelled recorded solve** (Tier-1/2), never a broken flo
 
 **Next needs:**
 
-- **The vault is v1-era.** Owner-gated on keystore + gas for a redeploy (finding 25). Until then the challenge is readable and not fully attemptable, and the copy must keep saying so.
+- ~~The vault is v1-era.~~ **✎ CORRECTED 2026-08-22 — "not fully attemptable" was wrong.** Verified on-chain: the vault holds 0.00012 ETH, is drainable, and exposes every selector the flow uses. `contracts.js` had already recorded that the v1 vault is compatible with the v2 attack. The real dependency is narrower and already handled: the bait is small, so the first solver empties it, and `ctfFlow`'s `vault-empty` phase says so instead of failing silently. **What is left is re-funding after a capture, not a redeploy.**
 - ~~A learning path, not only a competition.~~ **✎ DONE 2026-08-22** — three progressive hints, revealed one at a time, each pointing at a line of the vault above rather than explaining reentrancy in the abstract. Revealed in order on purpose: all three at once is a solution, in sequence it is a lesson. No wallet required, like the rest of the brief.
 - ~~Show what a solve looks like.~~ **✎ DONE 2026-08-22** — the shipped `vault-drain.json` walkthrough now renders on the pre-wallet brief, labelled as a dated recording, with its fallback preamble deliberately dropped.
