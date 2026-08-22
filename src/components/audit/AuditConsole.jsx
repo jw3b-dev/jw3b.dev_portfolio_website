@@ -29,6 +29,7 @@ import { useAuditWorkspace } from '../../hooks/useAuditWorkspace.js'
 import { SEVERITY_META } from '../../lib/auditHeuristics.js'
 import { AUDIT_DISCLAIMER, SOURCE_CAP } from '../../lib/auditClient.js'
 import { AUDIT_EXAMPLES } from '../../lib/auditExamples.js'
+import FixVerdict from './FixVerdict.jsx'
 
 const chipBase =
   'rounded-md border px-2 py-1 font-mono text-[10px] uppercase tracking-label motion-safe:transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan'
@@ -215,20 +216,9 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
           )}
           {w.screen?.empty && <p className="mt-3 text-sm text-content-secondary">Nothing to screen — the editor is empty.</p>}
 
-          {/* The re-screen verdict: the console applies a change and then reports what the
-              detector says about the RESULT. It never claims the fix worked. */}
-          {w.lastFix && (
-            <p
-              className={
-                'mt-3 rounded-md border p-2 text-xs ' +
-                (w.lastFix.cleared ? 'border-verified/40 bg-verified/5 text-verified' : 'border-caution/40 bg-caution/5 text-caution')
-              }
-            >
-              {w.lastFix.cleared
-                ? `Applied the rule-derived fix “${w.lastFix.label}” — re-screened, and the finding is gone. That clears one pattern; it is not an audit.`
-                : `Applied the rule-derived fix “${w.lastFix.label}” — but the re-screen still flags it. Shown as-is rather than claimed as fixed.`}
-            </p>
-          )}
+          {/* The re-screen verdict lives in its own component because it carries a RULE:
+              `introduced` outranks `cleared`. See FixVerdict.jsx. */}
+          <FixVerdict lastFix={w.lastFix} />
 
           {w.findings.length > 0 && (
             <h3 className="mt-4 font-mono text-[10px] uppercase tracking-label text-content-muted">

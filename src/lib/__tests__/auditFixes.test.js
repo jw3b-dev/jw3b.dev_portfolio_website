@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fixesFor, applyFixAndVerify, gateFixes, FIXES } from '../auditFixes.js'
+import { fixesFor, applyFixAndVerify, gateFixes, FIXES, findingsDelta } from '../auditFixes.js'
 import { auditSolidity, SAMPLE_CONTRACT } from '../auditHeuristics.js'
 
 /*
@@ -245,7 +245,12 @@ describe('auditFixes — offering rules', () => {
   })
 
   it('reports no clearance for a malformed fix rather than throwing', () => {
-    expect(applyFixAndVerify(null, TX_ORIGIN)).toEqual({ source: TX_ORIGIN, changed: false, cleared: false, before: 0, after: 0 })
+    // `delta` was added when the verdict stopped reporting only the target finding; an EMPTY
+    // delta (not undefined) is part of the contract, so callers never have to null-check it.
+    expect(applyFixAndVerify(null, TX_ORIGIN)).toEqual({
+      source: TX_ORIGIN, changed: false, cleared: false, before: 0, after: 0,
+      delta: { resolved: [], introduced: [], unchanged: [] },
+    })
     expect(applyFixAndVerify({ apply: 'nope' }, TX_ORIGIN).changed).toBe(false)
   })
 
@@ -323,5 +328,82 @@ contract V {
   it('tolerates junk rather than throwing — it runs on live editor state', () => {
     expect(gateFixes(null, null)).toEqual([])
     expect(gateFixes([{}], [{ findingId: 'nope' }], { analysed: true })).toMatchObject([{ locked: false }])
+  })
+})
+
+/*
+ * The re-screen DELTA (audit-console brief, next-need 2).
+ *
+ * `applyFixAndVerify` used to count only findings matching the fix's own id — so a fix that
+ * cleared its target while introducing a DIFFERENT finding reported a clean `cleared: true`, and
+ * the console printed "the finding is gone" over a contract that had just acquired a new problem.
+ * That is the precise failure mode this whole surface argues against, produced by our own code.
+ */
+describe('findingsDelta — what a change did to the WHOLE finding set', () => {
+  it('reports nothing changed when the source is identical', () => {
+    const d = findingsDelta(REENTRANT, REENTRANT)
+    expect(d.resolved).toEqual([])
+    expect(d.introduced).toEqual([])
+    expect(d.unchanged).toContain('reentrancy')
+  })
+
+  it('reports a finding as RESOLVED when it stops matching', () => {
+    // Uses the REAL fix rather than a hand-edited string, so this test cannot drift away from
+    // what the console actually applies.
+    const fix = fixFor(REENTRANT, 'reentrancy')
+    const d = findingsDelta(REENTRANT, fix.apply(REENTRANT))
+    expect(d.resolved).toContain('reentrancy')
+    expect(d.introduced).toEqual([])
+  })
+
+  it('reports a finding as INTRODUCED when an edit creates one', () => {
+    // Pinning is not the point here; adding a floating pragma to a clean-ish file is.
+    const before = '// SPDX-License-Identifier: MIT\npragma solidity 0.8.20;\ncontract A { uint x; }\n'
+    const after = '// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\ncontract A { uint x; }\n'
+    const d = findingsDelta(before, after)
+    expect(d.introduced).toContain('floating-pragma')
+    expect(d.resolved).toEqual([])
+  })
+
+  it('compares by COUNT, not by set — line numbers shift, so location matching would lie', () => {
+    const fix = fixFor(REENTRANT, 'reentrancy')
+    const after = fix.apply(REENTRANT)
+    // The fix moves the external call, so every surviving finding's LINE moves with it. A
+    // location-keyed diff would report the unchanged ones as resolved-and-reintroduced.
+    const d = findingsDelta(REENTRANT, after)
+    expect(d.introduced).toEqual([])
+    for (const id of d.unchanged) expect(d.resolved).not.toContain(id)
+  })
+
+  it('tolerates empty and nullish input without throwing', () => {
+    expect(findingsDelta('', '')).toEqual({ resolved: [], introduced: [], unchanged: [] })
+    expect(findingsDelta(null, undefined)).toEqual({ resolved: [], introduced: [], unchanged: [] })
+  })
+})
+
+describe('applyFixAndVerify carries the delta, so no caller can report a false all-clear', () => {
+  it('attaches a delta to every real verdict', () => {
+    const src = REENTRANT
+    const fix = fixesFor(auditSolidity(src).findings, src)[0]
+    const v = applyFixAndVerify(fix, src)
+    expect(v.delta).toBeDefined()
+    expect(Array.isArray(v.delta.resolved)).toBe(true)
+    expect(Array.isArray(v.delta.introduced)).toBe(true)
+  })
+
+  it('returns an empty delta — never undefined — when there is no fix to apply', () => {
+    const v = applyFixAndVerify(null, 'contract A {}')
+    expect(v.delta).toEqual({ resolved: [], introduced: [], unchanged: [] })
+    expect(v.cleared).toBe(false)
+  })
+
+  it('no shipped fix introduces a finding it did not resolve', () => {
+    // The guard that matters: if a future fix ever regresses into creating a new pattern, this
+    // fails here rather than being explained away in the UI.
+    const src = REENTRANT
+    for (const fix of fixesFor(auditSolidity(src).findings, src)) {
+      const v = applyFixAndVerify(fix, src)
+      expect(v.delta.introduced, `${fix.findingId} introduced ${v.delta.introduced}`).toEqual([])
+    }
   })
 })

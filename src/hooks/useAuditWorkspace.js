@@ -57,7 +57,7 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
   const [runsUsed, setRunsUsed] = useState(0)
   const [selectedRunId, setSelectedRunId] = useState(null)
   const [autoStatus, setAutoStatus] = useState(() => idle(AUTO_RUN_REASON.DISABLED))
-  const [lastFix, setLastFix] = useState(null) // { label, cleared, findingId } — the re-screen result
+  const [lastFix, setLastFix] = useState(null) // { label, cleared, findingId, delta } — the re-screen result
   // WHY the draft last moved. The text alone can't distinguish someone typing from someone
   // clicking back through their own checkpoints, and only one of those is worth a model call.
   const [changeOrigin, setChangeOrigin] = useState(CHANGE_ORIGIN.INIT)
@@ -144,7 +144,15 @@ export function useAuditWorkspace({ initialSource, idleMs = AUTO_RUN_IDLE_MS, fe
     const verdict = applyFixAndVerify(fix, wsRef.current.draft)
     setChangeOrigin(CHANGE_ORIGIN.FIX)
     setWs((prev) => applyFixPure(prev, fix))
-    setLastFix({ label: fix?.label || 'Fix', findingId: fix?.findingId, cleared: verdict.cleared, changed: verdict.changed })
+    setLastFix({
+      label: fix?.label || 'Fix',
+      findingId: fix?.findingId,
+      cleared: verdict.cleared,
+      changed: verdict.changed,
+      // The whole re-screen delta, not just the target finding. `introduced` is the one that
+      // changes what the verdict is ALLOWED to say — see AuditConsole.
+      delta: verdict.delta,
+    })
   }, [])
 
   const restoreVersion = useCallback((versionId) => {

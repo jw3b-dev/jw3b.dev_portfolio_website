@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import AuditConsole from './AuditConsole.jsx'
+import FixVerdict from './FixVerdict.jsx'
 import { AUDIT_DISCLAIMER, SOURCE_CAP } from '../../lib/auditClient.js'
 
 /*
@@ -455,5 +456,49 @@ describe('AuditConsole — the analysis follows the version you are viewing', ()
     setSource(TX_ORIGIN_CONTRACT) // never analysed
     const panel = screen.getByRole('tabpanel', { name: /Run 1/ })
     expect(within(panel).getByTitle(/editor has changed since this analysis ran/i)).toBeInTheDocument()
+  })
+})
+
+/*
+ * The re-screen DELTA (audit-console brief, next-need 2).
+ *
+ * The verdict used to be a boolean over the fix's OWN finding. The re-screen already knew what
+ * happened to every other finding and threw it away — so a fix that cleared its target while
+ * introducing a different pattern printed "the finding is gone" in success colours. These tests
+ * pin the rule that replaced it: `introduced` outranks `cleared`, and it leads the sentence.
+ */
+describe('AuditConsole — the re-screen reports the whole delta, not just its target', () => {
+  it('shows what the fix resolved, by detector id', () => {
+    renderConsole()
+    fireEvent.click(screen.getAllByRole('button', { name: /apply fix/i })[0])
+    expect(screen.getByText(/resolved:/i)).toBeInTheDocument()
+  })
+
+  it('does not invent an introduced line when nothing was introduced', () => {
+    renderConsole()
+    fireEvent.click(screen.getAllByRole('button', { name: /apply fix/i })[0])
+    expect(screen.queryByText(/introduced:/i)).toBeNull()
+  })
+
+  it('a fix that INTRODUCES a finding must not read as success', () => {
+    /*
+     * No shipped fix does this today (auditFixes.test.js asserts that), so the behaviour is
+     * driven through the component's own verdict branch with a delta that has an introduction.
+     * The assertion is about what the UI is ALLOWED to say, which is exactly the thing that
+     * cannot be left to "no current fix does that".
+     */
+    const lastFix = {
+      label: 'Pin the pragma',
+      findingId: 'floating-pragma',
+      cleared: true, // the target DID clear …
+      changed: true,
+      delta: { resolved: ['floating-pragma'], introduced: ['reentrancy'], unchanged: [] }, // … but something new appeared
+    }
+    render(<FixVerdict lastFix={lastFix} />)
+
+    // The bad news leads, and the "gone" phrasing is absent despite cleared === true.
+    expect(screen.getByText(/flags something it did not before/i)).toBeInTheDocument()
+    expect(screen.queryByText(/the finding is gone/i)).toBeNull()
+    expect(screen.getByText(/introduced: reentrancy/i)).toBeInTheDocument()
   })
 })

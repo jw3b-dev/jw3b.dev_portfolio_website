@@ -194,22 +194,69 @@ export function fixesFor(findings, source) {
   return out
 }
 
+/** PURE — findings grouped by detector id, as {id: count}. */
+function countsById(source) {
+  const out = {}
+  for (const f of auditSolidity(source).findings || []) out[f.id] = (out[f.id] || 0) + 1
+  return out
+}
+
+/**
+ * PURE — what a source change did to the WHOLE finding set.
+ *
+ * Keyed by detector id and compared by COUNT, not by line: a fix shifts line numbers, so matching
+ * on location would report every surviving finding as "resolved and reintroduced". Counts also
+ * express the case that matters — two reentrancy hits, one fixed — which a set difference cannot.
+ *
+ * @returns {{resolved:string[], introduced:string[], unchanged:string[]}}
+ */
+export function findingsDelta(beforeSource, afterSource) {
+  const a = countsById(String(beforeSource || ''))
+  const b = countsById(String(afterSource || ''))
+  const ids = [...new Set([...Object.keys(a), ...Object.keys(b)])].sort()
+  const resolved = [], introduced = [], unchanged = []
+  for (const id of ids) {
+    const before = a[id] || 0
+    const after = b[id] || 0
+    if (after < before) resolved.push(id)
+    else if (after > before) introduced.push(id)
+    else if (before > 0) unchanged.push(id)
+  }
+  return { resolved, introduced, unchanged }
+}
+
 /**
  * Apply a fix and RE-SCREEN the result — the single place the "did it actually clear?" question
  * is answered, so no caller can accidentally assert success (honesty rule 2).
  *
- * @returns {{source:string, changed:boolean, cleared:boolean, before:number, after:number}}
+ * WHY THIS CARRIES A FULL DELTA. It used to count only findings matching the fix's OWN id, which
+ * answers "did my target go away" and discards everything else the re-screen already computed. A
+ * fix that cleared its target while INTRODUCING a different finding therefore reported a clean
+ * "cleared" — a false all-clear on the one surface whose entire argument is that automated tools
+ * must not produce those. `cleared` keeps its original narrow meaning; `introduced` is what a
+ * caller must check before phrasing the result as good news.
+ *
+ * @returns {{source:string, changed:boolean, cleared:boolean, before:number, after:number,
+ *            delta:{resolved:string[], introduced:string[], unchanged:string[]}}}
  *   `cleared` = the finding this fix targets no longer matches. It does NOT mean the contract is
  *   safe; it means one pattern stopped matching.
  */
 export function applyFixAndVerify(fix, source) {
   const src = String(source || '')
+  const empty = { resolved: [], introduced: [], unchanged: [] }
   if (!fix || typeof fix.apply !== 'function') {
-    return { source: src, changed: false, cleared: false, before: 0, after: 0 }
+    return { source: src, changed: false, cleared: false, before: 0, after: 0, delta: empty }
   }
   const next = fix.apply(src)
   const countOf = (s) => auditSolidity(s).findings.filter((f) => f.id === fix.findingId).length
   const before = countOf(src)
   const after = countOf(next)
-  return { source: next, changed: next !== src, cleared: after === 0 && before > 0, before, after }
+  return {
+    source: next,
+    changed: next !== src,
+    cleared: after === 0 && before > 0,
+    before,
+    after,
+    delta: next === src ? empty : findingsDelta(src, next),
+  }
 }
