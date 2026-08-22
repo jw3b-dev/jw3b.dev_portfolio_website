@@ -13,6 +13,7 @@ import { RECORDED_RUNS } from '../../data/recorded-runs/index.js'
 import { isEnabled } from '../../config/features.js'
 import { framingOriginAllowed } from '../../config/embeds.js'
 import KthulhuCorpus from './KthulhuCorpus.jsx'
+import KthulhuPipeline from './KthulhuPipeline.jsx'
 import LivenessBadge from './LivenessBadge.jsx'
 
 // The live product host. Framing is allowed for https://jw3b.dev only (see file header).
@@ -122,6 +123,14 @@ export default function KthulhuEmbed({ url = KTHULHU_URL, embed = isEnabled('kth
           with a border (product-audit finding 21), and it renders whether or not the frame does.
       */}
       <KthulhuCorpus />
+
+      {/*
+          KTHULHU's own pipeline. It shipped for a day on the Overmind flagship, captioned as
+          "Overmind" — a different system that happens to share the word (see kthulhuPipeline.js).
+          It belongs here: it is how THIS product runs an audit, and it is the hardest thing on the
+          card to fake — half these steps execute in containers on self-hosted hardware.
+      */}
+      <KthulhuPipeline />
     </section>
   )
 }

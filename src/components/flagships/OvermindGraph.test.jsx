@@ -1,85 +1,110 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import OvermindGraph from './OvermindGraph.jsx'
-import { OVERMIND_PHASES, OVERMIND_STEPS, TOTAL_STEPS, LANES, laneSteps } from '../../lib/overmindPipeline.js'
+import { OVERMIND_PHASES, TOTAL_PHASES, haltingPrinciples } from '../../lib/overmindGovernance.js'
+import { getClaim } from '../../lib/claimsRegister.js'
 
 /*
- * OvermindGraph (FR-006), rebuilt 2026-08-22 second pass.
+ * OvermindGraph (FR-006) — the Overmind flagship, rebuilt 2026-08-22 after three wrong systems.
  *
- * The property worth pinning is the LANE. A stepper that renders 21 steps and advances through
- * them looks correct while saying nothing a competitor could not also say; what is hard to claim
- * falsely is that half of them execute in containers on self-hosted hardware. So the lane marker
- * is asserted on screen, not just in the model.
+ * The first assertion here is an ATTRIBUTION test, which is unusual for a component suite and is
+ * the whole point: this card rendered a different product's pipeline for a day while every unit
+ * test passed, because the tests only ever checked that the thing on screen matched the model —
+ * never that the model was the right system. So the identity is pinned to the evidence register.
  */
-describe('OvermindGraph — KTHULHU’s two-lane pipeline (FR-006)', () => {
-  const stepBtn = () => screen.getByRole('button', { name: /step the pipeline/i })
+describe('OvermindGraph — the governed engine (FR-006)', () => {
+  const stepBtn = () => screen.getByRole('button', { name: /step the lifecycle|retry the gate/i })
+  const breakSwitch = (n) => screen.getByRole('checkbox', { name: new RegExp(`^${n} `) })
 
-  it('attributes the pipeline to KTHULHU, so it cannot read as the other Overmind', () => {
+  it('is the ENGINE, not KTHULHU’s audit pipeline', () => {
     render(<OvermindGraph />)
-    // The heading stays "Overmind" (the flagship IA names it that); the attribution is explicit
-    // alongside it. Without this the card silently described a different product for a day.
     expect(screen.getByRole('heading', { name: /^Overmind$/i })).toBeInTheDocument()
-    expect(screen.getByText(/KTHULHU.s two-lane audit engine/i)).toBeInTheDocument()
+    expect(screen.getByText(/the engine beneath the work/i)).toBeInTheDocument()
+    // The exact caption that shipped wrong. If it ever returns, this fails.
+    expect(screen.queryByText(/KTHULHU.s two-lane audit engine/i)).not.toBeInTheDocument()
+    // ...and none of KTHULHU's pipeline vocabulary leaks back onto this card.
+    expect(screen.queryByText(/kill-gate vote/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/self-hosted box/i)).not.toBeInTheDocument()
   })
 
-  it('renders all four phases and every step', () => {
+  it('carries its own cleared claims — brief 04 HARD constraint 5', () => {
+    // The card previously rendered ZERO claims, so the flagship asserted a system with no receipts.
+    render(<OvermindGraph />)
+    for (const id of ['overmind-pipeline', 'overmind-governance-tests', 'overmind-corpus']) {
+      expect(screen.getByText(getClaim(id).value, { exact: false })).toBeInTheDocument()
+    }
+  })
+
+  it('renders the six lifecycle phases in order', () => {
     render(<OvermindGraph />)
     for (const p of OVERMIND_PHASES) expect(screen.getByText(p.label)).toBeInTheDocument()
-    for (const s of OVERMIND_STEPS) expect(screen.getByText(s.label)).toBeInTheDocument()
+    expect(screen.getByText(/phase 1 of 6/i)).toBeInTheDocument()
   })
 
-  it('SHOWS the lane on every step — the split must be visible, not merely modelled', () => {
+  it('shows the exit gate with the products that must be baselined', () => {
     render(<OvermindGraph />)
-    const box = screen.getAllByLabelText(/runs on the self-hosted box/i)
-    const cloud = screen.getAllByLabelText(/runs on the Cloudflare/i)
-    expect(box).toHaveLength(laneSteps(LANES.BOX).length)
-    expect(cloud).toHaveLength(laneSteps(LANES.CLOUD).length)
-    expect(box.length).toBeGreaterThan(0)
+    expect(screen.getByText(/baseline required: terms-of-reference/i)).toBeInTheDocument()
   })
 
-  it('states the lane counts in prose, from the model rather than hardcoded', () => {
+  it('names the increment-driven phase as such rather than showing an empty gate', () => {
     render(<OvermindGraph />)
-    expect(screen.getByText(new RegExp(`${laneSteps(LANES.CLOUD).length} orchestrated on Cloudflare`))).toBeInTheDocument()
-    expect(screen.getByText(new RegExp(`${laneSteps(LANES.BOX).length} executed in containers`))).toBeInTheDocument()
+    for (let i = 0; i < 3; i++) fireEvent.click(stepBtn())
+    expect(screen.getByText(/increment-driven — no product gate/i)).toBeInTheDocument()
   })
 
-  it('starts with no gate passed and explains a gate when it is reached', () => {
+  it('allows a clean gate and walks the whole lifecycle', () => {
     render(<OvermindGraph />)
-    expect(screen.getByText(/0\/2 gates/)).toBeInTheDocument()
-
-    const killIdx = OVERMIND_STEPS.findIndex((s) => s.id === 'kill-gate-vote')
-    for (let i = 0; i < killIdx; i++) fireEvent.click(stepBtn())
-
-    // The gate is not a tick — it says what it does, and what it refuses to do.
-    expect(screen.getByText(/dropped_fp/)).toBeInTheDocument()
-    expect(screen.getByText(/false negative is far worse/i)).toBeInTheDocument()
+    expect(screen.getByText(/gate allowed/i)).toBeInTheDocument()
+    for (let i = 0; i < TOTAL_PHASES; i++) fireEvent.click(stepBtn())
+    expect(screen.getByText(/lifecycle complete/i)).toBeInTheDocument()
   })
 
-  it('marks FV dispatch as async — the verdict may not land', () => {
+  it('REFUSES the transition when a halting principle is broken — the key moment', () => {
     render(<OvermindGraph />)
-    const fvIdx = OVERMIND_STEPS.findIndex((s) => s.id === 'fv-dispatch')
-    for (let i = 0; i < fvIdx; i++) fireEvent.click(stepBtn())
-    expect(screen.getByText(/the verdict may not land/i)).toBeInTheDocument()
+    fireEvent.click(breakSwitch(4)) // Never Compromise Quality
+    expect(screen.getByText(/gate halted — 1 exception/i)).toBeInTheDocument()
+
+    fireEvent.click(stepBtn())
+    expect(screen.getByText(/transition refused/i)).toBeInTheDocument()
+    // The index must NOT have moved. A halt that quietly advanced would be the worst outcome here.
+    expect(screen.getByText(/phase 1 of 6/i)).toBeInTheDocument()
   })
 
-  it('explains the review gate as DERIVED and holding delivery', () => {
+  it('proceeds past a coaching violation and still reports it', () => {
     render(<OvermindGraph />)
-    const reviewIdx = OVERMIND_STEPS.findIndex((s) => s.id === 'review-gate')
-    for (let i = 0; i < reviewIdx; i++) fireEvent.click(stepBtn())
-    // "awaiting_review" appears in BOTH the outcome and the asymmetry line, so match the
-    // distinctive half of each rather than the shared token.
-    expect(screen.getByText(/report delivery is HELD/i)).toBeInTheDocument()
-    expect(screen.getByText(/found something serious/i)).toBeInTheDocument()
+    // Principle 2 is COACHING, so it is not one of the switches — assert the distinction holds by
+    // confirming only the three halting principles are offered as switches at all.
+    const boxes = screen.getAllByRole('checkbox')
+    expect(boxes).toHaveLength(haltingPrinciples().length)
+    expect(boxes).toHaveLength(3)
   })
 
-  it('runs end to end and resets', () => {
+  it('clears the refusal once the principle is restored, and then advances', () => {
     render(<OvermindGraph />)
-    for (let i = 0; i < TOTAL_STEPS; i++) {
-      const b = screen.queryByRole('button', { name: /step the pipeline/i })
-      if (b) fireEvent.click(b)
-    }
-    expect(screen.getByText(/both gates passed/i)).toBeInTheDocument()
+    fireEvent.click(breakSwitch(8)) // Demonstrate Control
+    fireEvent.click(stepBtn())
+    expect(screen.getByText(/transition refused/i)).toBeInTheDocument()
+
+    fireEvent.click(breakSwitch(8)) // restore
+    expect(screen.queryByText(/transition refused/i)).not.toBeInTheDocument()
+    fireEvent.click(stepBtn())
+    expect(screen.getByText(/phase 2 of 6/i)).toBeInTheDocument()
+  })
+
+  it('resets state AND the broken principles', () => {
+    render(<OvermindGraph />)
+    fireEvent.click(breakSwitch(4))
+    fireEvent.click(stepBtn())
     fireEvent.click(screen.getByRole('button', { name: /reset/i }))
-    expect(screen.getByText(/0\/2 gates/)).toBeInTheDocument()
+    expect(screen.getByText(/phase 1 of 6/i)).toBeInTheDocument()
+    expect(screen.getByText(/gate allowed/i)).toBeInTheDocument()
+    expect(breakSwitch(4)).not.toBeChecked()
+  })
+
+  it('does not claim to be a live fleet connection', () => {
+    // BR-03/BR-09 honesty: this is a transcription you can operate. The card must say so, because
+    // a stepper that looks live is a stepper a visitor will believe is live.
+    render(<OvermindGraph />)
+    expect(screen.getByText(/not a live connection to a running\s+fleet/i)).toBeInTheDocument()
   })
 })

@@ -158,6 +158,18 @@ points at a missing or non-cleared entry, or a forbidden phrase appears in rende
   prep course; PRINCE2 Practitioner — Foundation only).
 - Citable audit record: **CodeHawks #124 · 17 findings · 1,430 EXP**.
 - **No zero-value theater.** A surface shows a proven figure or shows nothing.
+- **Attribute on the evidence pointer, never on the name.** Where two systems share a word, the
+  register's `evidence_pointer` / `source_system` decides which one a surface is about — settle
+  that *before* reading any code. "Overmind" names three things here: the governed agent engine
+  (**the** engine, what CR-04/05/06 attest to), a Cloudflare Worker inside KTHULHU called
+  `kthulhu-overmind`, and an FSM module inside the first. Discriminating on the name instead
+  shipped the wrong system on the `/work` flagship **three times**. `overmindGovernance.js` is the
+  engine; `kthulhuPipeline.js` is the Worker's namesake — the filenames are part of the fix.
+- **A claim's own source system is the check `claims-gate` cannot run.** The gate catches value
+  drift; it cannot tell you a cleared number is unsupported. CR-06 shipped as "13-phase pipeline"
+  for a month — flagged `[REQUIRES_RESOLUTION]` in business analysis, cleared without
+  reconciliation, and rendered on the homepage; the source system has **6 phases and 13 products**.
+  When a figure can be resolved by arithmetic or a grep against its source, resolve it.
 
 ## 6. Client audit data is never published
 

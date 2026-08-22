@@ -59,7 +59,12 @@ export default defineConfig({
         'src/lib/unlockPaywall.js',
         'src/lib/checkoutRouting.js',
         'src/lib/ctfFlow.js',
-        'src/lib/overmindPipeline.js',
+        'src/lib/kthulhuPipeline.js',
+        // The Overmind engine model. Gated because it is a TRANSCRIPTION of another repo's source
+        // (lifecycle.ts / principles.ts) — a drifted transcription renders a confident lie, which
+        // is exactly what this card did for a day. The tests assert the transcribed facts, so the
+        // coverage gate is what keeps them asserted.
+        'src/lib/overmindGovernance.js',
         'src/lib/fuzzHarness.js',
         'src/lib/txDecode.js',
         'src/lib/xmtpFlow.js',

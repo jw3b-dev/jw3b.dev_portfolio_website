@@ -19,17 +19,30 @@ each = name + one-line thesis + its verified proof (`<Claim>`s) + an **operable 
    the concierge, solve the CTF (deep-links to briefs 05/06 + the global concierge). This is the
    purest proof-as-interface panel: its "screenshot" is the visitor's own session.
 3. **Overmind GenAI Engine** (Engineer+AI) — the platform beneath the products; *"systems are
-   graphs, verification is a first-class step."* Entry: the **steppable pipeline** (below). Proof:
-   `13-phase · 51 modules`, `192,000+ corpus`, `1,345 tests · 100% coverage`.
+   graphs, verification is a first-class step."* ✎ **Corrected 2026-08-22** — this line was right all
+   along and the build drifted off it three times; the card had inverted it into *"KTHULHU's
+   two-lane audit engine"*, which is a **different system that shares the word**. Overmind is an
+   agent fleet governed by AgilePM/DSDM where the governance is **executable**. Entry: the
+   **steppable lifecycle** (below). Proof: `6-phase lifecycle · 8-principle gate`,
+   `192,000+ corpus`, `1,345 tests · 100% coverage` — CR-06's old `13-phase · 51 modules` was a
+   mis-transcription of the engine's **13 products** and is reconciled in the register.
 4. **Kointel** (Engineer+Auditor+Founder) — a shipped compliance-first product; *"a build-failing CI
    gate that bans tx-signing from Web3 modules; carries an EU AI Act dossier."* Entry: **external
    verifiable deep-link** to kointel.co.za + a readout of the gate concept.
 
-**The Overmind steppable pipeline (FR-006) — the ONE place the pipeline appears:** a horizontal
-sequence of nodes joined by **validated edges**; the visitor **steps** it and each gate **visibly
-passes its zero-trust check** (edge resolves cyan `VERIFIED`) before the next lights. It is
+**The Overmind steppable lifecycle (FR-006):** the visitor **steps** the six DSDM phases and each
+exit gate **visibly runs its eight-principle predicate sweep** before the next lights. It is
 **operable/steppable, never a static org-chart, and never the hero** (rejected #5). Under
 degrade/reduced-motion it shows a truthful pre-stepped state with the same verdicts.
+✎ **Amended 2026-08-22 — the gate must also be able to REFUSE.** Three of the eight principles are
+EXCEPTION-severity and halt the transition; a visitor can break one and watch the lifecycle stop
+with the engine's own reason printed. The original spec only ever let gates go green, which is a
+diagram of governance rather than governance. The card carries an explicit honesty line: it is a
+**transcription you can operate**, cited to `lifecycle.ts`/`principles.ts`, **not a live connection
+to a running fleet**.
+**KTHULHU's two-lane pipeline is still steppable — it moved onto the KTHULHU card**, where it was
+always true. Two steppers now exist and they are different systems; that is the correction, not a
+duplication.
 
 **Key Moment:** stepping an Overmind gate and watching the edge resolve to `VERIFIED` — the "systems
 are graphs, every step is checked" thesis made literally operable; and the KTHULHU embed actually
@@ -86,5 +99,8 @@ broken** (BR-03, NFR-02, R-01). Effective success ≥ 95%.
 - ~~Two of four are still frames.~~ **✎ RESOLVED 2026-08-22, after two corrections in one day.** It first said *two frames, blocked on read-only API access*; then *one frame*, when KTHULHU turned out to need no API (`KthulhuCorpus.jsx`, over endpoints deployed and uncalled since W4); then **none**, when Kointel was re-diagnosed instead of escalated and its differentiator turned out to be a pure rule (`KointelGate.jsx`). **All four flagships now operate on this site.** Kept in full because the sequence is the lesson: the second gap was invisible until the first was corrected, since it had inherited the first one's verdict rather than being examined.
 - ~~Nothing re-checks an owner-gated verdict.~~ **✎ THE RE-CHECK WAS DONE 2026-08-22, and it found something every time.** Row 23: half closed, not closed — the Google tag is off, Cloudflare Web Analytics is a separate setting still injecting. Row 25: **over-stated** — verified on-chain that the CTF vault is drainable and exposes every selector the flow needs, so it is attemptable today; the real ask shrank from "redeploy" to "re-fund after a capture". The second failure artifact: I had called it owner-blocked on John's material when it needed a real detector blind spot, which the detector had. Row 26 (Unlock/escrow funding) survives the challenge — money is money.
   **Deliberately NOT solved with a gate.** Four gates were added this week for things that went unchecked, and a fifth cannot work here: an owner-gated row is a *judgement*, and no script can re-open a judgement. What it needs is the standing habit of re-diagnosing before re-asking — the rule now recorded above for Kointel, applied to every row. **Score so far: five escalations challenged, four were wrong.**
-- **Resolve the four-flagship framing.** ✎ Narrowed 2026-08-22: it is no longer an *accident*. The Overmind card is labelled **"Flagship · KTHULHU's two-lane audit engine"**, so the relationship is stated on the page rather than left for a visitor to infer. What remains is genuinely a presentation call and genuinely the owner's: whether two cards for one product is the right count, or whether they should merge into one flagship with two faces.
+- ~~Resolve the four-flagship framing.~~ **✎ RESOLVED 2026-08-22 by the MAS, not by the owner — and the question turned out to be built on my own false premise.** It had been narrowed to a presentation call: *"two cards for one product, or one flagship with two faces?"* The owner answered it in five words — **"no overmind is the engine"** — and the MAS pass (`mas/audits/OVERMIND_ATTRIBUTION_2026-08-22.md`) found the premise itself was wrong. They are **not one product**: Overmind is a governed agent-orchestration engine, KTHULHU is a smart-contract auditor, and the only thing they share is a word — a Worker named `kthulhu-overmind` inside KTHULHU's infrastructure. **Two cards, contents returned to their real owners.** Merging would have permanently encoded the error.
+  **The register, this brief and the site's own hero all said so the whole time.** `Hero.jsx:246` reads *"Overmind GenAI engine"*; §3 above reads *"the platform beneath the products"*; the evidence pointer reads *"Overmind GenAI engine"*. Three rebuilds discriminated on the **name** instead. **Standing rule now recorded in CLAUDE.md: attribute on the evidence pointer, never on the name.**
+- **CR-06 was unsupported and shipped anyway — the register needs the same re-check habit as the escalations.** `business_analysis/03_requirements.md:170` marked it `[REQUIRES_RESOLUTION]` ("client-supplied, reconcile"); it reached the register `cleared` without reconciliation and rendered on the homepage for a month. A grep of the source system for `13[ -]phase` returns zero hits — it has 6 phases and **13 products**. Reconciled to the source-verified figure under "understate rather than overstate". **The open ask is the owner's:** if a 13-phase pipeline exists in a subsystem outside that tree, say so and it goes back with a pointer. **The other 30 cleared claims have never had this check run against their source systems** — that sweep is the obvious next need, and it is buildable.
+- **Two steppers, one page — watch the load.** KTHULHU's card now carries the corpus search, the embed *and* the pipeline. That is the right home for each, but it is the heaviest card on `/work`; if it reads as crowded, the pipeline is the piece that should collapse behind a disclosure, not the corpus.
 - ~~Per-flagship liveness.~~ **✎ DONE 2026-08-22.** `/liveness` probes a CLOSED allowlist of origins Worker-side — the flagship products send no CORS headers, and a browser `no-cors` probe returns an opaque response whose status cannot be read, which would let a card print "up" for a 500. The badge reports **reachability only** ("Responding", never "working"), and our own probe failing renders "unknown" rather than putting a false outage on someone else's product. It probes only from the deployed origin: the console-error budget caught a mount-time fetch logging CORS errors on every local build.

@@ -5,7 +5,9 @@
  *   2. The on-site AI — concierge + /audit + CTF as ONE self-demonstrating system. The
  *      operable /audit console is embedded here; the concierge is the always-present floating
  *      widget; the CTF is one click away.  [P1-07 + P1-08 + P2-09]
- *   3. Overmind — the steppable validated pipeline.  [P2-11]
+ *   3. Overmind — the governed agent engine; step its DSDM lifecycle and watch a gate refuse.
+ *      (Rebuilt 2026-08-22: this card rendered KTHULHU's pipeline for a day. Overmind is THE
+ *      engine — a separate system that shares a word with a Worker inside KTHULHU.)  [P2-11]
  *   4. Kointel — compliance-first live product.  [P2-12]
  * The delivery record (P1-14) is deliberately NOT a flagship — it stays a separate anchor.
  * Semantic tokens only.

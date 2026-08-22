@@ -8,7 +8,7 @@ export default function Work() {
     <>
       <Seo
         title="Work"
-        description="Four operable flagships — KTHULHU (autonomous smart-contract auditor), the on-site AI console, the Overmind validated pipeline, and Kointel — shipped systems you can run, not slideware."
+        description="Four operable flagships — KTHULHU (autonomous smart-contract auditor), the on-site AI console, the Overmind governed agent engine, and Kointel — shipped systems you can run, not slideware."
       />
       <FlagshipShowcase />
     </>

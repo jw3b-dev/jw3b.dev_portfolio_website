@@ -1,20 +1,23 @@
 /*
- * jw3b.dev v2 — KTHULHU Overmind pipeline model  ·  creative-technologist
+ * jw3b.dev v2 — KTHULHU's audit pipeline model  ·  creative-technologist
  *
  * NON-3D by design: the approved direction locks anti-spectacle / no-3D / flat engineered panels,
  * so this is NFR-03's "non-3D fallback" promoted to the primary rendering.
  *
- * ✎ REBUILT 2026-08-22 (second pass — the first was wrong twice over).
+ * ✎ RENAMED 2026-08-22 from `overmindPipeline.js`, which is what this file should never have been
+ * called. "Overmind" names THREE things across this portfolio, and every wrong rebuild of this
+ * surface discriminated on the name instead of on the evidence pointer:
  *
- *   v1 invented thirteen stage names. Their SEMANTICS were audit-domain and correct in spirit
- *   (severity labels, first-pass findings, "does the exploit actually run", human sign-off), but
- *   no such stage list exists in KTHULHU.
+ *   1. Overmind — MB-agentic's governed agent-orchestration engine. The site's Overmind claims
+ *      (CR-04/05/06) are attested against THIS one: `evidence_pointer: "Overmind GenAI engine"`.
+ *      It is modelled in `overmindGovernance.js`, and it is the engine.
+ *   2. `kthulhu-overmind` — a Cloudflare Worker inside KTHULHU's infrastructure, its cron
+ *      orchestrator (mas/audits/KTHULHU_INFRA_AUDIT.md:44). A NAMESAKE. What this file models.
+ *   3. `overmind.ts` — the FSM signal-router module inside (1).
  *
- *   v2 replaced them with the DSDM lifecycle from MB-agentic — a DIFFERENT product that is also
- *   called "Overmind". That was worse: real phases, wrong system. "Overmind" names two things in
- *   this portfolio (KTHULHU Overmind, the auditor at kthulhu.co; and the MB-agentic orchestration
- *   engine), and discriminating on the NAME rather than on what the stages describe is what
- *   produced the error.
+ * A file called `overmindPipeline.js` holding (2) confirmed the error for anyone who opened it to
+ * check what Overmind does. The filename was part of the defect, so the filename is part of the
+ * fix. Full history in `mas/audits/OVERMIND_ATTRIBUTION_2026-08-22.md`.
  *
  * This is KTHULHU's real pipeline, transcribed from `mas/audits/KTHULHU_INFRA_AUDIT.md` §2 —
  * itself read from `lib/ui/display.ts` (PIPELINE_STEPS, STEP_META) and `lib/engine/phases/`.
@@ -32,7 +35,7 @@ export const LANES = Object.freeze({ CLOUD: 'cloud', BOX: 'box' })
  * The four phases and their steps. `lane` is where the step runs; `gate` marks the two real
  * gates. Step names are KTHULHU's own, not paraphrases.
  */
-export const OVERMIND_PHASES = Object.freeze([
+export const KTHULHU_PHASES = Object.freeze([
   {
     id: 'triage',
     label: 'Triage',
@@ -85,11 +88,11 @@ export const OVERMIND_PHASES = Object.freeze([
 ])
 
 /** Flat step list in execution order. */
-export const OVERMIND_STEPS = Object.freeze(
-  OVERMIND_PHASES.flatMap((p) => p.steps.map((s) => ({ ...s, phase: p.id, phaseLabel: p.label }))),
+export const KTHULHU_STEPS = Object.freeze(
+  KTHULHU_PHASES.flatMap((p) => p.steps.map((s) => ({ ...s, phase: p.id, phaseLabel: p.label }))),
 )
 
-export const TOTAL_STEPS = OVERMIND_STEPS.length
+export const TOTAL_STEPS = KTHULHU_STEPS.length
 
 /**
  * What each gate actually does. Both are transcribed, not summarised — the asymmetry of the kill
@@ -142,26 +145,26 @@ export function isComplete(step, total = TOTAL_STEPS) {
 
 /** Detail for a step index, including its gate when it is one. */
 export function stepDetail(index) {
-  const s = OVERMIND_STEPS[index]
+  const s = KTHULHU_STEPS[index]
   return s ? { ...s, index, gateDetail: s.gate ? GATES[s.gate] : null } : null
 }
 
 /** How many of the two real gates have been passed. */
 export function gatesPassed(step) {
-  return OVERMIND_STEPS.filter((s, i) => s.gate && i < step).length
+  return KTHULHU_STEPS.filter((s, i) => s.gate && i < step).length
 }
 export function gateCount() {
-  return OVERMIND_STEPS.filter((s) => s.gate).length
+  return KTHULHU_STEPS.filter((s) => s.gate).length
 }
 
 /** Steps executed on a given lane — the two-lane split, countable rather than asserted. */
 export function laneSteps(lane) {
-  return OVERMIND_STEPS.filter((s) => s.lane === lane)
+  return KTHULHU_STEPS.filter((s) => s.lane === lane)
 }
 
 /** Progress within one phase, so the stepper can show where it is without a global bar only. */
 export function phaseProgress(phaseId, step) {
-  const idx = OVERMIND_STEPS.map((s, i) => ({ s, i })).filter(({ s }) => s.phase === phaseId)
+  const idx = KTHULHU_STEPS.map((s, i) => ({ s, i })).filter(({ s }) => s.phase === phaseId)
   if (idx.length === 0) return null
   const done = idx.filter(({ i }) => i < step).length
   return { done, total: idx.length, active: idx.some(({ i }) => i === step) }

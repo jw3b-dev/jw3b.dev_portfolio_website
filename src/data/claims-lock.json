@@ -118,8 +118,8 @@
       "evidence_pointer": "owner-attested — Overmind GenAI engine"
     },
     "overmind-pipeline": {
-      "value": "13-phase pipeline",
-      "evidence_pointer": "owner-attested — Overmind GenAI engine"
+      "value": "6-phase lifecycle · 8-principle gate",
+      "evidence_pointer": "source-verified — Overmind lifecycle.ts:20 + principles.ts (private repo)"
     },
     "prince2-foundation": {
       "value": "PRINCE2® Foundation",

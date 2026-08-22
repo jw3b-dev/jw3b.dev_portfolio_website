@@ -1,148 +1,229 @@
 /*
- * jw3b.dev v2 — KTHULHU Overmind steppable pipeline (FR-006)  ·  creative-technologist
+ * jw3b.dev v2 — Overmind flagship: the governed engine (FR-006)  ·  creative-technologist
  * NON-3D per the approved design lock (anti-spectacle / flat cyan engineered panels).
  *
- * ✎ REBUILT 2026-08-22 (second pass). Renders KTHULHU's real four-phase pipeline across its TWO
- * LANES — Cloudflare orchestration and box execution — with its two real gates. See
- * overmindPipeline.js for why the first two attempts were wrong.
+ * ✎ REBUILT 2026-08-22, third and final pass. The first three attempts all rendered the WRONG
+ * SYSTEM: v1 invented thirteen stage names (from a claim that turns out to be a mis-transcription),
+ * v2 used this engine's real DSDM lifecycle and I wrongly rejected it as "wrong system", v3
+ * "corrected" onto `kthulhu-overmind` — a Worker inside a different product that shares the word.
+ * The owner ended it in five words: "no overmind is the engine." The site's own hero
+ * (Hero.jsx:246, "Overmind GenAI engine") and the evidence register had said so the entire time.
+ * Full account: `mas/audits/OVERMIND_ATTRIBUTION_2026-08-22.md`.
  *
- * The lane is the point. Anyone can claim "multi-agent pipeline"; the claim that is hard to fake
- * is that half these steps execute in rootless-Podman containers on self-hosted hardware, under
- * deadline budgets, with watchdog re-enqueue.
+ * WHY THIS SHAPE. Brief 04 asks for a steppable pipeline where "each gate visibly passes its
+ * zero-trust check before the next lights". The real engine does better than the invention could:
+ * its gate can also REFUSE. So the operable moment here is not watching gates go green — it is
+ * breaking one of the three halting principles and watching the lifecycle STOP, with the engine's
+ * own reason printed. A governance engine that only ever says yes is a diagram.
+ *
+ * The rule set, severities and halt semantics are transcribed with citations
+ * (see overmindGovernance.js); the state is a visitor-editable sandbox, and the card says so
+ * rather than implying a live fleet connection.
  *
  * Reduced-motion safe; the only motion is a token-driven colour transition. Semantic tokens only.
  */
 import { useState } from 'react'
 import {
   OVERMIND_PHASES,
-  OVERMIND_STEPS,
-  TOTAL_STEPS,
-  LANES,
-  stepStatus,
-  advance,
-  reset,
-  isComplete,
-  gatesPassed,
-  gateCount,
-  stepDetail,
-  laneSteps,
-} from '../../lib/overmindPipeline.js'
+  PRINCIPLES,
+  TOTAL_PHASES,
+  SEVERITY,
+  DEFAULT_CONTEXT,
+  checkPrinciples,
+  advancePhase,
+  resetPhase,
+  phaseStatus,
+  phaseAt,
+  haltingPrinciples,
+} from '../../lib/overmindGovernance.js'
+import Claim from '../Claim.jsx'
 
-const STATUS_TONE = {
+const PHASE_TONE = {
   done: 'border-verified/50 text-verified',
-  running: 'border-cyan text-cyan',
+  active: 'border-cyan text-cyan',
   pending: 'border-hairline text-content-muted',
 }
 
-const LANE_LABEL = {
-  [LANES.CLOUD]: 'Cloudflare',
-  [LANES.BOX]: 'self-hosted box',
-}
+// Only the three EXCEPTION principles get a switch. Offering seven toggles would bury the point;
+// these are the ones whose failure changes the OUTCOME rather than the commentary.
+const SWITCHES = haltingPrinciples().map((p) => ({ field: p.field, number: p.number, name: p.name }))
 
 export default function OvermindGraph() {
-  const [step, setStep] = useState(0)
-  const complete = isComplete(step)
-  const detail = stepDetail(step)
+  const [phase, setPhase] = useState(0)
+  const [context, setContext] = useState(DEFAULT_CONTEXT)
+  const [halt, setHalt] = useState(null)
+
+  const current = phaseAt(phase)
+  const complete = phase >= TOTAL_PHASES
+  const verdict = current ? checkPrinciples(context, current.id) : null
+
+  const step = () => {
+    const next = advancePhase(phase, context)
+    setHalt(next.halted ? next.exceptions : null)
+    setPhase(next.index)
+  }
+
+  const toggle = (field) => {
+    setContext((c) => ({ ...c, [field]: !c[field] }))
+    setHalt(null)
+  }
+
+  const restart = () => {
+    setPhase(resetPhase())
+    setContext(DEFAULT_CONTEXT)
+    setHalt(null)
+  }
 
   return (
     <section aria-labelledby="overmind-title" className="rounded-lg border border-hairline bg-panel p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          {/* Heading stays "Overmind" — the flagship IA (FlagshipShowcase §3) names it that, and
-              restructuring the four-flagship framing is the owner's call. The attribution rides in
-              the eyebrow and the prose instead, so the card cannot be read as a different system. */}
-          <p className="font-mono text-[11px] uppercase tracking-label text-cyan">Flagship · KTHULHU&rsquo;s two-lane audit engine</p>
+          <p className="font-mono text-[11px] uppercase tracking-label text-cyan">Flagship · the engine beneath the work</p>
           <h3 id="overmind-title" className="mt-1 font-display text-lg font-semibold text-content-primary">Overmind</h3>
         </div>
         <p className="font-mono text-[11px] uppercase tracking-label text-content-muted" aria-live="polite">
-          {gatesPassed(step)}/{gateCount()} gates · step {Math.min(step + 1, TOTAL_STEPS)} of {TOTAL_STEPS}
+          phase {Math.min(phase + 1, TOTAL_PHASES)} of {TOTAL_PHASES}
         </p>
       </div>
 
-      <p className="mb-4 text-sm text-content-secondary">
-        Four phases, {TOTAL_STEPS} recorded steps, across two lanes:{' '}
-        <span className="text-content-primary">{laneSteps(LANES.CLOUD).length} orchestrated on Cloudflare</span> and{' '}
-        <span className="text-content-primary">{laneSteps(LANES.BOX).length} executed in containers on self-hosted
-        hardware</span> — forge, halmos, medusa, anvil, each under a deadline budget with watchdog re-enqueue.
+      <p className="mb-3 text-sm text-content-secondary">
+        An agent fleet governed by AgilePM/DSDM, where the governance is <span className="text-content-primary">executable</span>.
+        Every phase exit runs an eight-principle predicate sweep; three of the eight are
+        EXCEPTION-severity and <span className="text-content-primary">halt the transition</span>. Agents cannot vote
+        their own work through — the sovereign verbs sit behind an operator wall.
       </p>
 
-      {/* One block per phase; the lane rides on every step so the split is visible, not asserted. */}
-      <ol className="space-y-3">
-        {OVERMIND_PHASES.map((phase) => (
-          <li key={phase.id}>
-            <p className="font-mono text-[10px] uppercase tracking-label text-content-muted">{phase.label}</p>
-            <ul className="mt-1.5 flex flex-wrap gap-1.5">
-              {phase.steps.map((s) => {
-                const i = OVERMIND_STEPS.findIndex((x) => x.id === s.id)
-                const status = stepStatus(i, step)
-                return (
-                  <li
-                    key={s.id}
-                    aria-current={status === 'running' ? 'step' : undefined}
-                    className={`flex items-center gap-1.5 rounded-sm border bg-void/40 px-2 py-1 font-mono text-[10px] uppercase tracking-label motion-safe:transition-colors ${STATUS_TONE[status]}`}
-                  >
-                    <span>{s.label}</span>
-                    {/* The lane marker — a box step and a cloud step must never look identical. */}
-                    <span className="text-content-muted" aria-label={`runs on the ${LANE_LABEL[s.lane]}`}>
-                      {s.lane === LANES.BOX ? '▪' : '☁'}
-                    </span>
-                    {s.gate && <span aria-label="gate">{status === 'done' ? '✓' : status === 'running' ? '⋯' : '·'}</span>}
-                  </li>
-                )
-              })}
-            </ul>
-          </li>
-        ))}
+      <p className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+        <Claim id="overmind-pipeline" />
+        <span className="text-content-muted">·</span>
+        <Claim id="overmind-governance-tests" />
+        <span className="text-content-muted">·</span>
+        <Claim id="overmind-corpus" />
+      </p>
+
+      {/* The lifecycle. `lifecycle.ts:20` order, exactly — the engine's own test asserts this array. */}
+      <ol className="flex flex-wrap gap-1.5">
+        {OVERMIND_PHASES.map((p, i) => {
+          const status = phaseStatus(i, phase)
+          return (
+            <li
+              key={p.id}
+              aria-current={status === 'active' ? 'step' : undefined}
+              className={`rounded-sm border bg-void/40 px-2 py-1 font-mono text-[10px] uppercase tracking-label motion-safe:transition-colors ${PHASE_TONE[status]}`}
+            >
+              {p.label}
+              {p.gateProducts.length > 0 && <span className="ml-1.5 text-content-muted" aria-label="has an exit gate">▸</span>}
+            </li>
+          )
+        })}
       </ol>
 
-      {!complete && detail && (
+      {/* The gate readout for the phase being exited. */}
+      {current && verdict && (
         <div className="mt-4 rounded-md border border-hairline bg-void p-3">
           <p className="font-mono text-[10px] uppercase tracking-label text-content-muted">
-            {detail.phaseLabel} · {detail.label}
-            <span className="ml-2 text-content-secondary">runs on the {LANE_LABEL[detail.lane]}</span>
-            {detail.gateDetail && <span className="ml-2 text-cyan">gate</span>}
+            Exit gate · {current.label}
+            {current.gateProducts.length > 0 ? (
+              <span className="ml-2 text-content-secondary">baseline required: {current.gateProducts.join(', ')}</span>
+            ) : (
+              <span className="ml-2 text-content-secondary">increment-driven — no product gate</span>
+            )}
           </p>
 
-          {detail.async && (
-            <p className="mt-1 text-sm text-content-secondary">
-              Dispatched asynchronously — <span className="text-content-primary">the verdict may not land</span>. A
-              formal-verification job that does not return in budget leaves the finding unproven rather than proven.
-            </p>
-          )}
+          <ul className="mt-2 space-y-1">
+            {verdict.checks.map((c) => (
+              <li key={c.principle} className="flex items-baseline gap-2 text-[13px]">
+                <span
+                  className={`font-mono text-[11px] ${c.ok ? 'text-verified' : c.severity === SEVERITY.EXCEPTION ? 'text-failed' : 'text-caution'}`}
+                >
+                  {c.ok ? '✓' : c.severity === SEVERITY.EXCEPTION ? '✕' : '!'}
+                </span>
+                <span className={c.inForce ? 'text-content-secondary' : 'text-content-muted'}>
+                  <span className="font-mono text-[11px] text-content-muted">{c.number}</span> {c.name}
+                  {!c.inForce && <span className="ml-1 text-content-muted">— not in force this phase</span>}
+                  {!c.ok && <span className="block text-content-primary">{c.detail}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
 
-          {detail.gateDetail && (
-            <div className="mt-2 space-y-1 text-sm text-content-secondary">
-              <p>{detail.gateDetail.mechanism}</p>
-              <p className="text-content-primary">{detail.gateDetail.outcome}</p>
-              <p className="text-content-muted">{detail.gateDetail.asymmetry}</p>
-              <p className="font-mono text-[11px] text-content-muted">Applies to: {detail.gateDetail.scope}</p>
-            </div>
-          )}
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-label">
+            {verdict.gateAllowed ? (
+              <span className="text-verified">gate allowed</span>
+            ) : (
+              <span className="text-failed">gate halted — {verdict.exceptions.length} exception{verdict.exceptions.length === 1 ? '' : 's'}</span>
+            )}
+            {verdict.gateAllowed && !verdict.ok && (
+              <span className="ml-2 text-caution">with {verdict.violations.length} coaching signal{verdict.violations.length === 1 ? '' : 's'}</span>
+            )}
+          </p>
         </div>
       )}
 
-      <div className="mt-5 flex flex-wrap items-center gap-4">
-        {!complete ? (
-          <button
-            type="button"
-            onClick={() => setStep((s) => advance(s))}
-            className="rounded-md border border-cyan/50 bg-cyan/5 px-4 py-2 font-mono text-[12px] font-semibold uppercase tracking-label text-cyan hover:bg-cyan/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
-          >
-            Step the pipeline →
-          </button>
-        ) : (
-          <p className="font-mono text-[12px] uppercase tracking-label text-verified">
-            Pipeline complete · both gates passed ✓
-          </p>
-        )}
+      {halt && (
+        <p role="status" className="mt-3 rounded-md border border-failed/50 bg-void p-3 text-sm text-content-primary">
+          <span className="font-mono text-[11px] uppercase tracking-label text-failed">Transition refused. </span>
+          The gate did not advance, and the engine ledgers this as a Management-by-Exception rather than
+          failing quietly. Clear the exception, or descope — quality is the one thing that never flexes.
+        </p>
+      )}
+
+      {complete && (
+        <p role="status" className="mt-3 text-sm text-content-secondary">
+          Lifecycle complete — every gate crossed with no EXCEPTION-severity violation.
+        </p>
+      )}
+
+      <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => setStep(reset())}
-          className="font-mono text-[11px] uppercase tracking-label text-content-muted hover:text-content-secondary"
+          onClick={step}
+          disabled={complete}
+          className="rounded-sm border border-cyan px-3 py-1.5 font-mono text-[11px] uppercase tracking-label text-cyan hover:bg-cyan/10 disabled:border-hairline disabled:text-content-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+        >
+          {halt ? 'Retry the gate' : 'Step the lifecycle'}
+        </button>
+        <button
+          type="button"
+          onClick={restart}
+          className="rounded-sm border border-hairline px-3 py-1.5 font-mono text-[11px] uppercase tracking-label text-content-secondary hover:text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
         >
           Reset
         </button>
       </div>
+
+      {/* The operable moment: break a halting principle, step, watch it refuse. */}
+      <fieldset className="mt-4 rounded-md border border-hairline p-3">
+        <legend className="px-1 font-mono text-[10px] uppercase tracking-label text-content-muted">
+          Break a principle — the three that halt
+        </legend>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {SWITCHES.map((s) => (
+            <label key={s.field} className="flex items-center gap-2 text-[13px] text-content-secondary">
+              <input
+                type="checkbox"
+                checked={context[s.field] === false}
+                onChange={() => toggle(s.field)}
+                className="accent-current"
+              />
+              <span>
+                <span className="font-mono text-[11px] text-content-muted">{s.number}</span> {s.name} fails
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <p className="mt-3 text-[13px] text-content-muted">
+        The eight principles, their severities and the halt rule are transcribed from the engine
+        (<span className="font-mono text-[11px]">principles.ts</span>,{' '}
+        <span className="font-mono text-[11px]">lifecycle.ts</span>) with the predicates simplified to
+        one switch each. It is a transcription you can operate — not a live connection to a running
+        fleet, and not a claim that one is running right now.{' '}
+        <span className="text-content-secondary">
+          {PRINCIPLES.length} principles · {SWITCHES.length} of them halting.
+        </span>
+      </p>
     </section>
   )
 }

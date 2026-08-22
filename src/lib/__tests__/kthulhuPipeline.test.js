@@ -11,8 +11,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import {
-  OVERMIND_PHASES,
-  OVERMIND_STEPS,
+  KTHULHU_PHASES,
+  KTHULHU_STEPS,
   TOTAL_STEPS,
   LANES,
   GATES,
@@ -26,21 +26,21 @@ import {
   stepDetail,
   laneSteps,
   phaseProgress,
-} from '../overmindPipeline.js'
+} from '../kthulhuPipeline.js'
 
 describe('FR-006: the phases are KTHULHU’s, in order', () => {
   it('is the four recorded phases', () => {
-    expect(OVERMIND_PHASES.map((p) => p.id)).toEqual(['triage', 'ensemble', 'verification', 'reporting'])
+    expect(KTHULHU_PHASES.map((p) => p.id)).toEqual(['triage', 'ensemble', 'verification', 'reporting'])
   })
 
   it('carries ~20 recorded steps, with Ensemble the widest phase', () => {
     expect(TOTAL_STEPS).toBe(21)
-    expect(OVERMIND_PHASES.find((p) => p.id === 'ensemble').steps).toHaveLength(14)
-    expect(OVERMIND_PHASES.find((p) => p.id === 'verification').steps).toHaveLength(3)
+    expect(KTHULHU_PHASES.find((p) => p.id === 'ensemble').steps).toHaveLength(14)
+    expect(KTHULHU_PHASES.find((p) => p.id === 'verification').steps).toHaveLength(3)
   })
 
   it('names the steps KTHULHU names, not paraphrases of them', () => {
-    const ids = OVERMIND_STEPS.map((s) => s.id)
+    const ids = KTHULHU_STEPS.map((s) => s.id)
     for (const id of ['attack-surface-scoping', 'static-grounding', 'claude-discovery',
       'static-adjudication', 'kill-gate-vote', 'scenario-decomposition', 'fv-dispatch', 'review-gate']) {
       expect(ids).toContain(id)
@@ -58,7 +58,7 @@ describe('FR-006: the phases are KTHULHU’s, in order', () => {
 
 describe('FR-006: the two-lane split is the differentiating claim', () => {
   it('every step declares a lane', () => {
-    for (const s of OVERMIND_STEPS) expect([LANES.CLOUD, LANES.BOX]).toContain(s.lane)
+    for (const s of KTHULHU_STEPS) expect([LANES.CLOUD, LANES.BOX]).toContain(s.lane)
   })
 
   it('both lanes carry real work — a collapse to one lane is the failure to catch', () => {
@@ -68,21 +68,21 @@ describe('FR-006: the two-lane split is the differentiating claim', () => {
   })
 
   it('Verification runs entirely on the box; Reporting entirely in the cloud', () => {
-    const verification = OVERMIND_PHASES.find((p) => p.id === 'verification')
+    const verification = KTHULHU_PHASES.find((p) => p.id === 'verification')
     expect(verification.steps.every((s) => s.lane === LANES.BOX)).toBe(true)
-    const reporting = OVERMIND_PHASES.find((p) => p.id === 'reporting')
+    const reporting = KTHULHU_PHASES.find((p) => p.id === 'reporting')
     expect(reporting.steps.every((s) => s.lane === LANES.CLOUD)).toBe(true)
   })
 
   it('FV dispatch is marked async — its verdict may not land', () => {
-    expect(OVERMIND_STEPS.find((s) => s.id === 'fv-dispatch').async).toBe(true)
+    expect(KTHULHU_STEPS.find((s) => s.id === 'fv-dispatch').async).toBe(true)
   })
 })
 
 describe('FR-006: the two real gates, transcribed not summarised', () => {
   it('has exactly two gates: the kill-gate vote and the review gate', () => {
     expect(gateCount()).toBe(2)
-    expect(OVERMIND_STEPS.filter((s) => s.gate).map((s) => s.id)).toEqual(['kill-gate-vote', 'review-gate'])
+    expect(KTHULHU_STEPS.filter((s) => s.gate).map((s) => s.id)).toEqual(['kill-gate-vote', 'review-gate'])
   })
 
   it('the kill gate is asymmetric and persists its refutation reason', () => {
@@ -132,7 +132,7 @@ describe('FR-006: stepper mechanics', () => {
   })
 
   it('stepDetail carries the phase, the lane and the gate body', () => {
-    const killIdx = OVERMIND_STEPS.findIndex((s) => s.id === 'kill-gate-vote')
+    const killIdx = KTHULHU_STEPS.findIndex((s) => s.id === 'kill-gate-vote')
     const d = stepDetail(killIdx)
     expect(d).toMatchObject({ id: 'kill-gate-vote', phase: 'ensemble', lane: LANES.CLOUD })
     expect(d.gateDetail.label).toBe('Kill gate')

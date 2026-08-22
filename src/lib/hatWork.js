@@ -27,11 +27,11 @@ import { HATS } from '../constants/index.js'
 const WORK = Object.freeze({
   engineer: [
     { label: 'The on-site AI', detail: 'The concierge, /audit and the CTF as one system you are already operating.', href: '/work#ai-flagship-title' },
-    { label: 'Overmind', detail: "KTHULHU's two-lane audit engine, steppable — Cloudflare orchestration and box execution.", href: '/work#overmind-title' },
+    { label: 'Overmind', detail: 'The governed agent engine — step its lifecycle and break a principle to watch the gate refuse.', href: '/work#overmind-title' },
     { label: 'Kointel', detail: 'A compliance gate that fails the build — run the rule yourself.', href: '/work#kointel-title' },
   ],
   auditor: [
-    { label: 'KTHULHU', detail: 'The autonomous auditor, and its corpus searchable here.', href: '/work#kthulhu-title' },
+    { label: 'KTHULHU', detail: 'The autonomous auditor — its corpus searchable here, and its two-lane pipeline steppable.', href: '/work#kthulhu-title' },
     { label: 'The audit console', detail: 'Screen a contract, apply a rule-derived fix, watch it re-screen.', href: '/audit' },
     { label: 'Capture the Vault', detail: 'A reentrant vault on Base Sepolia, readable before any wallet.', href: '/ctf' },
   ],
