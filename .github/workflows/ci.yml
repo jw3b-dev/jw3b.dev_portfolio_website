@@ -137,8 +137,26 @@ jobs:
         if: steps.foundry.outcome == 'failure'
         run: sleep 30
 
+      # ✎ 2026-08-22: attempt 2 is now ALSO soft, because a real run went red through both of
+      # them (run 32473408258, "Install Foundry (retry)"). Two tries 30s apart both land inside
+      # the same upstream outage window, so the retry never had a chance — the same reasoning
+      # that added the first wait, one attempt short. A third try 90s later is a different
+      # window. Attempt 3 is HARD: if the toolchain genuinely cannot be installed the job must
+      # still fail, or this stops being a gate.
       - name: Install Foundry (retry)
+        id: foundry2
         if: steps.foundry.outcome == 'failure'
+        continue-on-error: true
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Wait out a longer outage
+        if: steps.foundry.outcome == 'failure' && steps.foundry2.outcome == 'failure'
+        run: sleep 90
+
+      - name: Install Foundry (final attempt)
+        if: steps.foundry.outcome == 'failure' && steps.foundry2.outcome == 'failure'
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: stable
