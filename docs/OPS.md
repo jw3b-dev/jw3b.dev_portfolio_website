@@ -123,3 +123,30 @@ So CI smokes `https://jw3b-dev-site.agilegypsy.workers.dev` — the SAME deploye
 same code, reached without the zone layer in the way. The scheduled health check still probes
 the apex (accepting 403 as "the edge is up and deciding"), so between them both layers are
 covered. Running `npm run e2e:prod` from an ordinary connection tests the apex end to end.
+
+**✎ 2026-08-22 — the consequence of that workaround, which was never written down.** The
+workers.dev origin has **no zone layer**, so anything Cloudflare injects at the zone is invisible
+to every automated gate. That is precisely where a real finding was living: the apex serves Google
+Tag Manager from its own origin (`/12am/`), which no CI check could ever see. `npm run e2e:zone`
+(`e2e-zone/`, its own config) exists to cover that blind spot and must be run by a **person from a
+normal connection** — a runner would measure the challenge page and pass while asserting nothing.
+
+## Cloudflare credentials: what each one can and cannot do
+
+Established by direct probe on 2026-08-22, not inferred from names — after finding 23 turned out
+to need a zone change nobody had the rights to make.
+
+| Credential | Where | Verified scope | Can it change zone settings? |
+|---|---|---|---|
+| wrangler OAuth (`john@agilegypsy.com`) | `~/.config/.wrangler/` | `wrangler whoami`: workers/d1/kv/pages/queues **write**, `zone` **read** | **No** — zone read only |
+| `CLOUDFLARE_API_TOKEN` | GitHub Actions secret | token verify `active`; `GET /zones?name=jw3b.dev` **200**; `GET /zones/{id}/settings` **`Unauthorized to access requested resource`**; `GET /zones/{id}/settings/zaraz/config` **403** | **No** — it is a deploy token: enough to find the zone, not to read or edit its settings |
+| Cloudflare MCP (`Cloudflare Developer Platform`) | session | Workers, D1, KV, R2, Hyperdrive, docs | **No** — exposes no zone/account settings tool at all |
+
+Zone: `jw3b.dev` = `a8c04dc89ab52c84845a005e1d2f9bb9`. Account: `AgileGypsy` =
+`04bf3d7c95516d3e9a2af68fc8f6619b`.
+
+**To let an agent make a zone change**, mint a token with **Zone → Zone Settings → Edit** scoped to
+`jw3b.dev`, plus the **account-level Tag Management** permission (the Google Tag Gateway page lives
+at `/:account/tag-management/`, so a zone-only token will not reach it). The deploy token is
+deliberately narrow — widen a *new* token instead of that one, so a leaked deploy credential can
+never reconfigure the zone.
