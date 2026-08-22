@@ -22,6 +22,7 @@ import { fixesFor } from '../../lib/auditFixes.js'
 import { AUDIT_DISCLAIMER } from '../../lib/auditClient.js'
 import { RUN_STATUS, runIsStale } from '../../lib/auditWorkspace.js'
 import RunCompare from './RunCompare.jsx'
+import ShareRun from './ShareRun.jsx'
 
 function RunPanel({ run, draft, onApplyFix, onRestore }) {
   // Derived from the run's pinned source, never stored — same rule as the live panel, so a run
@@ -61,6 +62,11 @@ function RunPanel({ run, draft, onApplyFix, onRestore }) {
             stale
           </span>
         )}
+        {/* Share sits on the run's own header because a run PINS its source — the link carries
+            exactly what this analysis read, not whatever is in the editor now. */}
+        <span className={stale ? '' : 'ml-auto'}>
+          <ShareRun source={run.source} />
+        </span>
         {stale && (
           <button
             type="button"

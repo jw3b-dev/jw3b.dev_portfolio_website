@@ -12,6 +12,7 @@
  */
 import { useState } from 'react'
 import { useSearchParams, useLocation } from 'react-router-dom'
+import { runFromHash } from '../lib/runPermalink.js'
 import Seo from '../components/seo/Seo.jsx'
 import { FAILURES } from '../data/recorded-runs/failures/index.js'
 import AuditConsole from '../components/audit/AuditConsole.jsx'
@@ -74,9 +75,18 @@ export default function Audit() {
   // `?case=` wins when both are present: it is an explicit instruction in the URL, usually a
   // "reproduce this failure" link, and silently overriding it with carried-over state would make
   // that link behave differently depending on where the visitor had been.
-  const { state } = useLocation()
+  const { state, hash } = useLocation()
   const handoffSource = typeof state?.source === 'string' && state.source.trim() ? state.source : undefined
-  const seedSource = replay?.input ?? handoffSource
+
+  // A shared run (brief 05-2). The contract rides in the URL FRAGMENT, which no server ever
+  // receives — not ours, not a proxy, not a referrer header — so a link can carry someone's code
+  // without us storing or even seeing it. The recipient's browser re-derives the findings from the
+  // source, so the link proves its claim rather than asserting a findings list.
+  const sharedSource = runFromHash(hash)
+
+  // Precedence: an explicit URL instruction beats carried-over state. `?case=` is the most
+  // explicit (a "reproduce this failure" link), then a shared run, then the hero handoff.
+  const seedSource = replay?.input ?? sharedSource ?? handoffSource
 
   // Left/Right arrows move between tabs, matching the WAI-ARIA tabs pattern.
   const onKeyDown = (e) => {

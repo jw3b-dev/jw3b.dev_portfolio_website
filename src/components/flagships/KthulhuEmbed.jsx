@@ -13,6 +13,7 @@ import { RECORDED_RUNS } from '../../data/recorded-runs/index.js'
 import { isEnabled } from '../../config/features.js'
 import { framingOriginAllowed } from '../../config/embeds.js'
 import KthulhuCorpus from './KthulhuCorpus.jsx'
+import LivenessBadge from './LivenessBadge.jsx'
 
 // The live product host. Framing is allowed for https://jw3b.dev only (see file header).
 export const KTHULHU_URL = 'https://kthulhu.co'
@@ -51,6 +52,7 @@ export default function KthulhuEmbed({ url = KTHULHU_URL, embed = isEnabled('kth
         <div>
           <p className="font-mono text-[11px] uppercase tracking-label text-cyan">Flagship · live product</p>
           <h3 id="kthulhu-title" className="mt-1 font-display text-lg font-semibold text-content-primary">KTHULHU</h3>
+          <LivenessBadge target="kthulhu" />
         </div>
         <a
           href={url}

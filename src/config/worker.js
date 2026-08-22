@@ -46,6 +46,10 @@ export const AGENT_KB_SEARCH_URL = `${WORKER_URL}/kb/search`
 export const AGENT_KB_RELATED_URL = `${WORKER_URL}/kb/related`
 export const AGENT_KB_STATS_URL = `${WORKER_URL}/kb/stats`
 
+// Flagship reachability (brief 04). Probed Worker-side: the flagship origins send no CORS
+// headers, so the browser cannot read a status from them directly.
+export const AGENT_LIVENESS_URL = `${WORKER_URL}/liveness`
+
 // Conversion capture (book-a-call floor + engagement requests).
 export const AGENT_ENGAGEMENT_URL = `${WORKER_URL}/engagement`
 export const AGENT_BOOK_A_CALL_URL = `${WORKER_URL}/book-a-call`

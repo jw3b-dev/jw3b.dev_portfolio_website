@@ -78,6 +78,6 @@ chain, no live Worker** (client-queued to localStorage, retries to D1) — BR-11
 
 **Next needs:**
 
-- **Survive a reload.** The offline queue protects a submitted request (BR-11), but a half-finished configuration is lost on refresh. The visitor most likely to reload is the one thinking hardest about spending money.
+- ~~Survive a reload.~~ **✎ DONE 2026-08-22.** `configuratorDraft.js` — sessionStorage, restored lazily so the first render already has the answers. Art 5(3) "strictly necessary" (the visitor's own in-progress form), the same basis as `engagementQueue`, and deliberately weaker: session not local, answer keys only, never contact or wallet, no identifier. Shaped on write AND on read, so an older build cannot reintroduce a dropped field.
 - **The live agent rail.** ADR-R2-02 scopes a dedicated hardened reception agent for `t.me` hand-off; it is the named next capability for this surface and is owner-gated on a 24/7 host.
-- **Explain what moves the price.** The indicative figure traces to `retainer.json` and is honest, but a visitor cannot see which of their answers drove it — so it reads as a quote rather than a calculation.
+- ~~Explain what moves the price.~~ **✎ DONE 2026-08-22, with the premise corrected.** There is no figure: **zero of six tiers are `price_provisioned`**, so `priceLabel` honestly returns "sized on the call" and explaining a number that does not exist would be the opposite of the fix. What was unexplained is the RECOMMENDATION — and `resolveLoadout` already returned `rationale` and `engagementScores` that the UI rendered nowhere. `explainRecommendation()` now shows the per-answer derivation.

@@ -10,6 +10,7 @@ import { handleAudit } from './routes/audit.js'
 import { handleEngagement, handleBookACall } from './routes/engagement.js'
 import { handleCtfVerify, handleCtfLeaderboard } from './routes/ctf.js'
 import { handleKbSearch, handleKbRelated, handleKbStats } from './routes/kbSearch.js'
+import { handleLiveness } from './routes/liveness.js'
 import { handleFuzz } from './routes/fuzz.js'
 import { handleTxExplain } from './routes/txExplain.js'
 import { handleStt, handleTts } from './routes/voice.js'
@@ -134,6 +135,13 @@ export default {
       // call: it reports whether the Worker is reachable and whether the AI bindings and
       // credential EXIST — never that a given answer will be live, which only an actual
       // exchange can prove. Booleans only; no secret value is echoed.
+      // Flagship reachability. Probes a CLOSED allowlist of origins server-side, because the
+      // flagship products send no CORS headers and a browser `no-cors` probe returns an opaque
+      // response whose status cannot be read — which would let a card print "up" for a 500.
+      if (pathname === '/liveness' && method === 'GET') {
+        const out = await handleLiveness(req, env, ctx)
+        return json(out.body, req, env, out.status)
+      }
       if (pathname === '/health' && method === 'GET') {
         return json(
           {

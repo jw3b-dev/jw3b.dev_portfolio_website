@@ -17,6 +17,7 @@ import { HATS } from '../../constants/index.js'
 import { isEnabled } from '../../config/features.js'
 import { framingOriginAllowed } from '../../config/embeds.js'
 import KointelGate from './KointelGate.jsx'
+import LivenessBadge from './LivenessBadge.jsx'
 
 export const KOINTEL_URL = 'https://kointel.co.za'
 
@@ -51,6 +52,7 @@ export default function Kointel({ url = KOINTEL_URL, embed = isEnabled('kointelE
         <div>
           <p className="font-mono text-[11px] uppercase tracking-label text-cyan">Flagship · live product</p>
           <h3 id="kointel-title" className="mt-1 font-display text-lg font-semibold text-content-primary">Kointel</h3>
+          <LivenessBadge target="kointel" />
         </div>
         <a
           href={url}

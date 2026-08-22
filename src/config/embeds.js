@@ -16,3 +16,20 @@ import { SITE } from '../constants/index.js'
 export function framingOriginAllowed(win = typeof window !== 'undefined' ? window : undefined) {
   return win?.location?.origin === SITE.domain
 }
+
+/*
+ * True only when the page origin is one the Worker's CORS allowlist accepts.
+ *
+ * The Worker locks `Access-Control-Allow-Origin` to an allowlist (NFR-04) and the dev origin
+ * arrives only via the `DEV_ORIGIN` secret, which is absent in production. So a browser on
+ * localhost or a preview host gets a CORS failure — and the browser logs that failure itself,
+ * before any try/catch in our code can see it. A component that probes ON MOUNT therefore prints
+ * a console error on every local build forever, which is precisely what the console-error budget
+ * (FR-067) exists to stop. It caught this.
+ *
+ * Same shape as `framingOriginAllowed` above, and the same reason: some checks can only honestly
+ * be made from the deployed origin, so don't attempt them anywhere else.
+ */
+export function workerOriginAllowed(win = typeof window !== 'undefined' ? window : undefined) {
+  return win?.location?.origin === SITE.domain
+}
