@@ -39,9 +39,4 @@ jobs:
           echo "== account-level tag management visible? (read probe, no mutation) =="
           curl -sS -m 30 -H "Authorization: Bearer ${CF_TOKEN}" \
             "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/tag_management/configuration" \
-            | python3 -c 'import json,sys
-d=json.load(sys.stdin)
-print("success:", d.get("success"))
-print("errors:", [e.get("message") for e in d.get("errors",[])])
-r=d.get("result")
-print("result keys:", sorted(r.keys()) if isinstance(r,dict) else type(r).__name__)'
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result"); print("success:", d.get("success")); print("errors:", [e.get("message") for e in d.get("errors",[])]); print("result keys:", sorted(r.keys()) if isinstance(r,dict) else type(r).__name__)'
