@@ -397,9 +397,26 @@ ledger rows and artifacts — so their `GHA_WF` constants are **dead code left b
 migration**, while `claude-discovery`'s is dead **by design** (`overmind.ts:435` returns before the
 dispatch). Collapsing the two classes is what kept the discovery case invisible.
 
-**4. Not covered by the factory — worth cutting.** No ticket exists for `kthulhu-scraper`:
-deployed 2026-07-06, scheduled `0 */6 * * *`, and with **no config anywhere in the repo**. It runs
-every six hours and is unreproducible from source. That is this audit's finding alone.
+**4. ✎ The orphan-worker finding was WRONG AS WRITTEN, and the corrected version is worse.** Rev 3
+said `kthulhu-scraper` has *"no config anywhere in the repo"*. `workers/scrapers/wrangler.toml`
+exists — I had grepped the wrong config file, which is the **third** instance of that exact error in
+this document. Before filing a ticket I asked the account instead, and it is not one worker:
+
+```
+kthulhu-scraper     cron 0 */6 * * *          modified 2026-08-01   no repo config
+kthulhu-scrapers    cron 0 0,6,12,18 * * *    modified 2026-08-21   workers/scrapers/wrangler.toml
+```
+
+Both are deployed, both scheduled, and those crons fire at the **same four times a day**. The
+singular's bindings are the plural's exactly — same D1 (`15ffad4f…`), same KV namespace
+(`8dc3d08e…`), same secret, same compat date: an earlier deployment under the former name, never
+deleted. Since `index.ts` caches a per-platform "last scraped" stamp in that shared KV *to skip
+unchanged data*, the unreviewable copy can suppress the maintained one. Filed as **KTH-0219**, with
+reading the orphan's deployed source as AC1 — the suppression is a mechanism, not yet a measurement.
+
+The retraction is the useful part: *"the name differs by one character and every grep lands on the
+plural"* is the same failure as `wrangler.toml` vs `wrangler.overmind.toml`, and as a literal grep
+for a flag that is read through a lookup table. Three shapes of one error in one audit.
 
 **5. The findings-funnel numbers have no factory record either way.** §4's aggregates came from
 live Neon via `/kb/stats`; the board neither corroborates nor contradicts them. They stand on the
@@ -418,7 +435,7 @@ database read, and should be re-measured rather than cited from here.
 | Dropping the `TOOL_QUEUE` binding would take **all** box dispatch dark | `queue.ts:109` — binding is part of the success condition | **Confirmed (source).** Not found by this audit; supplied by KTH-0215 |
 | ~~`LEDGER_PULL_STATIC` is a separate mechanism static adjudication does not use~~ | **RETRACTED (Rev 8).** Four production readers: `queue.ts:83`+`:94`, `overmind.ts:61`, `:468`, `:668`; `types/api.ts:169` — "gates the ENQUEUE and must stay on" | **Refuted (source).** The literal grep returns only declarations because the read is `env[flag]` |
 | `static-adjudication.yml` and `fuzz-discovery.yml` are absent, but those kinds run | `static_adjudication.ts:46`, `fuzz_discovery.ts:23` vs `done` ledger rows + artifacts | **Confirmed.** Dead constants from a completed migration — a different class from discovery's |
-| `kthulhu-scraper` is deployed with no repo config | CF API (deployed 2026-07-06, cron `0 */6 * * *`); no `wrangler*.toml` names it | **Confirmed.** No factory ticket covers it |
+| ~~`kthulhu-scraper` is the account's only scraper and has no config anywhere~~ | **CORRECTED (Rev 8).** Two are deployed: `kthulhu-scraper` (no config) and `kthulhu-scrapers` (`workers/scrapers/wrangler.toml`), on the same D1, same KV, same four cron times | **Confirmed (CF API).** Filed as KTH-0219 |
 | `LEDGER_PULL_{FUZZ,SCENARIO,STATIC}`, `STATIC_ADJ_ON_BOX`, `SHADOW_DISPATCH` **exist** | REST worker settings → present as `secret_text` bindings | **Confirmed to exist** |
 | …their VALUES | — | **Unverified.** Secret values are unreadable; absent from config, so dashboard- or CLI-set. Do not treat as on |
 
