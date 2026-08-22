@@ -75,6 +75,6 @@ JS. Concierge + Web3 hydrate after first paint (provider order Wagmi→Query→R
 
 **Next needs:**
 
-- **`/messages` is an orphan.** ✎ Corrected 2026-08-22: an earlier draft of this brief said it "remains in the footer". It does not — `grep` finds no link to it anywhere in `src/`. It is a registered route and a `<loc>` in the sitemap that **no surface links to**, so it is advertised to search engines and reachable by no visitor. Link it honestly or drop it from the sitemap; the drift guard makes that a real decision rather than a silent one.
+- ~~`/messages` is an orphan.~~ ✎ Corrected 2026-08-22 (an earlier draft claimed it "remains in the footer"; `grep` found no link anywhere in `src/` — a registered route and a sitemap `<loc>` reachable by no visitor), then **RESOLVED the same day**: `SiteFooter.jsx` links it as "Messages (not live)". Of the two honest options — link it truthfully, or drop it from the sitemap — the first was taken, so the crawler and the visitor now see the same site.
 - **Spine that knows its state.** A visitor who already submitted an engagement is still asked to submit one. The confirmation carries a real delivery state (FR-037), and nothing above the page reads it.
 - **A defined stacking order at 390px.** `layout-and-assets.spec.js` asserts the hire spine and concierge launcher never cover a footer link — that is the floor, not the design. The intended z-order and offsets are still implicit.

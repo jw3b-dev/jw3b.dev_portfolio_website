@@ -73,4 +73,4 @@ to a labelled recorded run (Tier-1 KV → Tier-2 client). First-token ≤ 3s; ef
 
 - **Compare two runs.** Runs accumulate as tabs, each pinned to the exact source it read — the hard part is done — but there is no side-by-side, which is the thing an auditor actually wants after applying a fix.
 - **A shareable run.** Export is a local `.md` download. A permalink to a run (source hash + findings, no source stored) is what turns the console into something a visitor sends to a colleague.
-- **Load an example.** A first-time visitor with no contract to hand has nothing to try. The vulnerability corpus exists Worker-side; a one-click example is the cheapest path from curiosity to a real screen.
+- ~~Load an example.~~ **✎ DONE 2026-08-22** — three teaching contracts ship in `src/lib/auditExamples.js` as chips above the editor. Not from the Worker-side corpus this line proposed: they are client-side, and each is *tested* to raise exactly the finding it advertises and nothing else, so an example that quietly stopped demonstrating its own detector fails the suite rather than teaching a visitor the wrong lesson.
