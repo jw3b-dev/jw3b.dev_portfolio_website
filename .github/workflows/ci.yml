@@ -207,7 +207,7 @@ jobs:
         run: npm ci || (sleep 15 && npm ci) || (sleep 45 && npm ci)
         working-directory: workers/portfolio-agent
       - name: Deploy the production worker
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -241,7 +241,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Deploy the production SPA
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
