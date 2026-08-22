@@ -21,6 +21,7 @@
  */
 import RunTabs from './RunTabs.jsx'
 import { section } from './consoleCopy.js'
+import { meteringState, meteringLabel } from '../../lib/meteringPolicy.js'
 import { buildAuditReport, reportFilename, lineRange } from '../../lib/auditReport.js'
 import VersionDiff from './VersionDiff.jsx'
 import { Link } from 'react-router-dom'
@@ -269,8 +270,12 @@ export default function AuditConsole({ initialSource, idleMs } = {}) {
             title={section('3').title}
             cost={section('3').cost}
             aside={
+              /* P5-05: the counter comes from meteringPolicy rather than arithmetic inlined
+                 here, so the exhausted state says what is STILL FREE instead of rendering a
+                 bare "0 left". The paid rails are unprovisioned, so the policy deliberately
+                 offers no upgrade — a disabled buy button is the shape this rerun removes. */
               <span className="font-mono text-[10px] uppercase tracking-label text-content-muted">
-                {w.runsLeft} of {w.runsUsed + w.runsLeft} AI analyses left this session
+                {meteringLabel(meteringState({ used: w.runsUsed }))}
               </span>
             }
           />
