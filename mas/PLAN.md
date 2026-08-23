@@ -649,8 +649,12 @@ existing ~10-minute IP purge stays untouched.
 - **work:** specify a read-only JSON contract those products can expose, and a renderer that
   routes every figure through the claims register, degrading to today's static card when the
   endpoint is absent.
-- **status:** **BLOCKED** — needs a read endpoint from KTHULHU/Kointel. Contract can be
-  specified now; no unsourced figure may render regardless.
+- **status:** **✎ DELIVERED 2026-08-22 — and this row said BLOCKED for a day after it shipped.**
+  `KthulhuCorpus.jsx` runs KTHULHU's retrieval layer on-site and `KointelGate.jsx` runs Kointel's
+  compliance rule on-site, both tested. **Neither needed the product read endpoint this row was
+  gated on** — that gating was a misdiagnosis, recorded as product-audit finding 21 and corrected
+  in `REQUIREMENTS.md` FR-066 ("MET 2026-08-22 for all four flagships"). No unsourced figure
+  renders, which was the real constraint and was never the blocker.
 
 ### P5-07 — On-chain roadmap continuation (EAS · ERC-4337 paymaster · ZK reputation · Push)
 - **role:** smart-contract-engineer + web3-blockchain
@@ -709,7 +713,7 @@ over from the stub.
 | **P5-05** Metered tools | **✎ POLICY LAYER DELIVERED 2026-08-22.** Metering was already live (`BUDGETS.audit` = 10/session, client mirror, parity note at `autoRunPolicy.js:21`); the missing piece — the pure policy module — is now `src/lib/meteringPolicy.js`, and the console header reads from it. Activation stays blocked on funding — do not light a paid path against a testnet contract. | FR-064 |
 | **P5-02** Funnel instrumentation | **✎ DELIVERED 2026-08-22 — after TWO corrections in one day.** First this row said OPEN when the code had shipped. Then I marked it DELIVERED and checked: **the migration had never been applied to production**, so `recordEvent` threw `no such table` on every call and `track()` swallowed it (it fails open by design). The counters had counted nothing, and there was no symptom. Migration applied and verified end-to-end: a valid event increments a row, a junk event creates none. Root cause is bigger than this row — **CI never applies D1 migrations at all** (see `docs/OPS.md`). Cookieless per ADR-P5-01: closed event/surface vocabularies, day-granularity, no identifier, `ctx.waitUntil`, fails open. **✎ The READER landed 2026-08-22 too:** `digest.js` + a Monday 08:00 UTC cron pushes a weekly summary over the same Telegram rail the lead alerts already prove. Pull requires remembering; push arrives. The message carries its own limits inline — these are events, not people (no identifier, by design), and the hero counts once per page load however much it is edited — because a number in a message gets believed, and these counters cannot support most of what a reader will assume. A quiet week sends nothing rather than a "0" that trains its reader to ignore the channel. | measures **every** loop |
 | **P5-04** Content pipeline | **✎ DELIVERED 2026-08-22 — this row said OPEN after it had shipped.** `src/lib/notes.js`, `src/lib/notesIndex.js` and the `/notes` routes exist; publishing is adding a file, and with zero notes no route registers. Serves no outcome loop; cheap, and lets John publish without a component edit. | — |
-| **P5-06** Live ecosystem data | **OPEN — owner-gated.** The same item as FR-066 and product-audit finding #21. The read-only JSON contract can be specified now; no unsourced figure renders regardless. | FR-066 |
+| **P5-06** Live ecosystem data | **✎ DELIVERED 2026-08-22 — the FOURTH stale row in this table, and the first one a gate did not catch.** It said OPEN — owner-gated while `KthulhuCorpus.jsx` and `KointelGate.jsx` were already shipped and tested. `REQUIREMENTS.md` FR-066, `POSTMORTEM_CONCEPT_SHIP.md` and `PRODUCT_AUDIT_2026-08-21.md` all recorded it as met; only this row disagreed, and it disagreed for a day. The drift gate could not see it because the row makes no claim about a file — it makes a claim about a STATUS, and status drift was listed under 'what it cannot check'. It now can: see the FR cross-check below. | FR-066 |
 | **P5-07** On-chain roadmap | **BLOCKED** on a funded Base mainnet wallet. Unchanged. | — |
 
 > **✎ 2026-08-22 — this table was stale, and that is the finding.** Three rows above said OPEN
@@ -719,10 +723,19 @@ over from the stub.
 > capability that was already deployed. `scripts/drift-gate.mjs` now fails CI on any "there is no
 > `<path>`" claim in `mas/` or `design/briefs/` whose file exists, so this specific class of
 > staleness cannot survive a push again.
+>
+> **✎ 2026-08-23 — it happened a fourth time, and the gate watched it happen.** P5-06 said
+> *"OPEN — owner-gated"* while both its surfaces were shipped and tested. The gate did not fire
+> because that row never claims a file is missing; it claims a *status*, and the gate's own header
+> listed status drift under **what it cannot check**. Writing a limitation down is not the same as
+> covering it. `drift-gate.mjs` now also fails when a planning row declares OPEN or BLOCKED
+> alongside an FR that `REQUIREMENTS.md` marks MET — the narrow, machine-checkable half of the
+> hole this row fell through.
 
 ### The reprioritised order, and why it changed
 
-**`P5-02 → P5-05 (policy layer) → P5-04 → [owner-gated: P5-06, P5-07]`.**
+**`P5-02 → P5-05 (policy layer) → P5-04 → [owner-gated: P5-07]`.** ✎ P5-06 left this list
+on 2026-08-23: it was delivered, not gated. P5-07 is the only genuinely owner-gated stub left.
 
 P5-02 moves to first. The original order was by conversion impact; the rerun has already delivered
 the conversion mechanics, so the binding constraint is no longer *does the loop work* but **does
