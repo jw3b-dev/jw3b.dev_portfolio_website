@@ -126,8 +126,12 @@
       "evidence_pointer": "owner-attested — PeopleCert result sheet (passed)"
     },
     "codehawks-validated-findings": {
-      "value": "7 validated findings across 3 First Flights — 3 High, 3 Medium, 1 Low",
-      "evidence_pointer": "owner-attested — Cyfrin's official contest reports for First Flights #42, #49 and #52 list agilegypsy in the validated-submitter set for each finding named on the surface"
+      "value": "11 validated findings across 5 First Flights — 5 High, 4 Medium, 2 Low",
+      "evidence_pointer": "owner-attested — Cyfrin's official contest reports for First Flights #42, #49, #50, #51 and #52 list agilegypsy in the validated-submitter set for each finding named on the surface"
+    },
+    "codehawks-selected-writeup": {
+      "value": "1 write-up selected for publication",
+      "evidence_pointer": "owner-attested — CodeHawks First Flight #50 (Raisebox Faucet) official report, L-01: 'Selected submission by: agilegypsy', chosen from the 24 researchers who reported it"
     }
   }
 }

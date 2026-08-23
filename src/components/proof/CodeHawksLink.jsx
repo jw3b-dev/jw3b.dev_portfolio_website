@@ -16,7 +16,7 @@
  */
 import Claim from '../Claim.jsx'
 import { getClaim, isClaimCleared, evidenceKind } from '../../lib/claimsRegister.js'
-import { CONTESTS } from '../../data/codehawks-contests.js'
+import { CONTESTS, selectedByJohn } from '../../data/codehawks-contests.js'
 
 // Severity carries the reserved failure tone only where a real High was found.
 const SEVERITY_TONE = {
@@ -80,6 +80,22 @@ export default function CodeHawksLink({ className = '' }) {
           is another researcher's.
         </p>
 
+        {/*
+            The strongest line on this surface, and it earns its own sentence. Validated =
+            the finding was real. SELECTED = Cyfrin published John's write-up as the canonical
+            version of it, over everyone else who reported the same bug. Merging the two would
+            overstate ten findings to the level of one, so they stay separate claims.
+        */}
+        {selectedByJohn().map((f) => (
+          <p key={`${f.flight}-${f.id}`} className="mt-3 rounded-md border border-cyan/30 bg-void p-3 text-sm text-content-secondary">
+            <span className="font-mono text-[11px] uppercase tracking-label text-cyan">Selected submission · </span>
+            On <span className="text-content-primary">First Flight #{f.flight} {f.contest}</span>, Cyfrin
+            published <span className="text-content-primary">John&rsquo;s</span> write-up of {f.id} as the
+            canonical version of the finding — chosen over every other researcher who reported it.
+            <span className="ml-1 text-content-muted">{f.title}.</span>
+          </p>
+        ))}
+
         <ul className="mt-3 space-y-2.5">
           {CONTESTS.map((c) => (
             <li key={c.flight}>
@@ -92,7 +108,14 @@ export default function CodeHawksLink({ className = '' }) {
                     <span className={`font-mono text-[11px] ${SEVERITY_TONE[f.severity]}`}>
                       {f.id} {f.severity}
                     </span>
-                    <span className="text-content-secondary">{f.title}</span>
+                    <span className="text-content-secondary">
+                      {f.title}
+                      {f.selected === 'agilegypsy' && (
+                        <span className="ml-1.5 font-mono text-[10px] uppercase tracking-label text-cyan">
+                          selected
+                        </span>
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>

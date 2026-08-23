@@ -152,10 +152,45 @@ Three of those eight have Cyfrin's **official results** on disk. Parsing each fi
 That is a materially stronger record than the aggregate the site had been leaning on, and unlike
 `#124` it is composed of things a reader can go and read.
 
-**The remaining five contests are deliberately NOT claimed.** They hold only John's own tooling
-output — no Cyfrin results — and an unverified contest is worth less than the space it takes.
-Downloading those five results reports is the highest-value thing left on this thread: on the
-observed rate it would likely add another five to ten validated findings.
+### And then two more reports turned up, one of them carrying John's own published prose
+
+The three-report figure above was wrong within the hour, for a reason worth recording: the first
+pass searched **filenames** for `result` / `report` / `findings`. The reports for **#50** and
+**#51** are named after their contest and sit at the directory root. Searching for the **content**
+signature — the literal string `Selected submission by` — found all five at once. *Look for what a
+document is, not for what someone named it.*
+
+Also methodological: Bid Beasts ships **both** a preliminary and a final report. The preliminary
+credits `agilegypsy` on **nothing**; the final on two findings. Reading the wrong file would have
+silently understated the record.
+
+| Contest | Validated findings |
+|---|---|
+| **#50 · Raisebox Faucet** (Oct 2025) | H-03 reentrancy in `claimFaucetTokens` **(High)** · M-01 `burnFaucetTokens()` drains full balance (Medium) · **L-01 incorrect comparison operator (Low) — SELECTED** |
+| **#51 · Company Simulator** (Oct 2025) | H-02 deposit slips accept investor funds without minting shares **(High)** |
+
+**Final tally: 11 validated findings across 5 First Flights — 5 High, 4 Medium, 2 Low.** Against a
+site that opened the day claiming a rank with a receipt that said *Unranked*.
+
+### The artifact I said did not exist
+
+On **#50 L-01**, Cyfrin's report reads **"Selected submission by: agilegypsy"** — chosen from the
+**24** researchers who reported that bug. The published prose (Root + Impact, annotated Solidity
+showing `<=` where `<` belongs, likelihood/impact breakdown, remediation) **is John's writing,
+published officially by Cyfrin.**
+
+That is precisely the sample audit report `PORTFOLIO_REFERENCE §1b` believed it had and did not —
+it named the #42 contest report, which is other researchers' work. The real one was two directories
+away, in a file nobody had opened.
+
+It is a **separate register claim** (`codehawks-selected-writeup`) and stays separate on purpose:
+*validated* means the finding was real; *selected* means his write-up became the canonical version.
+Merging them would promote ten findings to the standing of one.
+
+**The remaining three contests are deliberately NOT claimed.** #43, #48 and #53 hold only John's own tooling output — no Cyfrin results — and an unverified
+contest is worth less than the space it takes. Fetching those three results reports is the
+highest-value thing left on this thread: at the observed rate (11 findings from 5 contests) they
+would likely add another five or six, and possibly a second selected write-up.
 
 The claim value is **generated** by `summary()` in `src/data/codehawks-contests.js` and pinned to
 the register by a test, so a finding added to the rows without regenerating the string fails rather

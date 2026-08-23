@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import DeliveryAnchor from './DeliveryAnchor.jsx'
 import CodeHawksLink from './CodeHawksLink.jsx'
 import { getClaim, evidenceKind } from '../../lib/claimsRegister.js'
-import { CONTESTS, VALIDATED, summary } from '../../data/codehawks-contests.js'
+import { CONTESTS, VALIDATED, summary, selectedByJohn } from '../../data/codehawks-contests.js'
 
 describe('DeliveryAnchor — PM/Founder seniority anchor (FR-060)', () => {
   it('renders the delivery record and AgilePM cert straight from cleared claims', () => {
@@ -82,6 +82,24 @@ describe('CodeHawksLink — the CodeHawks #124 record (FR-044)', () => {
     expect(getClaim('codehawks-validated-findings').value).toBe(summary())
 
     expect(section.textContent).not.toMatch(/\b(wrote|authored|my report|his report)\b/i)
+  })
+
+  it('separates SELECTED from merely validated — they are different claims', () => {
+    // Validated = the finding was real. Selected = Cyfrin published John's write-up as the
+    // canonical version. Collapsing them would promote ten findings to the standing of one.
+    render(<CodeHawksLink />)
+    const section = screen.getByRole('region', { name: /codehawks competitive audit/i })
+    const selected = selectedByJohn()
+    expect(selected.length).toBeGreaterThan(0)
+    expect(within(section).getAllByText(/selected submission/i).length).toBeGreaterThan(0)
+    for (const f of selected) {
+      // The sentence spans several elements (John's is emphasised), so match the section's flat
+      // textContent rather than a single node.
+      expect(section.textContent).toMatch(new RegExp(`published\\s*John.s\\s*write-up of ${f.id}`, 'i'))
+      expect(section.textContent).toMatch(new RegExp(`First Flight #${f.flight}`))
+    }
+    // ...and the count claim must NOT absorb it.
+    expect(getClaim('codehawks-selected-writeup').value).not.toBe(getClaim('codehawks-validated-findings').value)
   })
 
   it('states where an attested record IS evidenced rather than showing bare numbers', () => {

@@ -17,8 +17,18 @@
  * that error, which nearly put two other researchers' work on this site under John's name.
  *
  * COVERAGE IS PARTIAL, DELIBERATELY. John entered at least eight First Flights (#42, #43, #48–#53).
- * Only three have Cyfrin's official results on disk, so only those three are stated. The remaining
- * five are not claimed here — an unverified contest is worth less than the space it would take.
+ * FIVE have Cyfrin's official results on disk; only those five are stated. #43, #48 and #53 hold
+ * only his own tooling's output and are not claimed — an unverified contest is worth less than the
+ * space it would take.
+ *
+ * ✎ Two of the five were nearly missed. A first pass searched filenames for "result", "report" and
+ * "findings" and turned up three; the reports for #50 and #51 are named after the contest and sit
+ * at the directory root. Searching for the CONTENT signature — the string "Selected submission by"
+ * — found all five at once. Look for what a document IS, not for what someone named it.
+ *
+ * ✎ Use FINAL results, never preliminary. Bid Beasts has both: the preliminary report credits
+ * agilegypsy on NOTHING, the final on two findings. Reading the wrong file would have silently
+ * understated the record.
  */
 
 /** @typedef {{id:string, severity:'High'|'Medium'|'Low', title:string, selected:string}} Finding */
@@ -45,6 +55,29 @@ export const CONTESTS = Object.freeze([
     ],
   },
   {
+    flight: 50,
+    name: 'Raisebox Faucet',
+    slug: '2025-10-raisebox-faucet',
+    ended: 'Oct 2025',
+    findings: [
+      { id: 'H-03', severity: 'High', title: 'Reentrancy in claimFaucetTokens allows double token claims', selected: '0xrafikaji' },
+      { id: 'M-01', severity: 'Medium', title: 'burnFaucetTokens() transfers the entire balance instead of the specified amount', selected: 'boobagreen' },
+      // THE one. Cyfrin chose John's write-up as the published version of this finding, from 24
+      // researchers who reported it. Severity is Cyfrin's (Low) — he submitted it as M-01 and they
+      // filed it as L-01; the register renders the judge's call, not the submitter's.
+      { id: 'L-01', severity: 'Low', title: 'Incorrect comparison operator in claimFaucetTokens prevents valid claims', selected: 'agilegypsy' },
+    ],
+  },
+  {
+    flight: 51,
+    name: 'Company Simulator',
+    slug: '2025-10-company-simulator',
+    ended: 'Oct 2025',
+    findings: [
+      { id: 'H-02', severity: 'High', title: 'Deposit slips caused investor funds to be accepted without minting shares', selected: 'galer ah' },
+    ],
+  },
+  {
     flight: 52,
     name: 'BriVault',
     slug: '2025-11-brivault',
@@ -61,6 +94,16 @@ export const CONTESTS = Object.freeze([
 export const VALIDATED = Object.freeze(
   CONTESTS.flatMap((c) => c.findings.map((f) => ({ ...f, flight: c.flight, contest: c.name }))),
 )
+
+/**
+ * The findings Cyfrin published in JOHN'S words. Being credited as a validated submitter means the
+ * finding was real; being SELECTED means his write-up was chosen as the canonical one. Those are
+ * different claims and the site must not blur them — which is why this is a separate function and
+ * a separate register entry rather than a footnote on the count.
+ */
+export function selectedByJohn(findings = VALIDATED) {
+  return findings.filter((f) => f.selected === 'agilegypsy')
+}
 
 /** Counts by severity — derived, never typed, so the claim string cannot drift from the rows. */
 export function severityTally(findings = VALIDATED) {
