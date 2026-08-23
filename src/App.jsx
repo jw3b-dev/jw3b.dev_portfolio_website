@@ -14,6 +14,7 @@ import HireSpine from './components/layout/HireSpine'
 import SiteFooter from './components/layout/SiteFooter'
 import RouteError from './components/layout/RouteError'
 import { HAS_NOTES } from './lib/notesIndex.js'
+import { HAS_ARTIFACTS } from './lib/findingArtifactsIndex.js'
 
 // Lazy-loaded routes — each page is code-split and loads behind the single
 // <Suspense> boundary in RootLayout. Heavy Web3 (and future R3F) libs are
@@ -30,6 +31,7 @@ const ZeroTrustValidator = lazy(() => import('./pages/thesis/ZeroTrustValidator'
 const Evidence = lazy(() => import('./pages/Evidence'))
 const NoteIndex = lazy(() => import('./pages/notes/NoteIndex'))
 const Note = lazy(() => import('./pages/notes/Note'))
+const FindingArtifact = lazy(() => import('./pages/findings/FindingArtifact'))
 
 const queryClient = new QueryClient()
 
@@ -117,6 +119,10 @@ const router = createBrowserRouter([
             { path: '/notes/:slug', element: <Note /> },
           ]
         : []),
+      /* Published audit findings, on the same rule as notes: the route exists only when an
+         artifact does. `publishable()` additionally refuses any finding whose selected submission
+         is not John's, so a stray markdown file cannot put another researcher's write-up here. */
+      ...(HAS_ARTIFACTS ? [{ path: '/findings/:slug', element: <FindingArtifact /> }] : []),
       { path: '*', element: <NotFound /> },
     ],
   },

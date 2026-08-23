@@ -4,7 +4,9 @@
  */
 import { test, expect } from '@playwright/test'
 
-const ROUTES = ['/', '/work', '/audit', '/ctf', '/hire-me', '/messages', '/privacy', '/thesis/systems-are-graphs', '/thesis/zero-trust-validator']
+// '/findings/50-L-01' is the published audit finding. It only exists while its markdown file
+// does — the route is registered from the glob — so a route that vanishes takes its test with it.
+const ROUTES = ['/', '/work', '/audit', '/ctf', '/hire-me', '/messages', '/privacy', '/thesis/systems-are-graphs', '/thesis/zero-trust-validator', '/findings/50-L-01']
 
 test.describe('every route renders in a real browser without console errors', () => {
   for (const route of ROUTES) {
@@ -76,4 +78,29 @@ test('a captured failure replays into an EDITABLE console', async ({ page }) => 
   await expect(box).toBeVisible()
   await expect(box).toContainText('contract Treasury')
   await expect(box).toBeEditable()
+})
+
+test('the published finding renders its code, not backticks', async ({ page }) => {
+  // The strongest proof surface on the site is mostly Solidity. Before the parser learned fences,
+  // rendering this page would have printed ``` markers and joined a Foundry test into a paragraph
+  // — product-audit finding 15, on the one page a skeptical auditor would actually read.
+  await page.goto('/findings/50-L-01')
+  await page.getByRole('heading', { level: 1 }).waitFor()
+
+  const body = await page.locator('body').innerText()
+  expect(body).not.toContain('```')
+
+  const codeBlocks = page.locator('pre code')
+  expect(await codeBlocks.count()).toBeGreaterThan(0)
+  await expect(page.locator('pre code', { hasText: 'forge-std/Test.sol' })).toBeVisible()
+
+  // Wide source scrolls inside its own box; the page never scrolls sideways.
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow).toBeLessThanOrEqual(1)
+
+  // Provenance must travel with the prose.
+  await expect(page.getByText(/severity is cyfrin.s classification/i)).toBeVisible()
+  await expect(page.getByRole('link', { name: /contest on codehawks/i })).toBeVisible()
 })

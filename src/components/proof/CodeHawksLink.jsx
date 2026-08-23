@@ -16,7 +16,9 @@
  */
 import Claim from '../Claim.jsx'
 import { getClaim, isClaimCleared, evidenceKind } from '../../lib/claimsRegister.js'
+import { Link } from 'react-router-dom'
 import { CONTESTS, selectedByJohn } from '../../data/codehawks-contests.js'
+import { ARTIFACTS } from '../../lib/findingArtifactsIndex.js'
 
 // Severity carries the reserved failure tone only where a real High was found.
 const SEVERITY_TONE = {
@@ -93,6 +95,15 @@ export default function CodeHawksLink({ className = '' }) {
             published <span className="text-content-primary">John&rsquo;s</span> write-up of {f.id} as the
             canonical version of the finding — chosen over every other researcher who reported it.
             <span className="ml-1 text-content-muted">{f.title}.</span>
+            {/* Published on this site, in full, because it is his to publish. */}
+            {ARTIFACTS.some((a) => a.slug === `${f.flight}-${f.id}`) && (
+              <Link
+                to={`/findings/${f.flight}-${f.id}`}
+                className="mt-2 block font-mono text-[12px] uppercase tracking-label text-cyan underline"
+              >
+                Read the finding →
+              </Link>
+            )}
           </p>
         ))}
 

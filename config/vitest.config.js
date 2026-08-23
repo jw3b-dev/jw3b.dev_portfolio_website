@@ -65,6 +65,10 @@ export default defineConfig({
         // is exactly what this card did for a day. The tests assert the transcribed facts, so the
         // coverage gate is what keeps them asserted.
         'src/lib/overmindGovernance.js',
+        // The publishing rule for audit artifacts. Gated because an untested branch here is the
+        // one that lets another researcher's write-up onto this site under John's name — the
+        // near-miss recorded in mas/facts/PORTFOLIO_REFERENCE.md §1b.
+        'src/lib/findingArtifacts.js',
         'src/lib/fuzzHarness.js',
         'src/lib/txDecode.js',
         'src/lib/xmtpFlow.js',

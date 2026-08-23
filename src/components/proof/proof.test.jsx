@@ -1,9 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render as rtlRender, screen, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import DeliveryAnchor from './DeliveryAnchor.jsx'
 import CodeHawksLink from './CodeHawksLink.jsx'
 import { getClaim, evidenceKind } from '../../lib/claimsRegister.js'
 import { CONTESTS, VALIDATED, summary, selectedByJohn } from '../../data/codehawks-contests.js'
+
+// CodeHawksLink now links to the published finding, so these surfaces need router context.
+const render = (ui) => rtlRender(<MemoryRouter>{ui}</MemoryRouter>)
 
 describe('DeliveryAnchor — PM/Founder seniority anchor (FR-060)', () => {
   it('renders the delivery record and AgilePM cert straight from cleared claims', () => {

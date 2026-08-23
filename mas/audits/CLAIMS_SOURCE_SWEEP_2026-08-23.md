@@ -196,6 +196,33 @@ The claim value is **generated** by `summary()` in `src/data/codehawks-contests.
 the register by a test, so a finding added to the rows without regenerating the string fails rather
 than desyncing quietly.
 
+### Published: `/findings/50-L-01`
+
+The write-up is now on the site in full, at **`/findings/50-L-01`**, linked from the CodeHawks
+surface. Verbatim prose from Cyfrin's report; every piece of metadata around it (contest, finding
+id, severity, who was selected) comes from the register-backed data module, so a write-up cannot
+describe itself as something it is not. Severity is rendered as **Cyfrin's** classification, with
+the page stating outright that it was filed as a Medium and published as a Low.
+
+**The publishing rule is code, not a convention.** `findingArtifacts.publishable()` refuses any
+finding whose selected submission is not John's, so dropping a markdown file for `42-H-01` renders
+nothing — a test asserts exactly that, by direct URL. The route itself only exists while an
+artifact does, mirroring the notes pipeline.
+
+**Three defects were found on the way, all of them real:**
+
+1. **`parseMarkdown` had no fenced-code support.** Publishing an audit write-up through it would
+   have joined every fenced line into a paragraph and printed the ``` markers as text — product-audit
+   finding **15** again, on the strongest proof surface the site has. The parser now handles fences
+   (nothing inside one parses as markdown), `*` bullets, and loose lists; an unterminated fence
+   renders as code rather than silently dropping content.
+2. **Blank-line-separated bullets became one-item lists.** The write-up's Risk section turned into
+   twelve lists of one. Markdown calls that a loose list and it is still one list.
+3. **Nested `<main>`.** The new page copied the notes pages, which wrap in `<main>` inside the
+   layout's own `<main>` — invalid HTML and an ambiguous landmark. It had never been observed
+   because no note has ever been published, so nothing rendered those paths. The route
+   console-error budget caught it on the new page; all four render paths are fixed.
+
 Still open, and genuinely the owner's: John's own 13 write-ups in `ai/markdown/` are his work
 product against the same codebase. They could anchor an **auditor demo** (this is what my tooling
 found), but they are not contest-validated and must never be presented as if they were.

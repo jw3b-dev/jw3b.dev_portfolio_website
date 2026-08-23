@@ -2,6 +2,11 @@
  * /notes/:slug — one note (P5-04 · FR-055 continuation)  ·  frontend-engineer
  * Renders a markdown file from src/content/notes/ with SEO + JSON-LD derived from its
  * frontmatter. Adding a note is adding a file; this component is never edited to publish one.
+ *
+ * ✎ 2026-08-23 — was <main>, nested inside the layout's own <main>. Invalid HTML (one main per
+ * document) and an ambiguous landmark for screen readers. Never observed because no note has been
+ * published, so no test ever rendered it; found when a new page copied the pattern and the route
+ * console-error budget caught the duplicate landmark. Matches Privacy.jsx, which had it right.
  */
 import { Helmet } from 'react-helmet-async'
 import { useParams, Link } from 'react-router-dom'
@@ -13,7 +18,7 @@ import { noteBySlug, noteJsonLd } from '../../lib/notes.js'
 function Block({ block }) {
   switch (block.type) {
     case 'h1':
-      return <h1 className="font-display text-2xl font-semibold text-content-primary">{block.text}</h1>
+      return <h1 id="note-title" className="font-display text-2xl font-semibold text-content-primary">{block.text}</h1>
     case 'h2':
       return <h2 className="mt-6 font-display text-lg font-semibold text-content-primary">{block.text}</h2>
     case 'h3':
@@ -36,18 +41,18 @@ export default function Note() {
   // A bad slug is a real state, not a crash — and not a blank page either.
   if (!note) {
     return (
-      <main className="mx-auto max-w-3xl px-6 py-16">
+      <section aria-labelledby="note-title" className="mx-auto max-w-3xl px-6 py-16">
         <Seo title="Note not found" description="That note does not exist." />
-        <h1 className="font-display text-2xl font-semibold text-content-primary">Note not found</h1>
+        <h1 id="note-title" className="font-display text-2xl font-semibold text-content-primary">Note not found</h1>
         <p className="mt-3 text-sm text-content-secondary">
           That note does not exist. <Link to="/notes" className="text-cyan underline">See what is published</Link>.
         </p>
-      </main>
+      </section>
     )
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
+    <section aria-labelledby="note-title" className="mx-auto max-w-3xl px-6 py-16">
       <Seo title={note.title} description={note.description || note.title} type="article" />
       {/* Seo does not take a jsonLd prop (verified against the component), so the structured
           data is emitted here the same way PersonJsonLd does it — a prop that is silently
@@ -62,6 +67,6 @@ export default function Note() {
       <div className="mt-4 flex flex-col gap-3">
         {parseMarkdown(note.body).map((block, i) => <Block key={i} block={block} />)}
       </div>
-    </main>
+    </section>
   )
 }
