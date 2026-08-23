@@ -28,9 +28,16 @@
  * #48 One Shot: Reloaded remains genuinely unknown — its own results page says judging and appeals
  * are still in progress, so there is nothing to check yet.
  *
- * PROVENANCE CAVEAT for #43: its report text was supplied by the owner in conversation, not saved
- * to the audit tree, so `npm run codehawks-scan` cannot re-derive it until the .md is dropped in.
- * Everything else here is reproducible from a file on disk.
+ * ✎ FULLY REPRODUCIBLE as of 2026-08-23. All three supplied reports are now in the audit tree and
+ * `npm run codehawks-scan` re-derives this table from disk: 12 findings across 7 final reports, 1
+ * selected. That run confirmed the hand-read above line for line, which is the only reason to
+ * trust a table a human transcribed from a chat window.
+ *
+ * The superseded #42 report (1 Jul 2025, selected=nomadic_bear) is retired to a
+ * `.2025-07-01.superseded` extension rather than deleted. Two `.md` copies of one contest would
+ * double-count exactly the way a preliminary beside a final does — and the difference between the
+ * two copies IS the evidence that `selected` is not stable, so deleting it would destroy the
+ * finding.
  *
  * ✎ Two of the five were nearly missed. A first pass searched filenames for "result", "report" and
  * "findings" and turned up three; the reports for #50 and #51 are named after the contest and sit
