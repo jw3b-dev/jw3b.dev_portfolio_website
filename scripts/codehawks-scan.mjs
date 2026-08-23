@@ -16,6 +16,25 @@
  * The scan reads only official reports — identified by the CONTENT signature "Selected submission
  * by", never by filename, because two of five reports were nearly missed by a filename search.
  *
+ * WHERE THE REPORTS COME FROM — investigated 2026-08-23 so nobody repeats it:
+ *
+ *   github.com/orgs/CodeHawks-Contests   Contest SOURCE only. Checked all 39 repos: each holds the
+ *                                        codebase under audit plus a README, no findings report,
+ *                                        no report branch, zero releases. Not a source of results.
+ *   /c/<slug>/results?t=report           LOGIN-GATED. Renders 2.3KB of nav and contest blurb to a
+ *                                        logged-out visitor; the only API call is
+ *                                        competitions.getContestReadme, which returns the contest
+ *                                        README, not the report.
+ *   trpc/leaderboard.getLeaderboard      PUBLIC, and already wired up (src/lib/codehawksLive.js).
+ *                                        Gives per-researcher xp and H/M/L TOTALS. A contestId
+ *                                        param is accepted and silently ignored — no per-contest
+ *                                        public cut exists.
+ *
+ * So the headline numbers need no download at all: the live leaderboard already carries them
+ * (17 = 8H + 5M + 4L, confirmed against the owner's authenticated profile). What the reports add
+ * is the NAMED findings and the "Selected submission by" attribution — the two things that decide
+ * what may be republished. Those still require the owner to download them while signed in.
+ *
  * Usage:
  *   node scripts/codehawks-scan.mjs [rootDir] [--handle agilegypsy]
  *
