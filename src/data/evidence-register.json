@@ -50,36 +50,40 @@
       "value": "+18 pts",
       "label": "GraphRAG hybrid retriever — uplift vs baseline (CR-01)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark",
+      "evidence_pointer": "owner-attested — EcoGraph `ingest/graphrag_query.py:65`: hybrid retrieval benchmarked +18 pts vs naive vector. Private repo; the benchmark run itself is not published.",
       "provenance_note": "AgileGypsy Labs / EcoGraph",
-      "source_system": "EcoGraph / GraphRAG"
+      "source_system": "EcoGraph / GraphRAG",
+      "reconciliation_note": "Pointer sharpened 2026-08-23 to the exact file:line that records the figure, rather than 'GraphRAG benchmark'. NOTE what this is and is not: a source-code comment stating a benchmark result is a citation, NOT a measurement — unlike the entity and chunk counts, nothing here was re-run. Publishing the benchmark harness and its output would move this to verified."
     },
     {
       "id": "graphrag-entities",
       "value": "9,828 entities",
       "label": "GraphRAG knowledge graph — entities, PageRank + Louvain (CR-02)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark",
+      "evidence_pointer": "owner-attested, MEASURED — EcoGraph Neo4j, `MATCH (n:KGEntity) RETURN count(n)` = 9,828 (23 Aug 2026). Not publicly reachable, so still attested.",
       "provenance_note": "AgileGypsy Labs / EcoGraph",
-      "source_system": "EcoGraph / GraphRAG"
+      "source_system": "EcoGraph / GraphRAG",
+      "reconciliation_note": "Pointer strengthened 2026-08-23. Previously the generic 'AgileGypsy Labs / EcoGraph GraphRAG benchmark'. Counted against the running database: KGEntity = 9,828, an EXACT match for the claim. The repo README rounds to '~9,800-entity', so the register was more precise than its own source document and nothing said where the precision came from. Deliberately still ATTESTED: a local container is not something a reader can open, and evidenceKind is right to keep it out of the verified tier. Measured beats asserted; neither beats checkable."
     },
     {
       "id": "graphrag-chunks",
       "value": "77k chunks",
       "label": "GraphRAG corpus — embedded chunks (CR-03)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark",
+      "evidence_pointer": "owner-attested, MEASURED — EcoGraph Neo4j, `MATCH (n:Chunk) RETURN count(n)` = 77,235 (23 Aug 2026); 10,557 DocPages. Not publicly reachable, so still attested.",
       "provenance_note": "AgileGypsy Labs / EcoGraph",
-      "source_system": "EcoGraph / GraphRAG"
+      "source_system": "EcoGraph / GraphRAG",
+      "reconciliation_note": "Pointer strengthened 2026-08-23 from the generic benchmark reference. Counted against the running database: Chunk = 77,235 behind the '77k' claim, over 10,557 crawled DocPages (README says '~10,600'). Still attested — a local container is not reader-checkable."
     },
     {
       "id": "graphrag-memory-recovery",
       "value": ">2× memory-miss recovery",
       "label": "GraphRAG graph-backed memory — miss recovery vs baseline (CR-09)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark",
+      "evidence_pointer": "owner-attested — EcoGraph `ingest/graphrag_query.py:65`: recovery 20%→43% (2.15x) vs baseline. Private repo; the benchmark run itself is not published.",
       "provenance_note": "AgileGypsy Labs / EcoGraph",
-      "source_system": "EcoGraph / GraphRAG"
+      "source_system": "EcoGraph / GraphRAG",
+      "reconciliation_note": "Pointer sharpened 2026-08-23. The source records 'recovery 20%→43%', which is 2.15x and so supports the '>2x' claim with room — the claim understates its own source, which is the right direction. Same caveat as the retriever uplift: a comment recording a benchmark is a citation, not a re-measurement."
     },
     {
       "id": "overmind-corpus",

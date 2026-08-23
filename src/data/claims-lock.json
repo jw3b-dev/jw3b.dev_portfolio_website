@@ -43,19 +43,19 @@
     },
     "graphrag-chunks": {
       "value": "77k chunks",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark"
+      "evidence_pointer": "owner-attested, MEASURED — EcoGraph Neo4j, `MATCH (n:Chunk) RETURN count(n)` = 77,235 (23 Aug 2026); 10,557 DocPages. Not publicly reachable, so still attested."
     },
     "graphrag-entities": {
       "value": "9,828 entities",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark"
+      "evidence_pointer": "owner-attested, MEASURED — EcoGraph Neo4j, `MATCH (n:KGEntity) RETURN count(n)` = 9,828 (23 Aug 2026). Not publicly reachable, so still attested."
     },
     "graphrag-memory-recovery": {
       "value": ">2× memory-miss recovery",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark"
+      "evidence_pointer": "owner-attested — EcoGraph `ingest/graphrag_query.py:65`: recovery 20%→43% (2.15x) vs baseline. Private repo; the benchmark run itself is not published."
     },
     "graphrag-retriever-uplift": {
       "value": "+18 pts",
-      "evidence_pointer": "owner-attested — AgileGypsy Labs / EcoGraph GraphRAG benchmark"
+      "evidence_pointer": "owner-attested — EcoGraph `ingest/graphrag_query.py:65`: hybrid retrieval benchmarked +18 pts vs naive vector. Private repo; the benchmark run itself is not published."
     },
     "kthulhu-audits-run": {
       "value": "75 audits",

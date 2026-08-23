@@ -25,6 +25,20 @@
  *     expected text is present. Not in the blocking path: a third party's outage is not our
  *     regression. Run it before a release and whenever a receipt is added.
  *
+ * CERTIFICATES ARE NOT PUBLICLY VERIFIABLE — checked 2026-08-23, do not re-investigate:
+ *
+ *   profiles.cyfrin.io/certificate/<id>   returns 200 and renders a LOGIN WALL. Tried for all three
+ *                                         Updraft ids (RJA259ONK621, IUY789PSN004, 1KG922MS21NX);
+ *                                         237 bytes of "Login to your account", no name, no course.
+ *   updraft.cyfrin.io/certificate[s]/<id> 404.
+ *   certificates.chain.link, profile.chain.link   do not resolve (DNS).
+ *
+ * That is the THIRD 200-that-is-a-login-wall in this register's history (the others: the CodeHawks
+ * results report, and profiles.cyfrin.io's own stats endpoint returning zeros to anonymous callers).
+ * It is exactly why this script renders in a browser and asserts on TEXT rather than trusting a
+ * status code. The nine certificate claims stay `attested` because nothing checkable exists for
+ * them, not because nobody looked.
+ *
  * Usage:  node scripts/receipt-check.mjs [--net]
  */
 import { readFileSync } from 'node:fs'
