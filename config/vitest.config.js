@@ -73,6 +73,7 @@ export default defineConfig({
         // third party's outage must become "unknown", never a wrong number on the homepage. The
         // hand-copied number it replaces was wrong for months.
         'src/lib/codehawksLive.js',
+        'src/lib/codehawksClient.js',
         'src/lib/fuzzHarness.js',
         'src/lib/txDecode.js',
         'src/lib/xmtpFlow.js',

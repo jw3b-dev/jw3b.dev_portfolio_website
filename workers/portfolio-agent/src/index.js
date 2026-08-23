@@ -11,6 +11,7 @@ import { handleEngagement, handleBookACall } from './routes/engagement.js'
 import { handleCtfVerify, handleCtfLeaderboard } from './routes/ctf.js'
 import { handleKbSearch, handleKbRelated, handleKbStats } from './routes/kbSearch.js'
 import { handleLiveness } from './routes/liveness.js'
+import { handleCodehawks } from './routes/codehawks.js'
 import { handleFuzz } from './routes/fuzz.js'
 import { handleTxExplain } from './routes/txExplain.js'
 import { handleStt, handleTts } from './routes/voice.js'
@@ -163,6 +164,14 @@ export default {
        * against closed vocabularies by `normalizeEvent`. No identifier, no cookie, no free text —
        * a rejected body simply increments nothing.
        */
+      // The live competitive-audit record. Cached in KV and STALE-SERVING on an upstream outage:
+      // a number with its age attached beats a blank, and beats the zeros Cyfrin's anonymous
+      // stats endpoint returns.
+      if (pathname === '/codehawks' && method === 'GET') {
+        const out = await handleCodehawks(req, env, ctx)
+        return json(out.body, req, env, out.status)
+      }
+
       if (pathname === '/funnel' && method === 'POST') {
         let payload = null
         try {

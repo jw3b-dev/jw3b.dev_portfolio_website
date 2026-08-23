@@ -19,6 +19,7 @@ import { getClaim, isClaimCleared, evidenceKind } from '../../lib/claimsRegister
 import { Link } from 'react-router-dom'
 import { CONTESTS, selectedByJohn } from '../../data/codehawks-contests.js'
 import { ARTIFACTS } from '../../lib/findingArtifactsIndex.js'
+import LiveRecordLine from './LiveRecordLine.jsx'
 
 // Severity carries the reserved failure tone only where a real High was found.
 const SEVERITY_TONE = {
@@ -134,6 +135,12 @@ export default function CodeHawksLink({ className = '' }) {
           ))}
         </ul>
       </div>
+
+      {/* The register is build-time; this says whether it is still current. Reads the number to
+          compare against FROM the register, so the two can never be typed apart. */}
+      <LiveRecordLine
+        registerValidSubmissions={parseInt(getClaim('codehawks-valid-submissions').value, 10)}
+      />
 
       {/* No public receipt: show WHERE the record is evidenced rather than leaving three bare
           numbers. An attested figure with its provenance stated beats one with nothing at all. */}
