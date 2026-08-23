@@ -39,13 +39,20 @@ test.describe('every route renders in a real browser without console errors', ()
       // 1) WHOSE code produced it. Wallet SDK chatter (WalletConnect/Reown/Coinbase), the
       //    flagship products' own origins and the analytics they inject, and Cloudflare's
       //    zone-injected scripts. Matched on the ORIGINATING URL, not the message text.
+      //    ✎ 2026-08-23: `cloudflareinsights` REMOVED from this list. Web Analytics' automatic
+      //    beacon injection is now off for the zone (auto_install=false, set via
+      //    scripts/cf-web-analytics.mjs), so the beacon must never appear again — and while this
+      //    forgave it by host, a re-enable would have been silently tolerated. Now it fails.
       const THIRD_PARTY_HOST =
-        /walletconnect|reown|coinbase|cloudflareinsights|cdn-cgi\/challenge-platform|googletagmanager|google-analytics|doubleclick|kthulhu\.co|kointel\.co\.za/i
+        /walletconnect|reown|coinbase|cdn-cgi\/challenge-platform|googletagmanager|google-analytics|doubleclick|kthulhu\.co|kointel\.co\.za/i
 
       // 2) Messages that carry no useful URL of their own. Kept deliberately narrow:
-      //    - `Executing inline script violates …` is the zone's injected bot-detection script
-      //      hitting our strict CSP. The fix is a zone setting, not code (docs/DEFERRED.md);
-      //      weakening script-src to 'unsafe-inline' to silence it would be strictly worse.
+      //    - `Executing inline script violates …` is the zone's injected BOT-DETECTION script
+      //      (`__CF$cv$params`, Bot Fight Mode's JavaScript Detections) hitting our strict CSP.
+      //      A DIFFERENT feature from Web Analytics, which is now off: turning that off dropped
+      //      the count from two errors to one, and this is the survivor. The fix is a zone
+      //      setting requiring Bot Management permission (docs/DEFERRED.md); weakening script-src
+      //      to 'unsafe-inline' to silence it would be strictly worse.
       //      We ship no inline <script> of our own, so this cannot be masking ours.
       //    - `__CF$cv$params` is that same script's global.
       const KNOWN_TEXT = /__CF\$cv\$params|Executing inline script violates/i

@@ -91,10 +91,32 @@ in order of preference, are all zone-side and owner-only:
 3. Or accept it: the script is blocked, the site is unharmed, and the E2E suite filters this
    specific noise while still failing on any error we actually own.
 
-Same investigation also observed `googletagmanager`/`cloudflareinsights` requests attributed to
-the page. Neither appears in our build or the served HTML — they originate from the flagship
-iframes' own origins. Worth confirming during any future consent review, since the site's
-"no consent banner required" position depends on **jw3b.dev itself** setting no tracking storage.
+~~Same investigation also observed `googletagmanager`/`cloudflareinsights` requests attributed to
+the page… they originate from the flagship iframes' own origins.~~
+
+**✎ RESOLVED 2026-08-23, and that attribution was WRONG.** `cloudflareinsights` was not coming
+from an iframe. **jw3b.dev's own zone was injecting `beacon.min.js`** — Cloudflare Web Analytics
+with one-click setup (`auto_install: true` on the RUM site), which injects at the edge as the HTML
+passes through. The paragraph above guessed at a cause and the guess held for months, which is the
+same failure mode as the finding it sits under.
+
+**Why it mattered more than console noise.** `src/content/privacy.md` opens *"It reflects what the
+code actually does — not an aspiration"* and then enumerates exactly three things the site
+collects: concierge messages, the audit-tool hash, rate-limiting IPs. A beacon collecting
+performance data from every visitor's browser was **not among them** — so the injection made the
+privacy notice inaccurate. That is the argument that settled it, not the CSP errors. Note the
+paragraph above had already identified the risk (*"depends on jw3b.dev itself setting no tracking
+storage"*) while misattributing the cause.
+
+**Fixed** by setting `auto_install: false` on the jw3b.dev RUM site
+(`216353e8ec704cbfacf530c5b86ced64`) via `npm run cf:analytics -- --apply`. Verified on production:
+`beacon.min.js` no longer in the served HTML, console errors **2 → 1**. Reversible from the
+dashboard. `cloudflareinsights` has been **removed from the E2E console-error allowlist**, so a
+re-enable now fails the suite instead of being silently forgiven.
+
+**The surviving error is item 1 above** — Bot Fight Mode's JavaScript Detections (`__CF$cv$params`),
+a different feature. Still owner-gated: it needs a token with Zone → Bot Management permission,
+which the available token does not carry.
 
 ## Deploys go straight to production (changed 2026-08-21)
 

@@ -25,7 +25,19 @@
  * account:read, user:read, workers, d1, pages). Mint or extend a token with the ACCOUNT-level
  * Web Analytics / Account Analytics WRITE permission.
  */
-const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || '04bf3d7c95516d3e9a2af68fc8f6619b'
+/*
+ * ✎ 2026-08-23 — the account is DISCOVERED, never assumed.
+ *
+ * The first version hardcoded the account id from `wrangler whoami` and reported "RUM denied" for
+ * three perfectly good tokens. They were not denied: they belong to a DIFFERENT Cloudflare account
+ * (the KTHULHU one), where the RUM site is kthulhu.co. jw3b.dev lives on the AgileGypsy account,
+ * which those tokens cannot see. A wrong account id and a missing permission produce the identical
+ * 403, so the assumption was invisible in the error.
+ *
+ * So: enumerate the accounts the token can actually see, and print them. An operator staring at a
+ * list of real accounts cannot make the mistake I made.
+ */
+const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || null
 const HOST = process.env.CF_TARGET_HOST || 'jw3b.dev'
 const APPLY = process.argv.includes('--apply')
 const API = 'https://api.cloudflare.com/client/v4'
@@ -47,18 +59,35 @@ const call = async (path, init = {}) => {
   return { ok: res.ok, status: res.status, body }
 }
 
+// Which accounts can this token even see? Printed, because "wrong account" and "missing
+// permission" are the same 403 and only this distinguishes them.
+const accounts = await call('/accounts')
+if (accounts.ok && accounts.body?.success) {
+  const rows = accounts.body.result || []
+  console.log(`Token can see ${rows.length} account(s):`)
+  for (const a of rows) console.log(`  ${a.id}  ${a.name}`)
+} else {
+  console.log('Token cannot list accounts (needs account:read) — proceeding with the id given.')
+}
+
+const accountId = ACCOUNT_ID || (accounts.body?.result || [])[0]?.id
+if (!accountId) {
+  console.error('✗ No account id: pass CLOUDFLARE_ACCOUNT_ID, or use a token that can list accounts.')
+  process.exit(2)
+}
+
 // Fail on the PERMISSION, clearly, rather than on a confusing downstream 404.
-const list = await call(`/accounts/${ACCOUNT_ID}/rum/site_info/list`)
+const list = await call(`/accounts/${accountId}/rum/site_info/list`)
 if (!list.ok || !list.body?.success) {
   const errs = (list.body?.errors || []).map((e) => `${e.code} ${e.message}`).join('; ')
   console.error(`✗ Cannot read RUM sites (HTTP ${list.status}): ${errs || 'unknown error'}`)
-  console.error('  The token lacks the account-level Web Analytics permission. This is the blocker,')
-  console.error('  not the script — every other step below is already verified.')
+  console.error('  Either the token lacks the account-level Web Analytics permission, or this is')
+  console.error('  the wrong account — those produce the SAME 403. Check the account list above.')
   process.exit(1)
 }
 
 const sites = list.body.result || []
-console.log(`Found ${sites.length} RUM site(s) on account ${ACCOUNT_ID}:`)
+console.log(`Found ${sites.length} RUM site(s) on account ${accountId}:`)
 for (const s of sites) {
   const zone = s.ruleset?.zone_name || s.ruleset?.zone_tag || '(no zone)'
   console.log(`  ${s.site_tag}  zone=${zone}  auto_install=${s.auto_install}  ruleset_enabled=${s.ruleset?.enabled}`)
@@ -80,7 +109,7 @@ for (const s of target) {
     console.log('          re-run with --apply to make the change.')
     continue
   }
-  const out = await call(`/accounts/${ACCOUNT_ID}/rum/site_info/${s.site_tag}`, {
+  const out = await call(`/accounts/${accountId}/rum/site_info/${s.site_tag}`, {
     method: 'PUT',
     body: JSON.stringify({ zone_tag: s.ruleset?.zone_tag, auto_install: false }),
   })
