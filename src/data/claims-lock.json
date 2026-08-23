@@ -114,8 +114,8 @@
       "evidence_pointer": "owner-attested — PeopleCert result sheet (passed)"
     },
     "codehawks-validated-findings": {
-      "value": "12 validated findings across 6 First Flights — 5 High, 4 Medium, 3 Low",
-      "evidence_pointer": "owner-attested — Cyfrin's official contest reports for First Flights #42, #43, #49, #50, #51 and #52 list agilegypsy in the validated-submitter set for each finding named on the surface"
+      "value": "14 validated findings across 7 First Flights — 7 High, 4 Medium, 3 Low",
+      "evidence_pointer": "owner-attested — Cyfrin's official contest reports for First Flights #42, #43, #48, #49, #50, #51 and #52 list agilegypsy in the validated-submitter set for each finding named on the surface"
     },
     "codehawks-selected-writeup": {
       "value": "1 write-up selected for publication",

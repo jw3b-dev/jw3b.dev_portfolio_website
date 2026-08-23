@@ -123,7 +123,7 @@ describe('buildIndex', () => {
     // Only ONE finding is currently selected-by-John, so two distinct paths resolving to the same
     // finding is the only way to exercise the comparator today. Stated plainly rather than dressed
     // up: this asserts the ordering INVARIANT holds, and it starts discriminating for real the
-    // moment a second contest's write-up is published (#43 / #48 / #53 are still to be fetched).
+    // moment a second contest's write-up is published (all supplied reports are now read; only one contest remains unfetched).
     const idx = buildIndex({
       'a/50-L-01.md': BODY,
       'b/50-L-01.md': BODY,

@@ -25,13 +25,21 @@
  * complete. #53 is therefore absent from CONTESTS rather than present with an empty list, so it
  * cannot inflate the contest count in summary().
  *
- * #48 One Shot: Reloaded remains genuinely unknown — its own results page says judging and appeals
- * are still in progress, so there is nothing to check yet.
+ * ✎ 2026-08-23 (later the same day) — #48 One Shot: Reloaded came out of judging and the owner
+ * supplied its report, closing the last "still in progress" gap. It adds TWO Highs (H-01, H-04),
+ * neither selected. Note what the result is NOT: the "My Submissions" list for #48 showed 3H/1M/1L
+ * proposed, and the judge validated two Highs and nothing else. That gap between submitted and
+ * validated is the whole reason this file reads reports instead of submission lists.
  *
- * ✎ FULLY REPRODUCIBLE as of 2026-08-23. All three supplied reports are now in the audit tree and
- * `npm run codehawks-scan` re-derives this table from disk: 12 findings across 7 final reports, 1
+ * ✎ FULLY REPRODUCIBLE as of 2026-08-23. Every supplied report is in the audit tree and
+ * `npm run codehawks-scan` re-derives this table from disk: 14 findings across 8 final reports, 1
  * selected. That run confirmed the hand-read above line for line, which is the only reason to
  * trust a table a human transcribed from a chat window.
+ *
+ * WHAT IS STILL MISSING, EXACTLY. These rows are 7 High, 4 Medium, 3 Low; the public leaderboard
+ * says 8/5/4. The residual is therefore precisely one High, one Medium and one Low — one contest's
+ * report that is not on disk, not a vague shortfall. Naming the size of the gap is what stops the
+ * count from being quietly rounded up later.
  *
  * The superseded #42 report (1 Jul 2025, selected=nomadic_bear) is retired to a
  * `.2025-07-01.superseded` extension rather than deleted. Two `.md` copies of one contest would
@@ -73,6 +81,18 @@ export const CONTESTS = Object.freeze([
     ended: 'Jul 2025',
     findings: [
       { id: 'L-03', severity: 'Low', title: 'Missing event indexing degrades dApp integration', selected: 'blee' },
+    ],
+  },
+  {
+    flight: 48,
+    name: 'One Shot: Reloaded',
+    slug: '2025-09-one-shot-reloaded',
+    ended: 'Sep 2025',
+    findings: [
+      // H-01 was reported by twenty researchers; H-04 by two. Credit is credit either way — the
+      // count says the finding was real, never that it was rare.
+      { id: 'H-01', severity: 'High', title: 'Challenger can exploit the pseudo-randomness of go_on_stage_or_battle()', selected: 'crazycelery' },
+      { id: 'H-04', severity: 'High', title: 'Battle arena DoS via non-rapper NFT token injection', selected: '0xrektified' },
     ],
   },
   {
