@@ -17,9 +17,20 @@
  * that error, which nearly put two other researchers' work on this site under John's name.
  *
  * COVERAGE IS PARTIAL, DELIBERATELY. John entered at least eight First Flights (#42, #43, #48–#53).
- * FIVE have Cyfrin's official results on disk; only those five are stated. #43, #48 and #53 hold
- * only his own tooling's output and are not claimed — an unverified contest is worth less than the
- * space it would take.
+ *
+ * ✎ 2026-08-23 — the owner supplied the #43 and #53 official reports, so six of the eight are now
+ * checked. #43 yielded ONE validated finding (L-03). **#53 RebateFi Hook yielded ZERO** — he does
+ * not appear in any of its seven submitter lists — and that is recorded deliberately: "checked and
+ * found nothing" is a different fact from "not checked", and only one of them means the record is
+ * complete. #53 is therefore absent from CONTESTS rather than present with an empty list, so it
+ * cannot inflate the contest count in summary().
+ *
+ * #48 One Shot: Reloaded remains genuinely unknown — its own results page says judging and appeals
+ * are still in progress, so there is nothing to check yet.
+ *
+ * PROVENANCE CAVEAT for #43: its report text was supplied by the owner in conversation, not saved
+ * to the audit tree, so `npm run codehawks-scan` cannot re-derive it until the .md is dropped in.
+ * Everything else here is reproducible from a file on disk.
  *
  * ✎ Two of the five were nearly missed. A first pass searched filenames for "result", "report" and
  * "findings" and turned up three; the reports for #50 and #51 are named after the contest and sit
@@ -40,8 +51,21 @@ export const CONTESTS = Object.freeze([
     slug: '2025-06-snowman-merkle-airdrop',
     ended: 'Jun 2025',
     findings: [
-      { id: 'H-01', severity: 'High', title: 'Unrestricted NFT Minting in Snowman.sol', selected: 'nomadic_bear' },
+      // ✎ `selected` corrected 2026-08-23: the report on disk (1 Jul 2025) says nomadic_bear; the
+      // version the owner downloaded today says 0xki. Cyfrin re-issued it and the selected
+      // submission changed. No effect on what may be published — it was never his — but it means
+      // `selected` is NOT stable over time, so a stale copy can silently misattribute authorship.
+      { id: 'H-01', severity: 'High', title: 'Unrestricted NFT Minting in Snowman.sol', selected: '0xki' },
       { id: 'M-01', severity: 'Medium', title: 'DoS to a user trying to claim a Snowman', selected: 'robercano' },
+    ],
+  },
+  {
+    flight: 43,
+    name: 'OrderBook',
+    slug: '2025-07-orderbook',
+    ended: 'Jul 2025',
+    findings: [
+      { id: 'L-03', severity: 'Low', title: 'Missing event indexing degrades dApp integration', selected: 'blee' },
     ],
   },
   {
