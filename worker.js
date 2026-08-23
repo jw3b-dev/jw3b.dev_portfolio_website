@@ -30,7 +30,15 @@ const CSP = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  "script-src 'self' 'wasm-unsafe-eval' https://paywall.unlock-protocol.com",
+  // `__NONCE__` is substituted per HTML response (see nonceCsp). Cloudflare's Bot Fight Mode
+  // injects a JavaScript-Detections inline script into every HTML page and it CANNOT be turned
+  // off while Bot Fight Mode is on — Cloudflare's docs are explicit. Their documented remedy is a
+  // nonce: "if your CSP uses a nonce for script tags, Cloudflare will add these nonces to the
+  // scripts it injects by parsing your CSP response header." So we publish a nonce we do not use
+  // ourselves — every script we ship is external and covered by 'self' — purely so their injected
+  // script can be signed. That keeps the bot protection AND the strict CSP; the alternative on
+  // offer was 'unsafe-inline', which the docs themselves discourage.
+  "script-src 'self' 'nonce-__NONCE__' 'wasm-unsafe-eval' https://paywall.unlock-protocol.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   "img-src 'self' data: https:",
@@ -38,6 +46,27 @@ const CSP = [
   "connect-src 'self' https://portfolio-agent.agilegypsy.workers.dev https://portfolio-agent-v2.agilegypsy.workers.dev https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://explorer-api.walletconnect.com https://*.web3modal.org https://*.reown.com https://mainnet.base.org https://sepolia.base.org https://*.base.org https://cloudflare-eth.com https://paywall.unlock-protocol.com https://rpc.unlock-protocol.com https://api.production.xmtp.network https://api.dev.xmtp.network",
   'frame-src \'self\' https://paywall.unlock-protocol.com https://app.unlock-protocol.com https://kthulhu.co https://kointel.co.za',
 ].join('; ')
+
+/**
+ * A fresh nonce per HTML response. 128 bits, base64.
+ *
+ * SAFE ONLY BECAUSE THE SHELL IS `no-store`. A nonce on a cached response is worse than no nonce:
+ * every visitor would share one, and a nonce an attacker can predict or replay is a bypass, not a
+ * control. The HTML shell is already uncacheable (ADR-07's stale-shell rule, below) — so this
+ * depends on that rule holding, and a change that ever made HTML cacheable must remove this too.
+ */
+export function makeNonce() {
+  const bytes = crypto.getRandomValues(new Uint8Array(16))
+  return btoa(String.fromCharCode(...bytes))
+}
+
+/** PURE — the CSP with a nonce substituted in, or with the placeholder removed entirely. */
+export function nonceCsp(csp, nonce) {
+  // No nonce (any non-HTML response): drop the token rather than shipping a literal `__NONCE__`,
+  // which would be a valid-looking nonce nobody can match and pure noise in the header.
+  if (!nonce) return csp.replace(" 'nonce-__NONCE__'", '')
+  return csp.replace('__NONCE__', nonce)
+}
 
 const SECURITY_HEADERS = {
   'x-content-type-options': 'nosniff',
@@ -104,6 +133,11 @@ export default {
     for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v)
     out.headers.set('x-served-by', 'jw3b-dev-site-worker')
 
+    // Nonce ONLY on HTML. Assets are immutable and cached for a year: a nonce baked into a cached
+    // response header is shared by every visitor forever, which is strictly worse than none.
+    const isHtml = (out.headers.get('content-type') || '').includes('text/html')
+    out.headers.set('content-security-policy', nonceCsp(CSP, isHtml ? makeNonce() : null))
+
     // A missing /assets/* file must 404 — never fall through to the SPA shell.
     //
     // `not_found_handling: single-page-application` rewrites ANY unmatched path to index.html
@@ -119,7 +153,12 @@ export default {
     if (url.pathname.startsWith('/assets/') && (out.headers.get('content-type') || '').includes('text/html')) {
       return new Response('Not found', {
         status: 404,
-        headers: { ...SECURITY_HEADERS, 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+        headers: {
+          ...SECURITY_HEADERS,
+          'content-security-policy': nonceCsp(CSP, null),
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'no-store',
+        },
       })
     }
 
