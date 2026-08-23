@@ -114,9 +114,30 @@ storage"*) while misattributing the cause.
 dashboard. `cloudflareinsights` has been **removed from the E2E console-error allowlist**, so a
 re-enable now fails the suite instead of being silently forgiven.
 
-**The surviving error is item 1 above** — Bot Fight Mode's JavaScript Detections (`__CF$cv$params`),
-a different feature. Still owner-gated: it needs a token with Zone → Bot Management permission,
-which the available token does not carry.
+**✎ AND THE SURVIVOR IS FIXED TOO, 2026-08-23 — by option 2, not option 1.** Bot Fight Mode's
+JavaScript Detections (`__CF$cv$params`) was the last error. Option 1 above (turn JS Detections
+off) turns out to be **impossible**: Cloudflare's docs state that for Bot Fight Mode customers
+*"JavaScript Detections is automatically enabled and cannot be disabled."* So the real choice was
+never off-vs-on — it was weaken the CSP, or drop bot protection entirely.
+
+Option 2 was the answer, and Cloudflare documents it: *"if your CSP uses a nonce for script tags,
+Cloudflare will add these nonces to the scripts it injects by parsing your CSP response header."*
+`worker.js` now emits a **per-response nonce on HTML only** (`nonceCsp`). We use it for nothing —
+every script this site ships is external and covered by `'self'` — it exists purely so Cloudflare's
+injected script can be signed.
+
+**It is safe only because the shell is `no-store`.** A nonce in a cached response header is shared
+by every visitor for the life of the cache, which is worse than none. The nonce therefore *depends
+on* the stale-shell rule; a change that makes HTML cacheable must remove the nonce, and the test
+says exactly that.
+
+**Production: ZERO console errors on `/` and `/audit`.** The E2E `KNOWN_TEXT` allowlist is now
+empty — nothing is excused by message text any more, so dropping the nonce fails the suite instead
+of reading as green. The four remaining errors on `/work` are the flagship iframes' own anonymous
+401s (finding 24, theirs), filtered by originating host.
+
+**Item 3 above — "or accept it" — is withdrawn.** It was the wrong call: a console error we can fix
+properly, without weakening anything, was never worth accepting.
 
 ## Deploys go straight to production (changed 2026-08-21)
 

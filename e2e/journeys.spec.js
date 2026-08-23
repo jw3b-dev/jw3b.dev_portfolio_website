@@ -46,16 +46,15 @@ test.describe('every route renders in a real browser without console errors', ()
       const THIRD_PARTY_HOST =
         /walletconnect|reown|coinbase|cdn-cgi\/challenge-platform|googletagmanager|google-analytics|doubleclick|kthulhu\.co|kointel\.co\.za/i
 
-      // 2) Messages that carry no useful URL of their own. Kept deliberately narrow:
-      //    - `Executing inline script violates …` is the zone's injected BOT-DETECTION script
-      //      (`__CF$cv$params`, Bot Fight Mode's JavaScript Detections) hitting our strict CSP.
-      //      A DIFFERENT feature from Web Analytics, which is now off: turning that off dropped
-      //      the count from two errors to one, and this is the survivor. The fix is a zone
-      //      setting requiring Bot Management permission (docs/DEFERRED.md); weakening script-src
-      //      to 'unsafe-inline' to silence it would be strictly worse.
-      //      We ship no inline <script> of our own, so this cannot be masking ours.
-      //    - `__CF$cv$params` is that same script's global.
-      const KNOWN_TEXT = /__CF\$cv\$params|Executing inline script violates/i
+      // 2) Messages that carry no useful URL of their own.
+      //    ✎ 2026-08-23: this list is now EMPTY, and that is the point.
+      //    It used to excuse `Executing inline script violates …` / `__CF$cv$params` — Bot Fight
+      //    Mode's JavaScript Detections hitting our strict CSP. That is fixed at the SOURCE: the
+      //    worker publishes a per-response CSP nonce and Cloudflare signs its own injected script
+      //    with it (worker.js nonceCsp). Production is at ZERO console errors on / and /audit.
+      //    Keeping the excuse would mean a future regression — someone dropping the nonce, or
+      //    making the HTML cacheable so the nonce has to go — would read as green. So it fails now.
+      const KNOWN_TEXT = /$^/
 
       // NOTE: a bare "Failed to load resource" is NO LONGER excused. If the URL that produced
       // it is ours, it is our defect and this budget must fail on it.
