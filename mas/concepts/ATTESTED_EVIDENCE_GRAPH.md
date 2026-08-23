@@ -1,0 +1,186 @@
+# Concept — the attested evidence graph (working name: **Receipts**)
+
+**Status:** brainstorm + architecture sketch, 2026-08-23. Nothing built. Written after consulting
+`agilegypsy-website/ecograph` for reusable tooling. Owner's idea; my job here is to separate the
+part that is a product from the part that is a research programme, and to say which is which.
+
+---
+
+## 0. The correction that changes what gets built
+
+The pitch says *ZK proof*. Almost nothing in the description needs zero-knowledge, and saying so up
+front is the difference between a shippable product and a two-year detour.
+
+| What you described | What it actually needs | Cost |
+|---|---|---|
+| "each piece of evidence once proven is written to the blockchain" | a **hash commitment** — publish `H(evidence)`, proves existence-at-time + integrity | trivial |
+| "the address is the encryption that solves the model graph" | a **Merkle root** over the graph's canonical state; any single fact proves against it with an O(log n) path | small |
+| "constantly updates and keeps itself fresh" | a **re-anchoring job** + visible staleness | small |
+| "live proof and attestation" | **deterministic re-verification**, published | you already built this twice |
+| prove something about evidence you **cannot show** | **this** is zero-knowledge | large |
+
+**Zero-knowledge earns its keep in exactly one place in your business, and it is a good place:
+client audit data you are contractually unable to publish.** You cannot show a client's findings.
+But you could prove *"this engagement produced N criticals"*, or *"this codebase passed invariant
+suite X at commit C"*, without revealing the code, the findings, or the client. That is a real,
+differentiated claim. Everything else on the list is a Merkle tree and a cron job.
+
+So: **build the commitment layer first, and treat ZK as a later module with one specific job.**
+Anything else inverts the risk — the hard cryptography would gate the boring part that carries the
+value.
+
+## 1. You are closer than you think — the EcoGraph inventory
+
+Consulting `ecograph/` rather than guessing, the prover primitive **already exists** and is running:
+
+- **`schema/02_assertions.cypher`** — *"Every query here MUST return ZERO rows… encode the
+  constraint so the model cannot silently violate it, then keep the receipts. Run in CI."* That is
+  the prover. It is not ZK; it is something better for v1 — a **deterministic, replayable,
+  human-auditable predicate suite over a graph.**
+- **`schema/07_support_assertions.cypher` A2** — a **canary that must return exactly one row**, so
+  the isolation assertion is proven to still fire. Testing the test. This is the single most
+  valuable pattern in the repo for this product: *an attestation that can prove it is still alive.*
+- **`06_support_agent.cypher`** — multi-tenant schema with POPIA-by-design (no per-question nodes).
+  Tenancy is already solved.
+- **`04/05_rwa_erc3643`** — RWA / ERC-3643 ontology **with reserve-backing invariants already
+  written**. Keep this in view; §4 argues it is the wedge.
+- **`ingest/`** — crawl → chunk → embed → entity/relationship extraction → PageRank/Louvain.
+  77k chunks, ~9.8k entities. The evidence intake pipeline exists.
+- **`bridge/radcad_bridge.py`** — graph ⇄ Monte-Carlo. Not needed for v1; interesting for
+  forward-looking attestations ("under these assumptions the reserve holds").
+
+**Missing:** canonical serialization, the commitment/anchor layer, the verifier, and the
+staleness model. That is a much shorter list than the idea implies.
+
+## 2. What the product actually is
+
+> **A claim you publish, with a receipt that keeps working.**
+
+Three properties, in priority order:
+
+1. **Tamper-evident.** The evidence behind a claim is committed; altering it after the fact is
+   detectable by anyone, without trusting you.
+2. **Live.** The claim carries a verification timestamp and **decays visibly**. A receipt that has
+   not re-verified in 30 days says so. This is the differentiator — every existing "verified badge"
+   is a one-time stamp that silently rots.
+3. **Selectively disclosed.** Reveal the fact, not the corpus. (Merkle path for public evidence;
+   ZK for private.)
+
+**The market research already happened, this week, on your own site.** Your CodeHawks receipt went
+from a working public profile to *"Ranking: Unranked · High 0 Med 0 Low 0"* with no notice to you.
+A cleared claim carried an unsupported number for a month. A reference document nearly caused two
+other researchers' work to be published under your name. **Every organisation that publishes claims
+has this problem and none of them know it.** That story sells the product better than any deck.
+
+## 3. Architecture
+
+```
+  EVIDENCE            NORMALISE           PROVE              COMMIT             SERVE
+  ─────────           ─────────           ─────             ──────             ─────
+  contest reports     ecograph/ingest     invariant suites   canonical          verifier lib
+  CI runs        →    → typed nodes  →    (zero-row)    →    serialize     →    receipt page
+  attestations        + provenance        + receipt-check    → Merkle root       badge + API
+  client audits       edges               (live fetch)       → chain anchor      ZK module
+       │                                        │                  │                 │
+       │                                        │                  │                 └─ anyone can
+       │                                        │                  └─ EAS on Base (attestations are
+       │                                        │                     the native primitive; do NOT
+       │                                        │                     hand-roll a registry)
+       │                                        └─ AI extracts + triages; DETERMINISTIC code decides.
+       │                                           An LLM's opinion is never the proof (see §5).
+       └─ every node carries source_system + evidence_pointer, exactly like jw3b.dev's register
+```
+
+**Overmind's role** is the honest one: it *orchestrates* the pipeline — ingest, re-verify,
+re-anchor, escalate on failure — with its own governance gates (a phase transition that halts on an
+EXCEPTION-severity violation is already the right shape). It is the operator, not the prover.
+
+**KTHULHU's role**: the highest-value evidence source. An audit that reproduces an exploit on an
+ephemeral fork is *already* a deterministic, replayable proof. Anchoring those is the flagship use.
+
+## 4. Where I would aim it — and it is not auditors
+
+The obvious market (auditors proving their track record) is small, poor, and mostly served by
+vanity. Three better targets, best first:
+
+1. **Tokenized RWA / ERC-3643 issuers.** They must continuously demonstrate that reserves back
+   supply and that compliance paths hold. **You already wrote those invariants**
+   (`05_rwa_assertions.cypher`). They have budgets, auditors, and a regulator asking. The product is
+   *"a live, anchored attestation that the reserve invariant held at every block since issuance"* —
+   and when it breaks, the receipt says so before the journalist does.
+2. **AI corpus provenance.** Prove a training/RAG corpus did or did not contain a document, without
+   publishing the corpus. Merkle for inclusion; ZK for exclusion-with-privacy. Genuinely hard, very
+   topical, and your ingest pipeline is the front half of it.
+3. **Compliance attestations** (the Kointel adjacency). *"Prove we hold consent for every subject in
+   this dataset"* without revealing the register. POPIA/GDPR-shaped, and you already encode advice
+   boundaries and PII-absence as graph invariants.
+
+## 5. The three things that will bite
+
+1. **"AI-attested" is not a proof, and selling it as one is the failure mode.** A model asserting a
+   fact is evidence of nothing. The trustworthy core must be deterministic — the zero-row suites,
+   the fetch-and-compare checks, the hash. AI belongs in extraction, normalisation and triage,
+   clearly labelled, never in the verdict. Your own claims discipline already says this; the product
+   must not quietly abandon it for a better pitch.
+2. **Canonical graph serialization is the actual engineering problem.** Hashing a graph requires a
+   deterministic ordering — node/edge sort, property normalisation, float and timestamp
+   canonicalisation, a version tag. Get it wrong and the same graph hashes two ways, which destroys
+   the whole product silently. This is where the real week goes, not the cryptography.
+3. **Low-entropy commitments are brute-forceable.** `H("passed")` is not private, and neither is
+   `H(client_name)`. Every commitment over a small domain needs a per-leaf salt (a nonce), stored
+   with the evidence and revealed only with the proof. This is the mistake that turns a privacy
+   product into a data leak.
+
+## 6. Red team
+
+1. **Why would anyone trust the anchor?** Because it is checkable without trusting you — but only
+   if the verifier is open-source and someone else can run it. **Ship the verifier before the
+   badge.** A badge whose verifier only you can run is a logo.
+2. **What stops garbage-in?** Nothing. The chain proves *"this was committed at time T"*, never
+   *"this is true"*. The invariant suite is what carries truth, and its quality is the product.
+   Over-claiming here is fraud-adjacent — say plainly: *committed, not certified.*
+3. **What happens when a re-verification fails?** This is the whole design, not an edge case. It
+   must be **visible and public**, or the product is a rubber stamp. The receipt shows the failure
+   and the last-good anchor. That is the behaviour worth paying for — and it is exactly what
+   `receipt-check` did to jw3b.dev this week.
+4. **Chain choice / cost.** Base + EAS. Attestations are the native primitive, revocation is
+   built in, and hand-rolling a registry is a solved-problem tax. Batch to one root per interval;
+   per-item anchoring will not survive contact with volume.
+5. **Which regulation applies?** If any client evidence touches personal data, POPIA/GDPR apply to
+   the *hashes* too where they are re-identifiable. Salt everything, and keep the graph
+   PII-free-by-design as `06_support_agent.cypher` already does.
+
+## 7. What I would build first
+
+**Two weeks, no cryptography beyond SHA-256.**
+
+1. `canonicalize(graph) -> bytes` + `merkleRoot()` + `proveLeaf()` + a standalone `verify()` that
+   depends on nothing of ours. **The verifier is the product; write it first.**
+2. Anchor jw3b.dev's **own** evidence register — 33 claims — as one EAS attestation on Base.
+3. Point each `<Claim>` receipt at its Merkle proof. Re-verify nightly; **render the staleness**.
+4. Dogfood the failure: break a claim on purpose and show the receipt going red in public.
+
+That is a complete, honest, demonstrable product on a corpus you own, with no client data and no ZK.
+**And it fixes your actual problem** — the receipt that died this week — rather than being a demo.
+
+**Then**, and only then, one ZK module with one job: *prove a KTHULHU engagement produced N findings
+of severity ≥ High, without revealing the engagement.* Circuit over a Merkle inclusion + a
+comparison. Small, well-understood, and the first thing a client would actually pay to keep private.
+
+**What I would not build:** ZK proofs *of graph queries* (research-grade), a general-purpose
+"AI attestation" claim (indefensible), or per-item on-chain writes (cost).
+
+## 8. The EcoGraph MCP
+
+`neo4j-ecograph` is registered in `agilegypsy-website/.mcp.json` — **not in this project**, so I
+could not call it from this session and read the repo instead. To use it here, add the server block
+to a `.mcp.json` in the jw3b.dev working tree (password stays in the gitignored file, as it is now)
+and approve it. Worth doing before any modelling work: interrogating the live graph beats reading
+`.cypher` files, and the assertion suites are meant to be *run*, not read.
+
+---
+
+**One-line verdict:** the valuable product is **live, tamper-evident, selectively-disclosed
+receipts** — and you already own the ingest, the ontology, the invariant pattern and the
+orchestration. Drop "ZK" from the v1 name, ship the verifier, and keep zero-knowledge in reserve for
+the client-confidential case where it is genuinely the only tool that works.
