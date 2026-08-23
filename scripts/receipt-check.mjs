@@ -59,12 +59,13 @@ const EXPECTATIONS = {
   // the owner's attestation. That is why the four NUMERIC KTHULHU claims are attested, not linked.
   'kthulhu-paying-users': { mustContain: ['KTHULHU', 'Pricing'] },
 
-  // Credly badge wallet — ISSUER-attested (APMG / APM publish these; the holder cannot type them
-  // in), and the page renders all three with issuer and date. Assert the holder's name AND each
-  // issuer, so a page that loads but lists someone else's wallet fails.
-  'agilepm-practitioner': { mustContain: ['Wellard', 'AgilePM', 'Practitioner', 'APMG'] },
-  'agilepm-foundation': { mustContain: ['Wellard', 'AgilePM', 'Foundation', 'APMG'] },
-  'apm-pfq': { mustContain: ['Wellard', 'Project Fundamentals', 'Association for Project Management'] },
+  // Credly, ONE BADGE PER CLAIM — issuer-attested (APMG / APM publish these; the holder cannot
+  // type them in). Each cites the badge that attests IT rather than a wallet page listing five,
+  // so a receipt cannot be satisfied by a neighbouring credential. Assert the holder's name too:
+  // a badge page that loads for someone else must fail.
+  'agilepm-practitioner': { mustContain: ['Wellard', 'AgilePM', 'Practitioner'] },
+  'agilepm-foundation': { mustContain: ['Wellard', 'AgilePM', 'Foundation'] },
+  'apm-pfq': { mustContain: ['Wellard', 'Project Fundamentals'] },
 
   // GraphAcademy certificates render the course title and the holder's name.
   'neo4j-certified-professional': { mustContain: ['Neo4j Certified Professional', 'Wellard'] },
