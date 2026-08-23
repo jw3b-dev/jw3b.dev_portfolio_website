@@ -32,9 +32,33 @@
  *
  * If apex egress ever reaches CI, fold this into the post-deploy job and delete the separation.
  */
+import { readFileSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { test, expect } from '@playwright/test'
 
 const ZONE = process.env.ZONE_BASE_URL || 'https://jw3b.dev'
+
+/*
+ * ✎ 2026-08-23 — this suite went 2/3 RED and the cause is Cloudflare Bot Fight Mode.
+ *
+ * BFM's JavaScript Detections serve `/cdn-cgi/challenge-platform/…/jsd/…` from our own origin and
+ * store `cf_clearance`. Verified NOT to be a Playwright artifact: `curl` — not a browser, running
+ * no JavaScript — already receives `challenge-platform/scripts/jsd/main.js` in the HTML, so every
+ * visitor gets it.
+ *
+ * The temptation is to assert `[]` minus this one thing and move on. That is how a gate becomes
+ * decoration. So the allowance is NAMED, and it is CONDITIONAL: the exception only holds while
+ * `src/content/privacy.md` actually discloses the cookie to visitors. Weaken the notice and this
+ * suite goes red again — the test enforces the disclosure, not the vendor's convenience.
+ *
+ * It is an exception on the strength of purpose, not of source. `cf_clearance` is a security
+ * cookie, the one ePrivacy Art 5(3) purpose that needs no prior consent. Cloudflare serving it
+ * buys it nothing: `/cdn-cgi/zaraz/*` comes from the same vendor and the same path family and
+ * stays banned below, because that one is a tag injector.
+ */
+const SECURITY_COOKIES = ['cf_clearance']
+const PRIVACY_NOTICE = join(dirname(fileURLToPath(import.meta.url)), '..', 'src/content/privacy.md')
 
 /*
  * Storage the site legitimately needs to function, under the ePrivacy Art 5(3) "strictly
@@ -54,11 +78,25 @@ const FUNCTIONAL_KEYS = [
 const isFunctional = (key) => FUNCTIONAL_KEYS.some((re) => re.test(key))
 
 test.describe('the cookieless posture ADR-P5-01 claims, checked on the domain visitors use', () => {
-  test('no cookies are set on a plain first visit', async ({ page, context }) => {
+  test('the only cookie is the named security one, and the notice says so', async ({ page, context }) => {
     await page.goto(`${ZONE}/`, { waitUntil: 'networkidle' })
     await page.waitForTimeout(2500)
     const cookies = await context.cookies()
-    expect(cookies.map((c) => `${c.name}@${c.domain}`), 'ADR-P5-01: no cookie, therefore no consent banner').toEqual([])
+
+    const undeclared = cookies.filter((c) => !SECURITY_COOKIES.includes(c.name))
+    expect(
+      undeclared.map((c) => `${c.name}@${c.domain}`),
+      'an undeclared cookie — ADR-P5-01 says there is no consent obligation, and each of these is one',
+    ).toEqual([])
+
+    /*
+     * The half that makes the allowance honest rather than convenient. A visitor's entitlement is
+     * to be TOLD; if the notice stops telling them, the exception has no basis and this fails.
+     */
+    const notice = readFileSync(PRIVACY_NOTICE, 'utf8')
+    for (const name of cookies.map((c) => c.name)) {
+      expect(notice, `the live site sets \`${name}\` and the privacy notice never names it`).toContain(name)
+    }
   })
 
   test('nothing writes NON-FUNCTIONAL storage — localStorage is a consent surface too', async ({ page }) => {
@@ -99,12 +137,19 @@ test.describe('the cookieless posture ADR-P5-01 claims, checked on the domain vi
      */
     const ALLOWED_SAME_ORIGIN = ['/cdn-cgi/speculation']
 
+    /*
+     * Bot Fight Mode's JS challenge, allowed by exact path family and nothing wider. `zaraz` lives
+     * one segment away under the same `/cdn-cgi/` parent and must keep failing this test.
+     */
+    const ALLOWED_SAME_ORIGIN_PREFIX = [/^\/cdn-cgi\/challenge-platform\//]
+
     const proxied = []
     page.on('request', (r) => {
       const u = new URL(r.url())
       if (u.origin !== new URL(ZONE).origin) return
       if (/^\/assets\//.test(u.pathname) || u.pathname === '/' || /\.(css|js|png|svg|webp|json|txt|xml|ico)$/.test(u.pathname)) return
       if (ALLOWED_SAME_ORIGIN.includes(u.pathname)) return
+      if (ALLOWED_SAME_ORIGIN_PREFIX.some((re) => re.test(u.pathname))) return
       proxied.push(u.pathname)
     })
 

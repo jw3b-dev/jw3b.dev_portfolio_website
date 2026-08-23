@@ -150,10 +150,34 @@ was open for an engineering reason — an unbuilt UI over a deployed endpoint �
 as an owner ask for a month. A register that mistakes an engineering gap for a provisioning gap
 sends the owner a bill for work that was already paid for.
 
-**Now: 22 of 29 live findings fixed · 1 retracted · 1 closed as not-ours · 2 newly declared ·
+~~**Now: 22 of 29 live findings fixed · 1 retracted · 1 closed as not-ours · 2 newly declared ·
 3 open, each owner-gated with a named ask** (23 zone RUM · 25 CTF vault · 26 Unlock/escrow), plus
-**Kointel**, which is open and whose cause is *unknown* — it must be re-diagnosed the way KTHULHU
-just was, not assumed to need API access.
+**Kointel**, which is open and whose cause is *unknown*.~~
+
+**✎ REVISED 2026-08-23 — that verdict was stale in three places, and it is the fifth time a status
+line in this repo has outlived what it describes.** #23 was closed the day it was written; Kointel
+was re-diagnosed and `KointelGate.jsx` now runs its rule on the card (FR-066 met); #25 was
+re-graded P3, not blocking. **Exactly one finding is genuinely owner-gated: #26** — Unlock lock
+provisioning and mainnet escrow funding.
+
+Note what caught it and what did not. `scripts/drift-gate.mjs` gained a status-drift rule the same
+morning; it could not see this, because a verdict paragraph is prose and the rule matches a bolded
+status beside an FR id in a table row. The gate covers the shape that bit, not the class.
+
+**Now: 24 of 29 live findings fixed · 1 retracted · 1 closed as not-ours · 3 newly declared ·
+1 open, owner-gated with a named ask (26 Unlock/escrow).**
+
+| # | Finding (verified 2026-08-23) | Sev | Status |
+|---|---|---|---|
+| 32 | **The apex sets a cookie the privacy notice never mentioned.** Cloudflare Bot Fight Mode's JavaScript Detections store `cf_clearance` and execute `/cdn-cgi/challenge-platform/…/jsd/…` from our own origin. `npm run e2e:zone` went **2/3 red**; the register had recorded it 3/3 green on 2026-08-22. NOT an automation artifact — `curl`, running no JavaScript, already receives `challenge-platform/scripts/jsd/main.js` in the HTML, so every visitor gets it. The cookie is security-purpose and so exempt from *consent* under ePrivacy Art 5(3), but `privacy.md` opened with *"It reflects what the code actually does — not an aspiration"* and did not name it, which is a claim the live site contradicts. **FIXED (disclosure):** a "Cookies and browser storage" section names the cookie, its purpose and its legal basis; the zone suite now allows it **only while the notice discloses it**, and a unit test proves the words render. Red-witnessed both ways. **The cookie itself is a zone-level decision and remains open** — see the ask below. |
+| 33 | **No credential on this machine can change the jw3b.dev zone.** The Infisical `CLOUDFLARE_API_TOKEN` authenticates but sees exactly one zone, `kthulhu.co`, in a different account. Wrangler's OAuth token is on the AgileGypsy account but carries `zone (read)` only — a zone-settings GET returns `9109 Unauthorized to access requested resource`. Finding 31 said no automated gate can see the zone layer; this adds that none can *change* it either. **OPEN — owner-gated**, ask below. |
+
+**The ask for 32/33 — a decision, then a permission.** Bot Fight Mode is doing its job; disabling
+it removes the cookie and the injected script and restores a genuinely cookieless posture, at the
+cost of the free bot protection that is currently challenging every datacenter IP (including the
+one that makes finding 31 necessary). Keeping it is equally defensible now that the notice is
+honest. Whichever way it goes, changing it needs a token with **Zone → Zone Settings → Edit** on
+`jw3b.dev`, which does not exist yet.
 
 *Earlier caveat, now resolved:* the Overmind flagship rewrite has since been pushed and deployed;
 the table no longer describes a site the deploy does not match.

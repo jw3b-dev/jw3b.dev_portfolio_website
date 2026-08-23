@@ -22,6 +22,22 @@ describe('Privacy notice (FR-057 / NFR-07)', () => {
     )
   })
 
+  /*
+   * Added 2026-08-23 after the live apex was found setting a cookie this notice never mentioned.
+   * The notice opens by promising it "reflects what the code actually does — not an aspiration",
+   * and for a month it did not: Cloudflare Bot Fight Mode stores `cf_clearance` on every visit.
+   * `e2e-zone/zone-posture.spec.js` allows that cookie ONLY while this section names it, so the
+   * two checks hold each other up — this one proves the words reach the page, that one proves the
+   * words still match the live site.
+   */
+  it('discloses the security cookie the zone actually sets', () => {
+    renderPage()
+    expect(screen.getByRole('heading', { name: /cookies and browser storage/i })).toBeInTheDocument()
+    expect(screen.getByText(/cf_clearance/)).toBeInTheDocument()
+    // The legal basis must be stated, not merely implied — security is why no banner is required.
+    expect(screen.getByText(/set for security/i)).toBeInTheDocument()
+  })
+
   it('covers the three mandated disclosures: analytics, connected-wallet data, engagement PII', () => {
     renderPage()
     // Analytics — the concierge/audit/rate-limit collection.

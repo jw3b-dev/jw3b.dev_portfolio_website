@@ -12,6 +12,14 @@ To operate and improve the site, its backend records a small amount of usage dat
 - Security console: when you run the AI audit tool, a one-way hash of the contract you paste — never the source itself — plus which tool ran and how long it took.
 - Abuse prevention: your IP address and which endpoint you called, kept briefly, to rate-limit and stop abuse.
 
+### Cookies and browser storage
+
+The site sets no cookie of its own, and shows no consent banner, because it has nothing to ask consent for: there is no advertising, no profiling, and no cross-site tracking anywhere on it.
+
+One cookie is set that is not the site's own. Cloudflare, which serves and protects this domain, runs a bot check on visits and may store a `cf_clearance` cookie in your browser together with a short script from a `/cdn-cgi/` path. It exists to tell automated traffic from people and to keep the site available; it carries no advertising identifier and is not used to profile you. It is set for security, which is the one purpose the UK and EU cookie rules let a site use without asking first — but it is disclosed here because it is on your device and you are entitled to know it.
+
+Everything else this site keeps in your browser is local storage it needs to work: your wallet connection state, if you chose to connect a wallet, and the offline queue described below. Clearing site data removes all of it.
+
 ### Connected-wallet data
 
 Connecting a wallet is always optional and never required to contact John. If you do connect one, or add its address to an engagement request, that public wallet address is stored with the request. A wallet address is a public on-chain identifier.
@@ -37,6 +45,7 @@ This is kept in order to respond to your enquiry. Providing it is your choice; w
 ## What this site does not do
 
 - It does not sell your data or share it for advertising.
+- It sets no tracking or advertising cookie, and runs no third-party analytics or advertising tag.
 - It does not store the raw source of contracts you analyse — only a one-way hash.
 - AI output is labelled as AI-assisted and is not a substitute for a full manual audit.
 
@@ -58,4 +67,4 @@ This site is operated from South Africa, so POPIA governs how your information i
 
 John Wellard — john@agilegypsy.com
 
-Last updated: 18 August 2026
+Last updated: 23 August 2026
