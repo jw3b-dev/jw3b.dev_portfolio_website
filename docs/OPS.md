@@ -145,11 +145,48 @@ to need a zone change nobody had the rights to make.
 Zone: `jw3b.dev` = `a8c04dc89ab52c84845a005e1d2f9bb9`. Account: `AgileGypsy` =
 `04bf3d7c95516d3e9a2af68fc8f6619b`.
 
+**✎ 2026-08-23 — a fourth credential exists, and this table not naming it cost most of a session.**
+
+| Credential | Where | Verified scope | Can it change zone settings? |
+|---|---|---|---|
+| **zone token** (`cfat_…3e30`) | free text inside `/home/agilegypsy/code/projects/jw3b.dev_website/.env` — the **v1 repo**, not this one, and not on a `KEY=` line | sees 5 zones incl. `jw3b.dev`; `GET /zones/{id}/settings` **200**; `PATCH settings/challenge_ttl` (no-op, same value) **200** | **Yes** |
+
+How it was missed, so the next sweep does better: every search keyed on the *name*
+`CLOUDFLARE_API_TOKEN`, and this one is a bare value on its own line in a different repo's `.env`.
+The same trap has now caught two searches — **grep the token SHAPE (`cf[a-z]t_…`) across disk, never
+the variable name.** The owner had to point at the file twice.
+
+Two wrong conclusions were published before that, both stated with more confidence than the
+evidence carried, and both are corrected here: that no credential on the machine could reach the
+zone (one could), and that a token is permanently bound to the account that issued it and so could
+never be widened to another (false for **user** tokens — `cfut_` belongs to the user, and its zone
+resources may span every account that user can reach).
+
+**Bot Fight Mode cannot be changed through the API on this plan.** With the zone token — which
+demonstrably has zone-settings *write* — the bot endpoints answer:
+
+```
+GET  /zones/{id}/bot_management        200  {"fight_mode": true, "enable_js": true, …}
+PUT  /zones/{id}/bot_management        10400 Bad Request          ← even echoing the object back
+PATCH /zones/{id}/bot_management       10405 Method not allowed for this authentication scheme
+GET  /zones/{id}/settings/bot_fight_mode  1003 Undefined zone setting
+```
+
+`jw3b.dev` is a **Free Website** plan: `bot_management` is readable but the write path belongs to
+paid Bot Management. Proven not to be a permissions problem by writing `challenge_ttl` back at its
+own value (200) with the same token. **So this toggle is dashboard-only** — Security → Bots.
+
+**`enable_js` is a separate field from `fight_mode`, which contradicts what was assumed earlier.**
+Turning off **JavaScript Detections** stops `/cdn-cgi/challenge-platform/…/jsd/…` and the
+`cf_clearance` cookie (product-audit finding 32) **while Bot Fight Mode stays on**. That is the
+surgical change; disabling Bot Fight Mode entirely is not required and is not recommended.
+
 **To let an agent make a zone change**, mint a token with **Zone → Zone Settings → Edit** scoped to
 `jw3b.dev`, plus the **account-level Tag Management** permission (the Google Tag Gateway page lives
 at `/:account/tag-management/`, so a zone-only token will not reach it). The deploy token is
 deliberately narrow — widen a *new* token instead of that one, so a leaked deploy credential can
-never reconfigure the zone.
+never reconfigure the zone. Note that even a fully-scoped token will not fix the bot toggle above:
+that limit is the plan, not the permission.
 
 ## D1 migrations are NOT applied by CI — apply them by hand, before the code that needs them
 
