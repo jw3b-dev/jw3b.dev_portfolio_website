@@ -69,6 +69,10 @@ export default defineConfig({
         // one that lets another researcher's write-up onto this site under John's name — the
         // near-miss recorded in mas/facts/PORTFOLIO_REFERENCE.md §1b.
         'src/lib/findingArtifacts.js',
+        // The live CodeHawks record. Gated because its whole contract is degrading honestly: a
+        // third party's outage must become "unknown", never a wrong number on the homepage. The
+        // hand-copied number it replaces was wrong for months.
+        'src/lib/codehawksLive.js',
         'src/lib/fuzzHarness.js',
         'src/lib/txDecode.js',
         'src/lib/xmtpFlow.js',
