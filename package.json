@@ -19,6 +19,7 @@
     "claims-lock": "node scripts/claims-lock.mjs",
     "receipt-check": "node scripts/receipt-check.mjs",
     "codehawks-scan": "node scripts/codehawks-scan.mjs",
+    "cf:analytics": "node scripts/cf-web-analytics.mjs",
     "receipt-check:net": "node scripts/receipt-check.mjs --net",
     "e2e:zone": "playwright test --config config/playwright.zone.config.js",
     "seed:kv": "node scripts/seed-kv-runs.mjs",
