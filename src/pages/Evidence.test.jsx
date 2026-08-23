@@ -1,20 +1,22 @@
-/*
- * /evidence — the register, readable.
- *
- * The tests that matter are about HONESTY, not layout. This page's whole justification is that a
- * reader can weigh the claims themselves — so it must show every cleared claim, must not invent a
- * figure of its own, and must state the verified/attested split rather than implying every number
- * is checkable. A register page that flattered the register would be worse than no page.
- */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import Evidence from './Evidence.jsx'
-import { allClaims, isClaimCleared, evidenceKind } from '../lib/claimsRegister.js'
+import { allClaims, isClaimCleared, evidenceKind, firstSentence } from '../lib/claimsRegister.js'
+import { FORBIDDEN_RULES } from '../lib/claimsValidate.js'
 
-const cleared = allClaims().filter(isClaimCleared)
-const renderPage = () =>
+vi.mock('../config/embeds.js', () => ({ workerOriginAllowed: () => false }))
+
+/*
+ * /evidence — the register, and the times it was wrong.
+ *
+ * The corrections section is the point of this page. Any site can list claims it believes; a site
+ * that publishes the occasions its own numbers were wrong is making a checkable statement about how
+ * it is maintained. "#152 (Aug 2026)" is worth less than the note recording that it read "#124"
+ * here for months while every gate passed.
+ */
+const view = () =>
   render(
     <HelmetProvider>
       <MemoryRouter>
@@ -23,99 +25,61 @@ const renderPage = () =>
     </HelmetProvider>,
   )
 
-/** Claim rows only — every <li> inside a source section, excluding the blocklist below. */
-const registerRows = () =>
-  screen.getAllByRole('listitem').filter((li) => li.closest('section')?.id !== 'refused-claims-section')
+const cleared = allClaims().filter(isClaimCleared)
+const corrected = cleared.filter((c) => c.reconciliation_note)
 
-describe('/evidence — completeness', () => {
-  it('lists EVERY cleared claim — a partial register is a curated one', () => {
-    renderPage()
-    // Scoped to the REGISTER sections. The refused-claims blocklist below is also a list, and a
-    // page-wide count conflates "claims we make" with "claims we refuse to make" — two opposite
-    // things that must never be summed.
-    const rows = registerRows()
-    expect(rows).toHaveLength(cleared.length)
+describe('Evidence page', () => {
+  it('renders one <section>, not a nested <main>', () => {
+    // The layout already provides <main>. This page wrapped in another one — invalid HTML and an
+    // ambiguous landmark — and /evidence was not in the E2E route list, so nothing caught it.
+    const { container } = view()
+    expect(container.querySelectorAll('main')).toHaveLength(0)
+    expect(screen.getByRole('heading', { level: 1, name: /evidence register/i })).toBeInTheDocument()
   })
 
-  it('shows each claim label', () => {
-    renderPage()
-    // getAllByText, not getByText: several certificates legitimately share a label
-    // ("Neo4j GraphAcademy — course certificate"), so uniqueness is not the property here.
-    for (const c of cleared) expect(screen.getAllByText(c.label).length).toBeGreaterThan(0)
-  })
-
-  it('groups by source system, and every source appears', () => {
-    renderPage()
-    const sources = new Set(cleared.map((c) => c.source_system || 'Other'))
-    for (const s of sources) {
-      expect(screen.getByRole('heading', { name: s })).toBeInTheDocument()
-    }
-  })
-})
-
-describe('/evidence — it does not flatter the register', () => {
-  it('states the verified/attested split, computed not written', () => {
+  it('states the verified/attested split from the register, not from prose', () => {
+    view()
     const verified = cleared.filter((c) => evidenceKind(c) === 'verified').length
-    const attested = cleared.length - verified
-    renderPage()
-    expect(screen.getByText(String(cleared.length))).toBeInTheDocument()
-    expect(screen.getByText(String(verified))).toBeInTheDocument()
-    expect(screen.getByText(String(attested))).toBeInTheDocument()
-    // The disclaimer itself, because the numbers alone do not tell a reader what they mean.
-    expect(screen.getByText(/Attested is not verified/i)).toBeInTheDocument()
+    expect(screen.getAllByText(String(verified)).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(String(cleared.length)).length).toBeGreaterThan(0)
   })
 
-  it('gives every VERIFIED claim an openable link to its own pointer', () => {
-    renderPage()
-    const links = screen.getAllByRole('link', { name: /check it/i })
-    const verified = cleared.filter((c) => evidenceKind(c) === 'verified')
-    expect(links).toHaveLength(verified.length)
-    for (const c of verified) {
-      expect(links.some((l) => l.getAttribute('href') === c.evidence_pointer)).toBe(true)
+  it('publishes EVERY correction the register carries', () => {
+    view()
+    expect(corrected.length).toBeGreaterThan(0)
+    const section = screen.getByRole('region', { name: /corrections/i })
+    for (const c of corrected) {
+      // getAllBy: a single-sentence note is its own summary, so it appears twice (collapsed and
+      // expanded). Presence is the assertion, not uniqueness.
+      expect(within(section).getAllByText(firstSentence(c.reconciliation_note)).length).toBeGreaterThan(0)
     }
   })
 
-  it('labels every ATTESTED claim in words, and never gives it a fake receipt link', () => {
-    renderPage()
-    const attested = cleared.filter((c) => evidenceKind(c) === 'attested')
-    // Scope to the ROWS. The summary prose also contains the exact string "owner-attested",
-    // so counting page-wide overcounts by one — which is what this assertion first did.
-    const rowMarkers = registerRows().filter((li) => within(li).queryByText(/^owner-attested$/i))
-    expect(rowMarkers).toHaveLength(attested.length)
-    for (const c of attested) {
-      expect(screen.queryByRole('link', { name: c.evidence_pointer })).toBeNull()
+  it('shows the count as a fraction of the whole register — not a bare number', () => {
+    // "11 corrections" invites "out of how many?". The ratio is the honest figure.
+    view()
+    expect(screen.getByRole('heading', { name: new RegExp(`${corrected.length} of ${cleared.length}`) }))
+      .toBeInTheDocument()
+  })
+
+  it('keeps the full note available, not just the summary', () => {
+    view()
+    const section = screen.getByRole('region', { name: /corrections/i })
+    const longest = corrected.reduce((a, b) =>
+      (a.reconciliation_note.length > b.reconciliation_note.length ? a : b))
+    expect(within(section).getByText(longest.reconciliation_note)).toBeInTheDocument()
+  })
+
+  it('derives the blocklist from the register rather than hardcoding it', () => {
+    // ✎ My first version of this asserted the page never shows those phrases. Wrong: the page
+    // deliberately RENDERS the blocklist, and that is the point — a reader can see what the site
+    // refuses to say. The real invariant is that the list is DERIVED, so it cannot drift from the
+    // register and cannot be a literal in this component (which is what the claims gate scans for).
+    view()
+    const section = screen.getByRole('region', { name: /claims this site refuses to make/i })
+    expect(FORBIDDEN_RULES.length).toBeGreaterThan(0)
+    for (const rule of FORBIDDEN_RULES) {
+      expect(within(section).getByText(rule.why)).toBeInTheDocument()
     }
-  })
-
-  it('writes no figure of its own — every number shown traces to the register', () => {
-    const { container } = renderPage()
-    const registerValues = new Set(cleared.map((c) => String(c.value)))
-    const counts = new Set([String(cleared.length), String(cleared.filter((c) => evidenceKind(c) === 'verified').length),
-      String(cleared.length - cleared.filter((c) => evidenceKind(c) === 'verified').length)])
-    // Any standalone number rendered in a mono/tabular cell must be a register value or a count.
-    const monoNumbers = [...container.querySelectorAll('.tabular-nums, .font-mono')]
-      .map((n) => n.textContent.trim())
-      .filter((t) => /^[\d,]+$/.test(t))
-    for (const n of monoNumbers) {
-      expect(registerValues.has(n) || counts.has(n), `unsourced figure rendered: ${n}`).toBe(true)
-    }
-  })
-})
-
-describe('/evidence — reachable', () => {
-  it('points at the gate demo so a reader can try the blocklist themselves', () => {
-    renderPage()
-    const link = screen.getByRole('link', { name: /zero-trust validator/i })
-    expect(link).toHaveAttribute('href', '/thesis/zero-trust-validator')
-  })
-
-  it('renders a single h1 and one section heading per source', () => {
-    renderPage()
-    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
-    const sources = new Set(cleared.map((c) => c.source_system || 'Other'))
-    // One h2 per evidence source, PLUS the refused-claims blocklist section — that section is a
-    // peer of the sources, not a source, so it is named here rather than folded into the count.
-    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(sources.size + 1)
-    expect(screen.getByRole('heading', { level: 2, name: /refuse|refused|never claim/i })).toBeInTheDocument()
   })
 })

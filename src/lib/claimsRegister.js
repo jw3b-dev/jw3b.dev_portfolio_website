@@ -42,3 +42,17 @@ export function evidenceKind(claim) {
   if (typeof p !== 'string' || !p.trim()) return 'unsourced'
   return /^https?:\/\//i.test(p.trim()) ? 'verified' : 'attested'
 }
+
+/**
+ * PURE — the first sentence of a reconciliation note, for a collapsed summary.
+ *
+ * A third of the register carries a note explaining a time its figure was wrong. They are
+ * paragraph-length by design (the detail is the point), so /evidence shows the first sentence and
+ * expands to the whole thing. Falls back to the entire note rather than an empty string: a
+ * correction that renders blank is worse than one that renders long.
+ */
+export function firstSentence(note = '') {
+  const text = String(note ?? '').trim()
+  const m = /^(.*?[.!?])(\s|$)/s.exec(text)
+  return (m ? m[1] : text).trim()
+}

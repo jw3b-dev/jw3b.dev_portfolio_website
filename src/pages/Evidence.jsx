@@ -18,6 +18,8 @@ import Seo from '../components/seo/Seo.jsx'
 import Claim from '../components/Claim.jsx'
 import { allClaims, isClaimCleared, evidenceKind } from '../lib/claimsRegister.js'
 import { FORBIDDEN_RULES } from '../lib/claimsValidate.js'
+import LiveRecordLine from '../components/proof/LiveRecordLine.jsx'
+import { getClaim, firstSentence } from '../lib/claimsRegister.js'
 
 const cleared = allClaims().filter(isClaimCleared)
 const verifiedCount = cleared.filter((c) => evidenceKind(c) === 'verified').length
@@ -30,6 +32,20 @@ const bySource = cleared.reduce((acc, c) => {
   return acc
 }, {})
 const sources = Object.keys(bySource).sort((a, b) => bySource[b].length - bySource[a].length)
+
+/*
+ * THE CORRECTIONS. A third of this register has been wrong at least once, and every one of those
+ * corrections was written down at the time — dates, what the figure said, what the source actually
+ * said, and how it went unnoticed. Those notes have been sitting in the register JSON where no
+ * reader could see them.
+ *
+ * Showing them is the strongest thing on this page. Any site can list claims it believes; a site
+ * that publishes the times its own numbers were wrong is making a checkable statement about how it
+ * is maintained. "#152 (Aug 2026)" is worth less than the note explaining that it read "#124" here
+ * for months while every gate passed.
+ */
+const corrected = cleared.filter((c) => c.reconciliation_note)
+
 
 function Row({ claim }) {
   const kind = evidenceKind(claim)
@@ -60,13 +76,13 @@ function Row({ claim }) {
 
 export default function Evidence() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
+    <section aria-labelledby="evidence-title" className="mx-auto max-w-3xl px-6 py-16">
       <Seo
         title="Evidence register"
         description="Every figure jw3b.dev renders, and what backs it — independently checkable or owner-attested, stated per claim."
       />
 
-      <h1 className="font-display text-2xl font-semibold text-content-primary">Evidence register</h1>
+      <h1 id="evidence-title" className="font-display text-2xl font-semibold text-content-primary">Evidence register</h1>
 
       <p className="mt-3 text-sm leading-relaxed text-content-secondary">
         Every number on this site renders from this register or not at all — a build gate blocks any
@@ -83,6 +99,46 @@ export default function Evidence() {
         systems that are not public. Attested is not verified, and this page will not pretend
         otherwise.
       </p>
+
+      {/*
+          The register is built at deploy time, which is what makes it gate-able — and is also how a
+          figure stays right-looking after it stops being true. This asks the source, now.
+      */}
+      <LiveRecordLine
+        registerValidSubmissions={parseInt(getClaim('codehawks-valid-submissions').value, 10)}
+      />
+
+      {corrected.length > 0 && (
+        <section className="mt-8" aria-labelledby="corrections-title">
+          <h2 id="corrections-title" className="font-mono text-[11px] uppercase tracking-label text-caution">
+            Corrections — {corrected.length} of {cleared.length}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-content-secondary">
+            A third of these figures has been wrong at least once. Each correction was written down
+            when it was found — what the number said, what the source actually said, and why nothing
+            caught it. They are kept here rather than quietly edited, because{' '}
+            <span className="text-content-primary">
+              how a register behaves when it is wrong
+            </span>{' '}
+            tells you more about it than the claims do.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {corrected.map((c) => (
+              <li key={c.id} className="border-t border-hairline pt-2">
+                <details>
+                  <summary className="cursor-pointer text-sm text-content-secondary marker:text-content-muted">
+                    <span className="font-mono tabular-nums text-content-primary">{c.value}</span>
+                    <span className="ml-2 text-content-muted">{firstSentence(c.reconciliation_note)}</span>
+                  </summary>
+                  <p className="mt-2 whitespace-pre-line text-[13px] leading-relaxed text-content-muted">
+                    {c.reconciliation_note}
+                  </p>
+                </details>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {sources.map((source) => (
         <section key={source} className="mt-8" aria-labelledby={`src-${source.replace(/\W+/g, '-')}`}>
@@ -139,6 +195,6 @@ export default function Evidence() {
           ))}
         </ol>
       </section>
-    </main>
+    </section>
   )
 }

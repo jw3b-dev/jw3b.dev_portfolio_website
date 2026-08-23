@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test'
 
 // '/findings/50-L-01' is the published audit finding. It only exists while its markdown file
 // does — the route is registered from the glob — so a route that vanishes takes its test with it.
-const ROUTES = ['/', '/work', '/audit', '/ctf', '/hire-me', '/messages', '/privacy', '/thesis/systems-are-graphs', '/thesis/zero-trust-validator', '/findings/50-L-01']
+const ROUTES = ['/', '/work', '/audit', '/ctf', '/hire-me', '/messages', '/privacy', '/thesis/systems-are-graphs', '/thesis/zero-trust-validator', '/findings/50-L-01', '/evidence']
 
 test.describe('every route renders in a real browser without console errors', () => {
   for (const route of ROUTES) {
@@ -109,4 +109,27 @@ test('the published finding renders its code, not backticks', async ({ page }) =
   // Provenance must travel with the prose.
   await expect(page.getByText(/severity is cyfrin.s classification/i)).toBeVisible()
   await expect(page.getByRole('link', { name: /contest on codehawks/i })).toBeVisible()
+})
+
+test('the evidence register publishes its own corrections', async ({ page }) => {
+  // The strongest thing on the site is not the claim list — it is the record of the claims that
+  // were wrong. Eleven of thirty-three carry a dated correction, and they lived in register JSON
+  // where no reader could reach them.
+  await page.goto('/evidence')
+  await page.getByRole('heading', { level: 1, name: /evidence register/i }).waitFor()
+
+  const corrections = page.getByRole('region', { name: /corrections/i })
+  await expect(corrections).toBeVisible()
+
+  // The count is shown as a FRACTION. "11 corrections" invites "out of how many?".
+  await expect(corrections.getByRole('heading', { name: /\d+ of \d+/ })).toBeVisible()
+
+  // The one that matters: the rank that was wrong on the homepage for months.
+  await expect(corrections.getByText(/#124/).first()).toBeVisible()
+
+  // Collapsed by default, and the full note is reachable.
+  const first = corrections.locator('details').first()
+  await expect(first).not.toHaveAttribute('open', /.*/)
+  await first.locator('summary').click()
+  await expect(first).toHaveAttribute('open', /.*/)
 })

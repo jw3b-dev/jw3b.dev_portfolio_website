@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { isCleared, validateRegister, scanTextForForbidden } from '../claimsValidate.js'
-import { getClaim, isClaimCleared } from '../claimsRegister.js'
+import { getClaim, isClaimCleared, firstSentence } from '../claimsRegister.js'
 import register from '../../data/evidence-register.json'
 
 describe('isCleared', () => {
@@ -120,5 +120,34 @@ describe('relative claims must be date-stamped', () => {
     expect(rank.value).toMatch(/^#\d+ \([A-Z][a-z]{2} \d{4}\)$/)
     // And the id must not re-embed the number: "codehawks-124-rank" outlived the 124.
     expect(register.claims.some((c) => /\d{3}/.test(c.id))).toBe(false)
+  })
+})
+
+describe('firstSentence — the collapsed summary for a correction', () => {
+  it('takes the first sentence', () => {
+    expect(firstSentence('Corrected 2026-08-23 from "#124". The profile reads #152.'))
+      .toBe('Corrected 2026-08-23 from "#124".')
+  })
+
+  it('handles ! and ? and newlines inside a note', () => {
+    expect(firstSentence('Was it wrong? Yes.')).toBe('Was it wrong?')
+    expect(firstSentence('First line.\nSecond line.')).toBe('First line.')
+  })
+
+  it('falls back to the WHOLE note when there is no sentence break', () => {
+    // A correction that renders blank is worse than one that renders long.
+    expect(firstSentence('no terminator here')).toBe('no terminator here')
+  })
+
+  it('survives empty and non-string input rather than throwing', () => {
+    for (const v of ['', '   ', null, undefined]) expect(firstSentence(v)).toBe('')
+  })
+
+  it('every reconciliation note in the register yields a non-empty summary', () => {
+    // The guard that matters: a note whose summary comes out blank would render a correction row
+    // with no explanation, which is worse than not showing it.
+    const noted = register.claims.filter((c) => c.reconciliation_note)
+    expect(noted.length).toBeGreaterThan(0)
+    for (const c of noted) expect(firstSentence(c.reconciliation_note).length).toBeGreaterThan(10)
   })
 })
