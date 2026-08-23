@@ -29,6 +29,57 @@ So: **build the commitment layer first, and treat ZK as a later module with one 
 Anything else inverts the risk — the hard cryptography would gate the boring part that carries the
 value.
 
+## 0b. ✎ Correction, after the owner clarified — ZK moves from optional to load-bearing
+
+§0 argued ZK was a later module. That was answering a **different design** from the one intended,
+and the difference matters.
+
+**What I argued against:** an AI that holds a decryption key, decrypts to answer, and is trusted to
+decide what to reveal. That is an oracle wearing a lock — decomposed questions and prompt injection
+walk straight out with the contents.
+
+**What was actually meant:** the evidence is committed into a ciphertext **nothing decrypts**. A
+query is evaluated *against* it and returns **only a boolean**. The AI never sees plaintext and
+never authorises anything — it turns English into a predicate and reports the verified answer. The
+owner's analogy is exact: a wallet signature proves control of a key without revealing the key;
+this proves a claim without revealing the register.
+
+That design is sound, and it makes the cryptography the product rather than a bolt-on.
+
+### The primitive stack, cheapest first
+
+| Layer | What it answers | Cost |
+|---|---|---|
+| **Merkle commitment** over the canonical register | *"Is this exact claim in the attested set?"* — proof reveals that one leaf and nothing else | ~200 lines. Do this first. |
+| **Salted leaves** | stops a small claim-space being brute-forced out of the root | trivial, and mandatory (§5.3) |
+| **ZK predicate** (Noir / Plonk) | *"≥3 Highs"*, *"cert issued before X"* — true/false over a value never revealed | weeks, genuinely needed here |
+| **Encrypted search / PIR** | hides the QUESTION as well as the data | research-grade — avoid unless a customer pays for it |
+
+**Most "invisible register, answerable questions" behaviour is the first two rows, not the third.**
+Membership and integrity are a Merkle tree; only a claim *about a hidden quantity* needs ZK.
+
+### The one real leak — design for it now, not later
+
+**A true/false oracle still leaks under repetition.** Unlimited yes/no queries over an enumerable
+space (certs, issuers, contest names, small integers) reconstruct the register by exhaustion — the
+same way an unlimited password check is a password dump. The ciphertext is never broken; the
+*answers* are the side channel.
+
+So the boolean must not be freely askable:
+
+1. **Authorised predicates, not open querying.** A verifier presents a capability naming the
+   questions they may ask. This is the actual boundary — not the encryption, and not the AI.
+2. **Rate-limit and log every query**, per verifier. An enumeration attempt should be visible as
+   one.
+3. **Prefer selective disclosure where the field is not secret.** W3C Verifiable Credentials with
+   **BBS+** reveals *"holds AgilePM Practitioner"* from a credential while hiding every other field
+   in it — no oracle, no leak, and a far smaller build than ZK. Reach for ZK when the claim is
+   about a hidden *quantity*; reach for BBS+ when it is about a hidden *field*.
+
+**Net:** the architecture holds. Build Merkle commitments + BBS+ selective disclosure first — that
+covers most of the promise with no research risk — and add ZK predicates for the numeric claims.
+§7's build order stands, with ZK promoted from "later, if ever" to "second".
+
 ## 1. You are closer than you think — the EcoGraph inventory
 
 Consulting `ecograph/` rather than guessing, the prover primitive **already exists** and is running:
