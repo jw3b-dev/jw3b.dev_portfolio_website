@@ -180,16 +180,20 @@
       "value": "AgilePM® v2 Practitioner",
       "label": "APMG — AgilePM Practitioner (Oct 2023)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — APMG certificate PDF + Credly badge + results letter",
-      "source_system": "APMG International"
+      "evidence_pointer": "https://www.credly.com/users/john-wellard/badges",
+      "source_system": "APMG International",
+      "provenance_note": "Credly badge issued by APMG International, publicly listed at credly.com/users/john-wellard/badges (expires Oct 1 2028)",
+      "reconciliation_note": "Upgraded attested -> VERIFIED 2026-08-23. The pointer already named a Credly badge and nobody had checked whether it was public: it is. credly.com/users/john-wellard/badges renders with no authwall and lists 'AgilePM(R) Practitioner - APMG International'. This is ISSUER-attested, which is the distinction that matters -- APMG publishes the badge, John does not type it in. Found because the owner pointed at his LinkedIn certifications page; LinkedIn itself is useless as evidence (HTTP 999 + authwall even on the base profile, and a LinkedIn entry is self-reported anyway, so it would not have changed the tier)."
     },
     {
       "id": "agilepm-foundation",
       "value": "AgilePM® v2 Foundation",
       "label": "APMG — AgilePM Foundation (Aug 2023)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — APMG certificate PDF + Credly badge + results letter",
-      "source_system": "APMG International"
+      "evidence_pointer": "https://www.credly.com/users/john-wellard/badges",
+      "source_system": "APMG International",
+      "provenance_note": "Credly badge issued by APMG International, publicly listed at credly.com/users/john-wellard/badges (issued Aug 11 2023)",
+      "reconciliation_note": "Upgraded attested -> VERIFIED 2026-08-23, same Credly listing as the Practitioner badge. Credly's issue date (Aug 11 2023) matches the register's 'Aug 2023' exactly."
     },
     {
       "id": "prince2-foundation",
@@ -204,8 +208,10 @@
       "value": "APM Project Fundamentals Qualification",
       "label": "APM — PFQ, cert P0528947 (Apr 2023)",
       "status": "cleared",
-      "evidence_pointer": "owner-attested — APM certificate PDF (P0528947)",
-      "source_system": "Association for Project Management"
+      "evidence_pointer": "https://www.credly.com/users/john-wellard/badges",
+      "source_system": "Association for Project Management",
+      "provenance_note": "Credly badge issued by the Association for Project Management, publicly listed at credly.com/users/john-wellard/badges (issued May 16 2023)",
+      "reconciliation_note": "Upgraded attested -> VERIFIED 2026-08-23. DATE DISCREPANCY, recorded rather than smoothed over: the register and mas/facts/PORTFOLIO_REFERENCE.md both say 15 Apr 2023 (the certificate PDF, cert P0528947); Credly says the BADGE was issued 16 May 2023. Both are probably true -- exam/certificate in April, badge minted in May -- but a reader comparing the two would notice, so the note says so instead of the register quietly picking one."
     },
     {
       "id": "cyfrin-solidity",

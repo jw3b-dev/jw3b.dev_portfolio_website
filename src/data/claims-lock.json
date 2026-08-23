@@ -3,15 +3,15 @@
   "claims": {
     "agilepm-foundation": {
       "value": "AgilePM® v2 Foundation",
-      "evidence_pointer": "owner-attested — APMG certificate PDF + Credly badge + results letter"
+      "evidence_pointer": "https://www.credly.com/users/john-wellard/badges"
     },
     "agilepm-practitioner": {
       "value": "AgilePM® v2 Practitioner",
-      "evidence_pointer": "owner-attested — APMG certificate PDF + Credly badge + results letter"
+      "evidence_pointer": "https://www.credly.com/users/john-wellard/badges"
     },
     "apm-pfq": {
       "value": "APM Project Fundamentals Qualification",
-      "evidence_pointer": "owner-attested — APM certificate PDF (P0528947)"
+      "evidence_pointer": "https://www.credly.com/users/john-wellard/badges"
     },
     "chainlink-fundamentals": {
       "value": "Chainlink Fundamentals",
