@@ -103,6 +103,62 @@ Consulting `ecograph/` rather than guessing, the prover primitive **already exis
 **Missing:** canonical serialization, the commitment/anchor layer, the verifier, and the
 staleness model. That is a much shorter list than the idea implies.
 
+## 1b. ✎ I queried the live graph — and the prover is currently red
+
+§1 was written from the `.cypher` files. Running them against the live database (`ecograph-neo4j`,
+up 14 hours) says something the files cannot.
+
+**First, it verifies two of the site's claims better than the README did:**
+
+| Claim | README | **Live graph** |
+|---|---|---|
+| `graphrag-entities` = 9,828 | "~9,800-entity" | `KGEntity` = **9,828** — exact |
+| `graphrag-chunks` = 77k | "77k chunks" | `Chunk` = **77,235** |
+| (context) | "~10,600 crawled pages" | `DocPage` = **10,557** |
+
+Those two move from *"consistent with a rounded README"* to **source-verified against the running
+database**. Worth re-running before the next claims sweep.
+
+**Then the finding that matters.** Running all three assertion suites:
+
+- `07_support_assertions` — **exactly one row, the A2 canary**, declaring itself
+  `"A2 EXPECTED (exactly one row): isolation probe present"`. Working as designed.
+- `02_assertions` — **two rows**: `A1 conservation broken` (RWA-DEMO: 0 allocated against
+  1,000,000 supply) and `A3 unguarded rug path`.
+- `05_rwa_assertions` — **one row**: `R2 non-compliant holder`.
+
+Two of those four are **deliberately seeded counter-examples** — the nodes carry
+`hypothetical: true` and a `[WHAT-IF]` tag. They are proof the detectors fire. But:
+
+1. **The runner does not exist.** `02_assertions.cypher` says *"Run in CI"* and names
+   `ecograph/verify.sh (greps for any output rows)`. There is no such file anywhere in the repo.
+   A gate documented and never wired — the same shape as jw3b.dev's product-owner rule, which sat
+   in `CLAUDE.md` unenforced until a script was written for it.
+2. **A grep-based runner would fail anyway**, because a seeded what-if is indistinguishable from a
+   real violation in its output. The A2 canary solved this properly by *declaring* itself expected;
+   A1/A3/R2 do not.
+3. **A1 is not marked hypothetical at all.** RWA-DEMO carries no `[WHAT-IF]` tag, so it is either a
+   real model inconsistency or an unlabelled fixture. Either way it is indistinguishable from a
+   breach.
+
+### The architectural lesson, and it is the important one
+
+**The prover's hardest problem is not cryptography. It is telling an intentional counter-example
+from a real failure.** Get that wrong and the gate cries wolf, someone adds `|| true`, and the
+whole apparatus becomes decoration — which is exactly how `#124` survived on a site with five
+passing gates.
+
+So the evidence product needs, before any commitment scheme:
+
+- **Every seeded fixture self-declares**, the way A2 does. A violation row must carry its own
+  verdict — `EXPECTED` or `BREACH` — not rely on the reader knowing the fixture.
+- **A canary per invariant**, not per suite. A2 proves tenant-isolation still fires; nothing proves
+  A1 or A3 still fire. An assertion that silently stopped matching is worse than an absent one.
+- **The runner ships with the assertions**, or the assertions are a document, not a gate.
+
+That is a week of unglamorous work and it is the part that makes the cryptography worth anything —
+a Merkle root over a corpus whose invariants nobody actually checks is a signed lie.
+
 ## 2. What the product actually is
 
 > **A claim you publish, with a receipt that keeps working.**
