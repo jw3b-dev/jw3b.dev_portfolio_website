@@ -17,18 +17,6 @@
       "value": "Chainlink Fundamentals",
       "evidence_pointer": "owner-attested — Chainlink certificate CLF-9XSZOBM7L2SPS"
     },
-    "codehawks-124-exp": {
-      "value": "1,430 EXP",
-      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: Cyfrin's official reports for First Flights #42, #49 and #52 credit agilegypsy as a validated submitter on seven findings (see codehawks-validated-findings)"
-    },
-    "codehawks-124-findings": {
-      "value": "17 findings",
-      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: Cyfrin's official reports for First Flights #42, #49 and #52 credit agilegypsy as a validated submitter on seven findings (see codehawks-validated-findings)"
-    },
-    "codehawks-124-rank": {
-      "value": "#124",
-      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: Cyfrin's official reports for First Flights #42, #49 and #52 credit agilegypsy as a validated submitter on seven findings (see codehawks-validated-findings)"
-    },
     "cyfrin-foundry": {
       "value": "Foundry Fundamentals",
       "evidence_pointer": "owner-attested — Cyfrin Updraft certificate IUY789PSN004"
@@ -132,6 +120,18 @@
     "codehawks-selected-writeup": {
       "value": "1 write-up selected for publication",
       "evidence_pointer": "owner-attested — CodeHawks First Flight #50 (Raisebox Faucet) official report, L-01: 'Selected submission by: agilegypsy', chosen from the 24 researchers who reported it"
+    },
+    "codehawks-rank": {
+      "value": "#152 (Aug 2026)",
+      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: Cyfrin's official reports for First Flights #42, #49 and #52 credit agilegypsy as a validated submitter on seven findings (see codehawks-validated-findings)"
+    },
+    "codehawks-valid-submissions": {
+      "value": "17 valid submissions",
+      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: Cyfrin's official reports for First Flights #42, #49 and #52 credit agilegypsy as a validated submitter on seven findings (see codehawks-validated-findings)"
+    },
+    "codehawks-exp": {
+      "value": "1,430 EXP",
+      "evidence_pointer": "owner-attested — dated CodeHawks/Cyfrin stats cards (4 Nov 2025 -> 12 Jan 2026, rising). Contest-level corroboration: Cyfrin's official reports for First Flights #42, #49 and #52 credit agilegypsy as a validated submitter on seven findings (see codehawks-validated-findings)"
     }
   }
 }

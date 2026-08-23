@@ -82,9 +82,43 @@ describe('validateRegister', () => {
 
 describe('runtime register (seeded starter)', () => {
   it('CodeHawks #124 record is present + cleared', () => {
-    const c = getClaim('codehawks-124-findings')
+    const c = getClaim('codehawks-valid-submissions')
     expect(c).toBeTruthy()
     expect(isClaimCleared(c)).toBe(true)
   })
   it('unknown id → null', () => expect(getClaim('nope')).toBeNull())
+})
+
+/*
+ * ✎ 2026-08-23 — the rank rotted in public.
+ *
+ * "#124" was live on the homepage for months after it stopped being true. Nothing had gone wrong
+ * in the codebase: a CodeHawks leaderboard rank is RELATIVE, so it moves when other researchers
+ * earn EXP and the holder does nothing at all (#137 Nov 2025 -> #124 Jan 2026 -> #152 Aug 2026).
+ * No gate could catch it, because every gate was checking that the site matched the register and
+ * it did. The register was simply stale, and a stale relative number reads as a current fact.
+ *
+ * The fix that generalises: a claim whose truth depends on other people's activity must carry its
+ * as-of date IN THE VALUE, so a reader sees a snapshot rather than a standing claim.
+ */
+describe('relative claims must be date-stamped', () => {
+  const RELATIVE = /(^|\s)#\d+/ // a leaderboard position
+
+  it('every rank-shaped claim value carries an as-of', () => {
+    const stamped = /\((?:[A-Z][a-z]{2}\s)?\d{4}\)|\b\d{4}-\d{2}\b/
+    for (const claim of register.claims.filter((c) => RELATIVE.test(c.value))) {
+      expect(
+        stamped.test(claim.value),
+        `${claim.id} = "${claim.value}" is a position relative to other people and will go stale ` +
+          'without anyone touching it. Put the as-of in the value.',
+      ).toBe(true)
+    }
+  })
+
+  it('the CodeHawks rank is the one this was written for', () => {
+    const rank = register.claims.find((c) => c.id === 'codehawks-rank')
+    expect(rank.value).toMatch(/^#\d+ \([A-Z][a-z]{2} \d{4}\)$/)
+    // And the id must not re-embed the number: "codehawks-124-rank" outlived the 124.
+    expect(register.claims.some((c) => /\d{3}/.test(c.id))).toBe(false)
+  })
 })

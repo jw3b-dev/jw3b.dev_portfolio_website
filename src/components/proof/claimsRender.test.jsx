@@ -28,9 +28,9 @@ describe('P1 credibility surfaces render claims through <Claim> (FR-043/046/047)
     // teaches the next person to edit the number rather than check the rule.
     expect(hooks).toEqual(
       expect.arrayContaining([
-        'codehawks-124-rank',
-        'codehawks-124-findings',
-        'codehawks-124-exp',
+        'codehawks-rank',
+        'codehawks-valid-submissions',
+        'codehawks-exp',
         'codehawks-validated-findings',
       ]),
     )

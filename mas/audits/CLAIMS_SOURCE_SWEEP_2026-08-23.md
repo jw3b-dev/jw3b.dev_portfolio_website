@@ -229,6 +229,35 @@ found), but they are not contest-validated and must never be presented as if the
 
 ---
 
+## P0, found last — the rank had rotted in public
+
+The owner pasted his live First Flights profile. It reads:
+
+```
+Rank                     #152
+Total earned             1,430.80 EXP
+Total valid submissions  8 / 5 / 4
+```
+
+**The site said `#124`.** Nothing had gone wrong in the codebase, and no gate could have caught it:
+every gate checks that the site matches the register, and it did. A CodeHawks rank is **relative** —
+it moves when *other* researchers earn EXP, with no action by the holder. #137 (Nov 2025) → #124
+(Jan 2026) → **#152 (Aug 2026)**. A stale relative number reads as a current fact, and this one had
+been overstating him for months.
+
+The other two figures are exact: **1,430.80 EXP** and **8+5+4 = 17 valid submissions**.
+
+**Fixes:**
+- Value corrected and **date-stamped in the value** — `#152 (Aug 2026)` — because a claim whose
+  truth depends on other people's activity must present as a snapshot, not a standing fact.
+- A test now asserts **every rank-shaped claim carries an as-of**. This is the generalisable half:
+  it will fire on the next relative figure anyone adds.
+- The claim ids `codehawks-124-*` were renamed to drop the embedded number. `codehawks-124-rank`
+  outlived the 124 — the same trap as `overmindPipeline.js` holding KTHULHU's pipeline.
+- Wording tightened from *"17 findings"* to *"17 valid submissions"*, matching CodeHawks' own label.
+- **CLAUDE.md now says lead with EXP and valid submissions** — they are his own and monotonic — and
+  never state a rank without its as-of.
+
 ## Owner actions
 
 1. **The CodeHawks receipt is the real loss** — it was the one independently checkable proof of the

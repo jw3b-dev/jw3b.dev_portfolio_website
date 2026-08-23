@@ -156,7 +156,12 @@ points at a missing or non-cleared entry, or a forbidden phrase appears in rende
 - Blocked outright: aggregate TVL / value-secured, dollar bounties, "50+ audits completed",
   "decades of combined experience", and two credential inflations (PMP — the artifact is an exam-
   prep course; PRINCE2 Practitioner — Foundation only).
-- Citable audit record: **CodeHawks #124 · 17 findings · 1,430 EXP**.
+- Citable audit record: **1,430 EXP · 17 valid submissions (8 High · 5 Medium · 4 Low)**, of which
+  **11 are reproduced from official contest reports** and **1 write-up Cyfrin selected for
+  publication** (`/findings/50-L-01`). **Lead with these — they are John's own and monotonic.**
+  The leaderboard RANK is relative and moves without him: #137 (Nov 2025) → #124 (Jan 2026) →
+  #152 (Aug 2026). It shipped as "#124" for months after it stopped being true, so it is now
+  date-stamped in the register value. Never state a rank without its as-of.
 - **No zero-value theater.** A surface shows a proven figure or shows nothing.
 - **Attribute on the evidence pointer, never on the name.** Where two systems share a word, the
   register's `evidence_pointer` / `source_system` decides which one a surface is about — settle

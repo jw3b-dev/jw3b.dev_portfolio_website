@@ -225,11 +225,11 @@ function VerdictRail() {
       <div className="rounded-md border border-hairline bg-panel px-3 py-2.5">
         <p className="mb-1 font-mono text-[11px] text-content-secondary">CodeHawks competitive audit</p>
         <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
-          <Claim id="codehawks-124-rank" />
+          <Claim id="codehawks-rank" />
           <span className="text-content-muted">·</span>
-          <Claim id="codehawks-124-findings" />
+          <Claim id="codehawks-valid-submissions" />
           <span className="text-content-muted">·</span>
-          <Claim id="codehawks-124-exp" />
+          <Claim id="codehawks-exp" />
         </p>
       </div>
 

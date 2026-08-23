@@ -83,7 +83,7 @@ describe('ClaimGraphWalk — a graph you can actually walk', () => {
     const list = screen.getByText(/start from another claim/i).closest('details')
     const target = within(list)
       .getAllByRole('button')
-      .find((b) => /#124/.test(b.textContent))
+      .find((b) => /^#\d+/.test(b.textContent))
     expect(target).toBeDefined()
     fireEvent.click(target)
     expect(screen.getByText(/owner-attested/i)).toBeInTheDocument()

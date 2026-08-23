@@ -1,6 +1,6 @@
 /*
- * jw3b.dev v2 — CodeHawks #124 record (P1-14 · FR-044)  ·  frontend-engineer
- * The citable competitive-audit record. The figures (#124 · 17 findings · 1,430 EXP) render
+ * jw3b.dev v2 — the CodeHawks record (P1-14 · FR-044)  ·  frontend-engineer
+ * The citable competitive-audit record. The figures (rank · valid submissions · EXP) render
  * through <Claim> (cleared-only); the deep-link is read from the register's evidence pointer —
  * never re-hardcoded — and the whole surface renders nothing if the record isn't cleared.
  *
@@ -28,7 +28,7 @@ const SEVERITY_TONE = {
 }
 
 export default function CodeHawksLink({ className = '' }) {
-  const rank = getClaim('codehawks-124-rank')
+  const rank = getClaim('codehawks-rank')
   // Gate the surface on the record being cleared (BR-01). No cleared record → render nothing.
   if (!rank || !isClaimCleared(rank)) return null
 
@@ -55,11 +55,11 @@ export default function CodeHawksLink({ className = '' }) {
       </h2>
 
       <p className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
-        <Claim id="codehawks-124-rank" />
+        <Claim id="codehawks-rank" />
         <span className="text-content-muted">·</span>
-        <Claim id="codehawks-124-findings" />
+        <Claim id="codehawks-valid-submissions" />
         <span className="text-content-muted">·</span>
-        <Claim id="codehawks-124-exp" />
+        <Claim id="codehawks-exp" />
       </p>
 
       {/*

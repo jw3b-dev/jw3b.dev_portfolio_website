@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { HelmetProvider } from 'react-helmet-async'
 import { MemoryRouter } from 'react-router-dom'
 import Home from './Home'
+import { getClaim } from '../lib/claimsRegister.js'
 
 // Home now renders <Seo> (P1-15, useLocation) and router-linked chrome, so it needs the
 // Router + Helmet context the app provides in production.
@@ -32,8 +33,13 @@ test('Home renders the operable hero: position line + editable auditor + a claim
   expect(editor).toBeInTheDocument()
   expect(editor.value).toMatch(/contract Vault/)
 
-  // 3. a cleared claim renders from the register (CodeHawks findings). Since P1-14 added a
-  // dedicated CodeHawks deep-link card below the hero, this figure now legitimately appears
-  // on more than one section of Home — assert it renders at all, not that it's unique.
-  expect(screen.getAllByText(/17 findings/).length).toBeGreaterThan(0)
+  // 3. a cleared claim renders from the register (CodeHawks valid submissions). Since P1-14 added
+  // a dedicated CodeHawks card below the hero, this figure legitimately appears on more than one
+  // section of Home — assert it renders at all, not that it's unique.
+  //
+  // ✎ Read the value FROM the register rather than typing it. This was hardcoded as "17 findings"
+  // and broke when the wording was tightened to match CodeHawks' own label — a test that restates
+  // a register value is a second copy of it, and the register is supposed to be the only one.
+  const submissions = getClaim('codehawks-valid-submissions').value
+  expect(screen.getAllByText(submissions, { exact: false }).length).toBeGreaterThan(0)
 })

@@ -29,13 +29,13 @@ describe('CodeHawksLink — the CodeHawks #124 record (FR-044)', () => {
   // "High 0 Med 0 Low 0"), so the pointer was downgraded to attested and the link correctly
   // disappeared — the component was built for that. What the test should pin is the RULE, which
   // holds either way: the link tracks the evidence tier, and so does the wording beside it.
-  const tier = () => evidenceKind(getClaim('codehawks-124-rank'))
+  const tier = () => evidenceKind(getClaim('codehawks-rank'))
 
   it('links only when the pointer is a real URL, and never to prose', () => {
     render(<CodeHawksLink />)
     const link = screen.queryByRole('link', { name: /public record on cyfrin/i })
     if (tier() === 'verified') {
-      expect(link).toHaveAttribute('href', getClaim('codehawks-124-rank').evidence_pointer)
+      expect(link).toHaveAttribute('href', getClaim('codehawks-rank').evidence_pointer)
       expect(link).toHaveAttribute('target', '_blank')
       expect(link).toHaveAttribute('rel', expect.stringContaining('noreferrer'))
     } else {
@@ -122,7 +122,7 @@ describe('CodeHawksLink — the CodeHawks #124 record (FR-044)', () => {
   it('shows the #124 rank / findings / EXP figures via cleared claims', () => {
     render(<CodeHawksLink />)
     const section = screen.getByRole('region', { name: /codehawks competitive audit/i })
-    expect(within(section).getByText(getClaim('codehawks-124-rank').value)).toBeInTheDocument()
-    expect(within(section).getByText(getClaim('codehawks-124-findings').value)).toBeInTheDocument()
+    expect(within(section).getByText(getClaim('codehawks-rank').value)).toBeInTheDocument()
+    expect(within(section).getByText(getClaim('codehawks-valid-submissions').value)).toBeInTheDocument()
   })
 })

@@ -26,8 +26,8 @@ describe('PersonJsonLd — structured data + cross-link (FR-054/FR-044)', () => 
     expect(PERSON_LD.worksFor.url).toBe(STUDIO_URL)
   })
 
-  it('deep-links CodeHawks #124 from the register (completes FR-044 2nd surface)', () => {
-    expect(CODEHAWKS_URL).toBe(getClaim('codehawks-124-rank').evidence_pointer)
+  it('deep-links the CodeHawks profile from the register (completes FR-044 2nd surface)', () => {
+    expect(CODEHAWKS_URL).toBe(getClaim('codehawks-rank').evidence_pointer)
     expect(PERSON_LD.sameAs).toContain(CODEHAWKS_URL)
   })
 
