@@ -162,24 +162,37 @@ zone (one could), and that a token is permanently bound to the account that issu
 never be widened to another (false for **user** tokens — `cfut_` belongs to the user, and its zone
 resources may span every account that user can reach).
 
-**Bot Fight Mode cannot be changed through the API on this plan.** With the zone token — which
-demonstrably has zone-settings *write* — the bot endpoints answer:
+**✎✎ Corrected again, minutes later, by reading the error BODY instead of the error code.** What
+stood here was wrong twice over, because a `10400 Bad Request` was logged as a bare code while
+Cloudflare put the reason in `messages`:
 
 ```
-GET  /zones/{id}/bot_management        200  {"fight_mode": true, "enable_js": true, …}
-PUT  /zones/{id}/bot_management        10400 Bad Request          ← even echoing the object back
-PATCH /zones/{id}/bot_management       10405 Method not allowed for this authentication scheme
-GET  /zones/{id}/settings/bot_fight_mode  1003 Undefined zone setting
+PUT /zones/{id}/bot_management  {"fight_mode": true, "enable_js": false}
+  errors:   [{"code": 10400, "message": "Bad Request"}]
+  messages: [{"code": 10400, "message": "cannot enable Fight_Mode while EnableJS is disabled"}]
 ```
 
-`jw3b.dev` is a **Free Website** plan: `bot_management` is readable but the write path belongs to
-paid Bot Management. Proven not to be a permissions problem by writing `challenge_ttl` back at its
-own value (200) with the same token. **So this toggle is dashboard-only** — Security → Bots.
+So **the write path works** — this is not a Free-plan restriction, and the claim that
+`bot_management` was read-only here was false. And **`enable_js` is NOT separable** — Cloudflare
+refuses to run Bot Fight Mode with JavaScript Detections off, which is what the note originally
+assumed before it was "corrected" to the opposite. The first assumption was right.
 
-**`enable_js` is a separate field from `fight_mode`, which contradicts what was assumed earlier.**
-Turning off **JavaScript Detections** stops `/cdn-cgi/challenge-platform/…/jsd/…` and the
-`cf_clearance` cookie (product-audit finding 32) **while Bot Fight Mode stays on**. That is the
-surgical change; disabling Bot Fight Mode entirely is not required and is not recommended.
+**Log the whole error object, never just `code`.** Three wrong conclusions in one session came from
+reading `errors[].code` and discarding `messages[]`, which is where Cloudflare explains itself.
+
+**The choice is binary**, and it is the owner's:
+
+| Option | jsd script + `cf_clearance` | Bot protection |
+|---|---|---|
+| Leave Bot Fight Mode **on** | stays — disclosed in `privacy.md`, allowed by the named conditional exception in `e2e-zone/zone-posture.spec.js` | kept |
+| `{"fight_mode": false, "enable_js": false}` | gone | **lost entirely — there is no middle setting** |
+
+Nothing here has been changed; `bot_management` is byte-identical to the pre-session read
+(`/tmp/bot_management.before.json`).
+
+**One write did land, and it was mine:** `PATCH settings/challenge_ttl` at its existing value
+(1800 → 1800), to test whether the token could write at all. The value is unchanged, but it stamps
+the zone's *Last updated* — if the dashboard shows a recent change nobody made, that is it.
 
 **To let an agent make a zone change**, mint a token with **Zone → Zone Settings → Edit** scoped to
 `jw3b.dev`, plus the **account-level Tag Management** permission (the Google Tag Gateway page lives
