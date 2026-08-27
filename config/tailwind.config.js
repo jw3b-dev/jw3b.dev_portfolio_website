@@ -18,7 +18,7 @@ export default {
           inverse: 'var(--color-text-inverse)',
         },
         // Accents that carry alpha use the RGB-channel tokens so `cyan/40`, `bg-cyan/5`,
-        // `border-failed/50` etc. resolve to real colors (hex tokens stay the source).
+        // `border-cyan/50` etc. resolve to real colors (hex tokens stay the source).
         cyan: 'rgb(var(--color-cyan-rgb) / <alpha-value>)',
         'cyan-dim': 'var(--color-cyan-dim)',
         verified: 'rgb(var(--color-cyan-rgb) / <alpha-value>)',
@@ -51,18 +51,27 @@ export default {
       },
       spacing: {
         section: 'var(--space-section)',
+        // Modern rhythm refinements — keep 8-pt grid but tighter interior spacing
+        // so surfaces breathe without excessive air.
+        heroGap: 'clamp(1rem, 2vw, 1.5rem)',
+        contentGap: 'clamp(0.75rem, 1.5vw, 1rem)',
       },
       borderRadius: {
         sm: 'var(--radius-sm)',
         md: 'var(--radius-md)',
         lg: 'var(--radius-lg)',
         pill: 'var(--radius-pill)',
+        // New modern radii for chips & badges
+        badge: 'var(--radius-sm)',
       },
       boxShadow: {
         panel: 'var(--shadow-panel)',
         raised: 'var(--shadow-raised)',
         'edge-cyan': 'var(--shadow-edge-cyan)',
         'edge-failed': 'var(--shadow-edge-failed)',
+        // Modern elevation refinements — subtle focus / active states
+        focus: '0 0 0 2px rgba(34, 211, 238, 0.25), 0 4px 12px -2px rgba(0, 0, 0, 0.3)',
+        card: '0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 0 1px rgba(255, 255, 255, 0.02) inset',
       },
       blur: {
         scrim: 'var(--blur-scrim)',
@@ -73,6 +82,9 @@ export default {
         standard: 'var(--ease-standard)',
         accelerate: 'var(--ease-accelerate)',
         spring: 'var(--ease-spring)',
+        // New modern easing for state transitions
+        'state-out': 'var(--ease-out-expo)',
+        'state-in': 'var(--ease-accelerate)',
       },
       transitionDuration: {
         instant: 'var(--duration-instant)',
@@ -80,6 +92,8 @@ export default {
         normal: 'var(--duration-normal)',
         entrance: 'var(--duration-entrance)',
         slow: 'var(--duration-slow)',
+        // New micro-states
+        'state-fast': 'var(--duration-instant)',
       },
       zIndex: {
         base: 'var(--z-base)',

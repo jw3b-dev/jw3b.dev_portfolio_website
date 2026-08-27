@@ -59,7 +59,7 @@ function VerdictChip({ reproduced }) {
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: duration.verdict, ease: ease.standard }}
-      className="inline-flex items-center gap-2 rounded-sm border border-cyan/50 bg-cyan/5 px-2.5 py-1"
+      className="inline-flex items-center gap-2 rounded-badge border border-cyan/50 bg-cyan/5 px-2.5 py-1"
     >
       <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden className="text-verified">
         <path d="M2.5 6.5l2.5 2.5 4.5-5.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -108,7 +108,7 @@ function Console() {
   const runLabel = edited ? 'Instant screen · in your browser' : 'Recorded run · reproduced on an Anvil mainnet fork'
 
   return (
-    <div className="overflow-hidden rounded-lg border border-hairline bg-panel shadow-edge-cyan">
+    <div className="rounded-lg border border-hairline bg-panel shadow-card">
       {/* console chrome */}
       <div className="flex items-center gap-3 border-b border-hairline bg-raised px-3 py-2">
         <span className="font-mono text-[12px] text-content-secondary">Vault.sol</span>
@@ -129,7 +129,7 @@ function Console() {
             value={source}
             spellCheck={false}
             onChange={(e) => setSource(e.target.value)}
-            className="h-64 w-full resize-none bg-void px-3 py-3 font-mono text-[12.5px] leading-relaxed text-content-secondary outline-none focus:text-content-primary"
+            className="h-64 w-full resize-none bg-void px-3 py-3 font-mono text-[12.5px] leading-relaxed text-content-secondary outline-none focus:text-content-primary focus-visible:ring-focus focus-visible:ring-offset-void"
             aria-label="Editable Solidity contract — edit to re-run the instant screen"
           />
         </div>
@@ -208,7 +208,7 @@ function Console() {
         <Link
           to="/audit"
           state={{ source }}
-          className="ml-auto font-mono text-[10px] uppercase tracking-label text-cyan no-underline hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+          className="ml-auto font-mono text-[10px] uppercase tracking-label text-cyan no-underline hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan focus-visible:ring focus-visible:ring-cyan focus-visible:ring-offset-void"
         >
           Open in the full console →
         </Link>
@@ -267,7 +267,7 @@ export default function Hero() {
             <p className="font-mono text-[11px] uppercase tracking-label text-cyan">Senior Agentic AI Developer</p>
             <h1
               id="hero-title"
-              className="mt-4 max-w-[20ch] text-balance font-display text-[clamp(2.25rem,6vw,4rem)] font-semibold leading-[1.03] tracking-tight text-content-primary"
+              className="mt-4 max-w-[20ch] text-balance font-display text-[clamp(2rem,4.5vw,3.5rem)] font-semibold leading-[1.03] tracking-tight text-content-primary"
             >
               Multi-agent systems that survive production — verified in front of you.
             </h1>
@@ -288,7 +288,7 @@ export default function Hero() {
           </div>
 
           {/* four-hat strip (low, identity structure without a skills grid) */}
-          <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-hairline pt-4 lg:col-span-12">
+          <div className="mt-2 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-hairline pt-4 lg:col-span-12">
             <span className="font-mono text-[10px] uppercase tracking-label text-content-muted">One operator, four hats</span>
             {/* Brief 01, next-need 2: these were display-only. A visitor learned the vocabulary
                 here and discovered it was actionable four folds down. Each chip now jumps to the
@@ -299,7 +299,7 @@ export default function Hero() {
                 key={h.key}
                 to="/#fourhats-title"
                 state={{ hat: h.key }}
-                className="inline-flex items-center gap-2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+                className="inline-flex items-center gap-2 rounded-badge focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan focus-visible:ring focus-visible:ring-cyan focus-visible:ring-offset-void"
                 title={`See the ${h.label} hat's work`}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${h.dot}`} />

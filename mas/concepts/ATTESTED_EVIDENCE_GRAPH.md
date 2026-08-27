@@ -6,6 +6,17 @@ part that is a product from the part that is a research programme, and to say wh
 
 ---
 
+> **✎ 2026-08-23 — READ `mas/research/RECEIPTS_PRIOR_ART_2026-08-23.md` BEFORE BUILDING ANY OF THIS.**
+> Deep research now says: **do not build this as a product.** The design below is sound and it is
+> also **Zero-Knowledge Sets (Micali–Rabin–Kilian, FOCS 2003)** — a named 23-year-old primitive with
+> no deployed product. The commitment layer this doc recommends building first already exists free
+> as **EAS Private Data Attestations** (450k attesters), including the salted-leaf construction, and
+> commercially as **POK** at $0.06/credential. **ERC-7512**, the closest thing to the differentiated
+> audit claim, has sat in DRAFT since 2023 with seven major firms behind it. **Trinsic pivoted off
+> verifiable credentials; POAP shut down.** What survives from this doc is Recommendation 2 in the
+> research: build the ~200-line salted Merkle root over jw3b.dev's own register as a *site feature*,
+> and stop.
+
 ## 0. The correction that changes what gets built
 
 The pitch says *ZK proof*. Almost nothing in the description needs zero-knowledge, and saying so up
