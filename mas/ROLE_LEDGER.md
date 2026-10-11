@@ -684,7 +684,8 @@ vault holds **0.00012 ETH**, so there is nothing to drain even when it works. Bl
 | TASK | PLAN role | Role (actual) | SKILL-LOADED | COMMIT |
 |-------|-----------|---------------|--------------|--------|
 | CV-PUBLISH | devops-engineer + portfolio-evidence | devops-engineer + portfolio-evidence | y | c993d03 |
-| README-RECORD | portfolio-evidence | portfolio-evidence | y | (this commit) |
+| README-RECORD | portfolio-evidence | portfolio-evidence | y | cd1856a |
+| CV-REPUBLISH | devops-engineer | devops-engineer | y | (this commit) |
 
 **John's three CVs published at `/cv/<file name>`, on John's word.** Asked in the v3 session on 2026-10-11 whether to put
 them on the live site, John answered "push all three". The PDFs are copied unchanged, byte for byte, from the job-search
@@ -697,3 +698,7 @@ note and asked for no change before publishing.
 the 17 valid submissions called findings. It now carries the register's cleared wording, 14 validated findings across
 7 First Flights (7 High, 4 Medium, 3 Low) and 1,430 EXP, which John's applications cite. The profile README of
 jw3b-dev/jw3b-dev was fixed the same way (5a850f9).
+
+**Two CVs re-rendered after the audit-platform correction.** The mini-projects session edited the agentic and
+blockchain CVs on 2026-10-11 at 18:10 BST to cite only CodeHawks, with the register's record, and called all three final.
+The published files now match its checksums (00ce3a3c…, 095bf7a7…; the PM CV unchanged, f88a7339…).
