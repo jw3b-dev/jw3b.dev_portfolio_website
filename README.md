@@ -29,7 +29,8 @@ unavailable. That property is tested, not hoped for.
 
 **Claims are gated, not typed.** Every number the site presents routes through an evidence
 register with a source pointer; a build fails if unsourced or blocklisted copy appears. The
-citable audit record is CodeHawks **#124 — 17 findings (8 High), 1,430 EXP**. There are
+citable audit record is CodeHawks: **14 validated findings across 7 First Flights (7 High, 4 Medium,
+3 Low) and 1,430 EXP**. There are
 deliberately no TVL or "protocols secured" figures, because they can't be evidenced.
 
 **Voice runs on-device.** The hands-free concierge transcribes with Whisper compiled to
