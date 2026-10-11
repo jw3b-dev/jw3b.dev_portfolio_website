@@ -686,6 +686,7 @@ vault holds **0.00012 ETH**, so there is nothing to drain even when it works. Bl
 | CV-PUBLISH | devops-engineer + portfolio-evidence | devops-engineer + portfolio-evidence | y | c993d03 |
 | README-RECORD | portfolio-evidence | portfolio-evidence | y | cd1856a |
 | CV-REPUBLISH | devops-engineer | devops-engineer | y | (this commit) |
+| CV-PAGES — the three CVs as pages at `/cv/<role>`, the PDFs rendered from them at build time (John: "v2 now") | frontend-engineer + devops-engineer + portfolio-evidence | frontend-engineer + devops-engineer + portfolio-evidence | y | (this commit) |
 
 **John's three CVs published at `/cv/<file name>`, on John's word.** Asked in the v3 session on 2026-10-11 whether to put
 them on the live site, John answered "push all three". The PDFs are copied unchanged, byte for byte, from the job-search
@@ -702,3 +703,24 @@ jw3b-dev/jw3b-dev was fixed the same way (5a850f9).
 **Two CVs re-rendered after the audit-platform correction.** The mini-projects session edited the agentic and
 blockchain CVs on 2026-10-11 at 18:10 BST to cite only CodeHawks, with the register's record, and called all three final.
 The published files now match its checksums (00ce3a3c…, 095bf7a7…; the PM CV unchanged, f88a7339…).
+
+**John's CVs as pages, each PDF rendered from its page, on John's word.** Asked how to stop the CVs going stale,
+John chose "v2 now": "Built into the live site at jw3b.dev/cv/<role>, with the PDFs generated at build time. The
+job-search session edits the sources in the site repo from then on."
+- **Where the sources live.** They moved byte for byte from the job-search folder at 18:24 BST (af9654b6…, 7bc008c6…,
+  a3d97d95…) into `src/content/cv/`. That session edits them there from now on.
+- **What the build does.** `npm run build` runs `scripts/build-cv.mjs` after `vite build`. Each source becomes
+  `/cv/<slug>`, with its fonts self-hosted because the CSP blocks Google Fonts. Chromium renders each page to its PDF at
+  the URL first published, so the hand-placed PDFs left `public/cv/`.
+- **What stops the build.** Anything off the site; a figure bound to the register (`data-claim`) that the register no
+  longer states; a phrase the register forbids. The agentic CV's "Neo4j GDS" tripped that last rule, and the job-search
+  session reworded it before the move.
+- **What is bound.** The CodeHawks record and the three GraphRAG figures. "1,345 tests at 100% coverage" stays unbound:
+  the CV names an "MB governance engine", and the register attributes those figures to Overmind.
+- **On a phone.** Two screen-only rules stop the agentic and PM stat grids scrolling sideways. The PDFs keep 4, 3 and
+  3 pages.
+- **What checks it.** CI installs Chromium for the build in verify and in the frontend deploy. `e2e/cv.spec.js` checks
+  each page and PDF on the build, and again on the deployed Worker in the post-deploy smoke.
+- **What could not be checked locally.** Local `wrangler dev` cannot start the site Worker: workerd refuses the string
+  export `HF_MODEL_PREFIX` in worker.js, under 4.123 and 4.149 alike. The routing through the Worker is proven by that
+  smoke after the deploy, not before it.

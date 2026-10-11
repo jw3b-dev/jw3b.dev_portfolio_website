@@ -106,6 +106,10 @@ jobs:
       - name: Drift gate (a plan may not claim an existing file is absent)
         run: npm run drift-gate
 
+      # The build renders John's CV PDFs from the CV pages (scripts/build-cv.mjs), so it needs Chromium.
+      # Without it the build fails, rather than ship pages without their PDFs.
+      - name: Install Chromium (the build renders the CV PDFs)
+        run: npx playwright install --with-deps chromium
       - name: Build
         run: npm run build
 
@@ -263,6 +267,10 @@ jobs:
       # Builds against the PRODUCTION worker (the default in config/worker.js). Feature flags
       # and the public WalletConnect id come from the committed .env.production — no env
       # overrides here, so what CI ships is exactly what the repo says it ships.
+      # The build renders John's CV PDFs from the CV pages (scripts/build-cv.mjs), so it needs Chromium.
+      # Without it the build fails, rather than ship pages without their PDFs.
+      - name: Install Chromium (the build renders the CV PDFs)
+        run: npx playwright install --with-deps chromium
       - name: Build
         run: npm run build
       - name: Deploy the production SPA

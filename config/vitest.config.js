@@ -110,6 +110,9 @@ export default defineConfig({
         // engineering: an untested rule that silently stopped firing would leave the card
         // demonstrating a gate that passes everything.
         'src/lib/kointelGate.js',
+        // The CV pages (John, 2026-10-11): the rules that stop a CV build — off-site references, a bound
+        // figure the register no longer states, a forbidden phrase. An untested rule here would ship a stale CV.
+        'src/lib/cvPages.js',
       ],
       // RAISED in the P5 expansion. Branches 85 -> 92 and statements 90 -> 98 for the pure
       // core, which the suite already clears — the old numbers had drifted well below actual

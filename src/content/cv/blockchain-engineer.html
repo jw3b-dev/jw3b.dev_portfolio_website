@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>John Wellard - Full-Stack Blockchain Engineer & Security Auditor CV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-blue: #2d5af6;
+            --neon-green: #0aff60;
+            --bg-dark: #030014;
+            --bg-card: rgba(10, 10, 20, 0.6);
+            --text-primary: #e5e5e5;
+            --text-secondary: #a1a1aa;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 40px 60px;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            background: var(--bg-dark);
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: #1e293b;
+            }
+
+            .header-section {
+                border-color: #bc13fe !important;
+            }
+
+            .name {
+                color: #bc13fe !important;
+            }
+
+            .section-header {
+                color: #bc13fe !important;
+                border-color: #e2e8f0 !important;
+            }
+
+            .skills-category {
+                color: #bc13fe !important;
+            }
+
+            .tech-tag {
+                background: #bc13fe !important;
+            }
+
+            .highlight-box {
+                background: #f5f3ff !important;
+                border-color: #bc13fe !important;
+            }
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--neon-purple);
+            padding-bottom: 20px;
+        }
+
+        .name {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--neon-purple);
+            margin: 0 0 8px 0;
+            text-shadow: 0 0 20px rgba(188, 19, 254, 0.4);
+            letter-spacing: 2px;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 500;
+            background: linear-gradient(to right, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0 0 16px 0;
+        }
+
+        .contact-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .contact-info a {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            transition: text-shadow 0.3s ease;
+        }
+
+        .contact-info a:hover {
+            text-shadow: 0 0 8px var(--neon-cyan);
+        }
+
+        .section-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--neon-purple);
+            margin: 28px 0 14px 0;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-subtle);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .professional-summary {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .highlight-box {
+            background: var(--bg-card);
+            border-left: 3px solid var(--neon-cyan);
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .highlight-box strong {
+            color: var(--neon-cyan);
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tech-tag {
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+            color: white;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .job-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 18px 0 4px 0;
+        }
+
+        .job-details {
+            font-size: 11px;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .job-description {
+            margin-left: 0;
+            margin-bottom: 16px;
+            padding-left: 18px;
+        }
+
+        .job-description li {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .job-description li::marker {
+            color: var(--neon-purple);
+        }
+
+        .skills-category {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            margin: 14px 0 6px 0;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .skills-list {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .certification-item {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .achievement-item {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .page-break {
+            page-break-before: always;
+            margin-top: 40px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        .audit-platforms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .platform-badge {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--neon-cyan);
+            transition: all 0.3s ease;
+        }
+
+        .platform-badge:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- PAGE 1 -->
+    <div class="header-section">
+        <h1 class="name">JOHN WELLARD</h1>
+        <div class="title">Full-Stack Blockchain Engineer & Smart Contract Security Auditor</div>
+        <div class="contact-info">
+            <strong>Surrey, United Kingdom</strong> • <strong>Remote</strong> • <strong>UK &amp; South African citizen</strong><br>
+            <a href="mailto:onchain@jw3b.dev">onchain@jw3b.dev</a> •
+            <a href="https://jw3b.dev" target="_blank">jw3b.dev</a> •
+            <a href="https://www.linkedin.com/in/john-wellard/" target="_blank">linkedin.com/in/john-wellard</a> •
+            <a href="https://github.com/jw3b-dev" target="_blank">github.com/jw3b-dev</a><br>
+            <span style="color: var(--neon-purple);">ENS:</span> jw3b.brave • agilegypsy.brave
+        </div>
+    </div>
+
+    <h2 class="section-header">// Professional Summary</h2>
+    <div class="professional-summary">
+        <strong>Full-Stack Blockchain Engineer</strong> and <strong>Security Researcher</strong> with deep expertise in
+        building secure, scalable decentralized applications and auditing DeFi protocols. I architect entire on-chain
+        systems that are attack-resistant and ready for institutional adoption, combining gas-optimized Solidity/Rust
+        protocols with seamless React/Next.js frontends. My adversarial mindset is honed through competitive auditing
+        on <strong>CodeHawks</strong>. Currently advancing toward formal verification with
+        Certora
+        and pioneering the "2026 Stack"—incorporating <strong>Autonomous AI Agents, Account Abstraction (ERC-4337), and
+            Zero-Knowledge proofs</strong> into practical applications.
+    </div>
+
+    <div class="highlight-box">
+        <strong>🔧 CORE STACK</strong>
+        <div class="tech-stack">
+            <span class="tech-tag">Solidity</span>
+            <span class="tech-tag">Rust</span>
+            <span class="tech-tag">Foundry</span>
+            <span class="tech-tag">Hardhat</span>
+            <span class="tech-tag">React.js</span>
+            <span class="tech-tag">Next.js</span>
+            <span class="tech-tag">Ethers.js</span>
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">ZK Circuits</span>
+            <span class="tech-tag">The Graph</span>
+        </div>
+    </div>
+
+    <h2 class="section-header">// Core Engineering & Security Experience</h2>
+
+    <div class="job-title">Full-Stack Blockchain Engineer | AgileGypsy</div>
+    <div class="job-details">Jan 2026 - Present • Remote</div>
+    <ul class="job-description">
+        <li>Engineering autonomous AI agents for DeFi protocol automation and intelligent trading systems</li>
+        <li>Architecting institutional-grade RWA infrastructure using ERC-3643 standards with DID integrations</li>
+        <li>Implementing ZK rollups and app-chain solutions for modular scaling</li>
+        <li>Building gasless user journeys with Account Abstraction (ERC-4337) for next-generation UX</li>
+        <li>Core Stack: Solidity, Rust, React, ZK Circuits, Python, AI Agents</li>
+    </ul>
+
+    <div class="job-title">Smart Contract Security Auditor | AgileGypsy / Independent</div>
+    <div class="job-details">Feb 2025 - Present • Remote</div>
+    <ul class="job-description">
+        <li>Conducting security assessments and formal verification for DeFi protocols</li>
+        <li data-claim="codehawks-validated-findings">14 validated findings across 7 CodeHawks First Flights: 7 High, 4 Medium, 3 Low</li>
+        <li>Research focus: Reentrancy attacks, oracle manipulation, cross-chain bridge exploits</li>
+        <li>Utilizing AI-enhanced fuzzing and invariant testing for comprehensive vulnerability detection</li>
+        <li>Stack: Foundry, Slither, Echidna, Aderyn, Certora, AI Fuzzing</li>
+    </ul>
+
+    <!-- PAGE 2 -->
+    <div class="page-break">
+        <div class="job-title">Junior Smart Contract & AI Developer | AgileGypsy</div>
+        <div class="job-details">Feb 2025 - Jan 2026 • Remote</div>
+        <ul class="job-description">
+            <li>Led full-stack engineering initiatives at the intersection of AI Agents and RWA tokenization</li>
+            <li>Built foundational skills in Solidity smart contract development and AI integration</li>
+            <li>Developed and deployed production-ready smart contracts on Ethereum, Polygon, and BSC</li>
+            <li>Created automated testing suites using Foundry and Hardhat</li>
+        </ul>
+
+        <h2 class="section-header">// Technical Skills</h2>
+
+        <div class="skills-category">Blockchain & Smart Contracts:</div>
+        <div class="skills-list">
+            Solidity, Rust (Solana), Yul/Assembly, Foundry, Hardhat, Ethers.js, Web3.js,
+            DeFi Protocols (Uniswap V2/V3, Curve, Aave), ERC-20/721/1155/3643/4337/6551,
+            zk-SNARKs, Cross-Chain Bridges, Account Abstraction, Formal Verification
+        </div>
+
+        <div class="skills-category">Security & Auditing:</div>
+        <div class="skills-list">
+            Slither, Aderyn, Echidna, Medusa, Certora, Static Analysis, Fuzz Testing,
+            Invariant Testing, Manual Code Review, Threat Modeling, Gas Optimization,
+            MEV Analysis, Flash Loan Attack Vectors, Reentrancy Detection
+        </div>
+
+        <div class="skills-category">Full-Stack Development:</div>
+        <div class="skills-list">
+            JavaScript, TypeScript, Python, React.js, Next.js, Node.js, Redux, GraphQL,
+            REST APIs, IPFS, The Graph, PostgreSQL, MongoDB, Git, CI/CD Pipelines
+        </div>
+
+        <div class="skills-category">AI & Automation:</div>
+        <div class="skills-list">
+            AI Agent Development, LLM Integration, Automated Trading Bots,
+            ML-Enhanced Security Analysis, Python (NumPy, Pandas), Data Pipeline Architecture
+        </div>
+
+        <h2 class="section-header">// Audit Record</h2>
+        <div class="audit-platforms">
+            <span class="platform-badge">CodeHawks First Flights</span>
+            <span class="platform-badge" data-claim="codehawks-validated-findings">14 validated findings</span>
+            <span class="platform-badge" data-claim="codehawks-validated-findings">7 High · 4 Medium · 3 Low</span>
+            <span class="platform-badge">Write-up selected by Cyfrin: #50 L-01</span>
+        </div>
+
+        <h2 class="section-header">// Education & Certifications</h2>
+
+        <div class="skills-category">Blockchain Education:</div>
+        <div class="certification-item">
+            <strong>Blockchain Development Bootcamp 3.0</strong> • Dapp University • Jan 2026 - Present (In Progress)
+        </div>
+        <div class="certification-item">
+            <strong>Solidity Smart Contract Developer (SSCD+)</strong> • Cyfrin Updraft • Feb 2025 - Present (In Progress)
+        </div>
+        <div class="certification-item">
+            <strong>The Blockchain Bootcamp 2.0</strong> • Dapp University • Jan 2025
+        </div>
+
+        <div class="skills-category">Formal Education:</div>
+        <div class="certification-item">
+            BSc (Honours) Environmental Science • The Open University • Part-time, in progress
+        </div>
+
+        <div class="skills-category">Completed Certifications:</div>
+        <ul>
+            <li class="certification-item">Chainlink Fundamentals (Jan 2026)</li>
+            <li class="certification-item">Cyfrin Blockchain Basics, Foundry Fundamentals, Web3 Wallet Security (2025)
+            </li>
+            <li class="certification-item">Neo4j Certified Professional (Jan 2025)</li>
+            <li class="certification-item">CompTIA Network+, A+ IT Technician, Microsoft MCP (2008)</li>
+        </ul>
+    </div>
+
+    <!-- PAGE 3 -->
+    <div class="page-break">
+        <h2 class="section-header">// Previous Technical Experience</h2>
+
+        <div class="job-title">Network Engineer & Lead Web Developer | Computer Concepts</div>
+        <div class="job-details">Jun 2004 - Dec 2010 • Kempton Park, South Africa</div>
+        <ul class="job-description">
+            <li>Built 200+ responsive websites using HTML, CSS, JavaScript</li>
+            <li>Maintained network infrastructures with 11% uptime improvement</li>
+            <li>Managed web hosting deployments, DNS configuration, and domain registrations</li>
+            <li>Stack: HTML/CSS, JavaScript, Network Security, DNS, Hosting</li>
+        </ul>
+
+        <h2 class="section-header">// Key Achievements</h2>
+        <ul>
+            <li class="achievement-item">
+                <strong>Security:</strong> Active competitive auditor identifying vulnerabilities in DeFi protocols
+            </li>
+            <li class="achievement-item">
+                <strong>Innovation:</strong> Pioneering AI × Web3 convergence with autonomous agent development
+            </li>
+            <li class="achievement-item">
+                <strong>Education:</strong> Pursuing advanced Cyfrin SSCD+ certification for professional auditing
+            </li>
+            <li class="achievement-item">
+                <strong>Open Source:</strong> Contributing to decentralized protocol development on GitHub
+            </li>
+        </ul>
+    </div>
+
+</body>
+
+</html>

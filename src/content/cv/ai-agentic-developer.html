@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="omelette-owns-print" content="true">
+<title>John Wellard - Senior Agentic Developer CV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #030014; }
+  a { color: #00f3ff; text-decoration: none; }
+  a:hover { text-shadow: 0 0 8px #00f3ff; }
+  @media print {
+    body { background: #ffffff; }
+    [data-doc] { background: #ffffff !important; color: #1e293b !important; padding: 0 !important; }
+    [data-accent] { color: #0369a1 !important; text-shadow: none !important; }
+    [data-accent-border] { border-color: #0369a1 !important; }
+    [data-rule] { border-color: #e2e8f0 !important; }
+    [data-muted] { color: #334155 !important; }
+    [data-strong] { color: #0f172a !important; }
+    [data-card] { background: #f0f9ff !important; border-color: #bae6fd !important; backdrop-filter: none !important; }
+    [data-tag] { background: #0369a1 !important; color: #ffffff !important; }
+    [data-gradient-text] { background: none !important; -webkit-text-fill-color: #0f172a !important; color: #0f172a !important; }
+    [data-break] { break-before: page; page-break-before: always; }
+    a { color: #0369a1 !important; }
+  }
+  @page { margin: 0; }
+  /* Screen-media PDF render (job-search/render-cvs.cjs): full-bleed dark pages, the document padding
+     repeated on every page, and the section breaks that the print rules above already define. */
+  html, body { background: #030014; }
+  [data-doc] { -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  [data-break] { break-before: page; page-break-before: always; }
+  /* On a phone the four figures sit two to a row. The PDF renders at A4 width, so it never reaches this. */
+  @media screen and (max-width: 600px) { [data-stats] { grid-template-columns: repeat(2, 1fr) !important; } }
+</style>
+
+</head>
+<body>
+
+
+<div data-doc="1" style="max-width: 880px; margin: 0 auto; padding: 40px 60px; font-family: 'Outfit', 'Inter', sans-serif; font-size: 12px; line-height: 1.5; color: #e5e5e5; background: #030014;">
+
+  <div data-accent-border="1" style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #00f3ff; padding-bottom: 20px;">
+    <h1 data-accent="1" style="font-size: 28px; font-weight: 700; color: #00f3ff; margin: 0 0 8px 0; text-shadow: 0 0 20px rgba(0, 243, 255, 0.4); letter-spacing: 2px; font-family: 'Outfit', sans-serif;">JOHN WELLARD</h1>
+    <div data-gradient-text="1" style="font-size: 16px; font-weight: 500; background: linear-gradient(to right, #00f3ff, #2d5af6); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0 0 16px 0;">Senior Agentic Developer | Multi-Agent Orchestration, GraphRAG &amp; Evaluation</div>
+    <div data-muted="1" style="font-size: 12px; color: #a1a1aa; line-height: 1.8;">
+      <strong data-strong="1" style="color: #e5e5e5;">Surrey, United Kingdom</strong> • <strong data-strong="1" style="color: #e5e5e5;">Remote</strong> • <strong data-strong="1" style="color: #e5e5e5;">UK &amp; South African citizen</strong><br>
+      <a href="mailto:onchain@jw3b.dev">onchain@jw3b.dev</a> •
+      <a href="https://agilegypsy.com" target="_blank">agilegypsy.com</a> •
+      <a href="https://jw3b.dev" target="_blank">jw3b.dev</a> •
+      <a href="https://www.linkedin.com/in/john-wellard/" target="_blank">linkedin.com/in/john-wellard</a> •
+      <a href="https://github.com/jw3b-dev" target="_blank">github.com/jw3b-dev</a>
+    </div>
+  </div>
+
+  <h2 data-accent="1" data-rule="1" style="font-size: 14px; font-weight: 700; color: #00f3ff; margin: 28px 0 14px 0; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Space Mono', monospace;">// Professional Summary</h2>
+  <div data-muted="1" style="font-size: 13px; color: #a1a1aa; line-height: 1.7; margin-bottom: 20px; text-align: justify; text-wrap: pretty;">
+    <strong data-strong="1" style="color: #e5e5e5;">Agentic developer</strong> shipping production multi-agent systems with deterministic orchestration, a zero-trust validator between every step, and output quality that is measured rather than assumed. My working thesis: <strong data-strong="1" style="color: #e5e5e5;">systems are graphs</strong> — an LLM over flat text guesses; an LLM over a knowledge graph reasons about structure, so I model the domain in Neo4j and query it instead of hoping vector similarity lands. Shipped work includes a 12-agent orchestration engine running 755 tasks at <strong data-strong="1" style="color: #e5e5e5;">98.7% autonomous verification</strong>, a hybrid GraphRAG retriever benchmarked <strong data-strong="1" style="color: #e5e5e5;" data-claim="graphrag-retriever-uplift">+18 points</strong> over naive vector search, and edge-deployed RAG on Cloudflare Workers AI with MCP tool bridges. Behind the AI work sits <strong data-strong="1" style="color: #e5e5e5;">20+ years</strong> of engineering and <strong data-strong="1" style="color: #e5e5e5;">15+ years</strong> leading delivery as an <strong data-strong="1" style="color: #e5e5e5;">AgilePM Practitioner</strong> — I can scope an ambiguous problem, estimate it honestly, name the delivery risks, and document it so the team can follow.
+  </div>
+
+  
+    <div data-stats="1" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0;">
+      <div data-card="1" style="background: rgba(10,10,20,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; text-align: center;">
+        <div data-accent="1" style="font-size: 22px; font-weight: 700; color: #00f3ff; font-family: 'Space Mono', monospace;">98.7%</div>
+        <div data-muted="1" style="font-size: 9px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Autonomously Verified</div>
+      </div>
+      <div data-card="1" style="background: rgba(10,10,20,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; text-align: center;">
+        <div data-accent="1" style="font-size: 22px; font-weight: 700; color: #00f3ff; font-family: 'Space Mono', monospace;" data-claim="graphrag-retriever-uplift">+18pt</div>
+        <div data-muted="1" style="font-size: 9px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Hybrid Retrieval Lift</div>
+      </div>
+      <div data-card="1" style="background: rgba(10,10,20,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; text-align: center;">
+        <div data-accent="1" style="font-size: 22px; font-weight: 700; color: #00f3ff; font-family: 'Space Mono', monospace;">100%</div>
+        <div data-muted="1" style="font-size: 9px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Governance Test Coverage</div>
+      </div>
+      <div data-card="1" style="background: rgba(10,10,20,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; text-align: center;">
+        <div data-accent="1" style="font-size: 22px; font-weight: 700; color: #00f3ff; font-family: 'Space Mono', monospace;">20+</div>
+        <div data-muted="1" style="font-size: 9px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Years Engineering</div>
+      </div>
+    </div>
+  
+
+  <div data-card="1" style="background: rgba(10,10,20,0.6); border-left: 3px solid #00f3ff; padding: 16px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; backdrop-filter: blur(10px);">
+    <strong data-accent="1" style="color: #00f3ff; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px;">CORE STACK</strong>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">Python</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">TypeScript</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">Claude Code</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">GCP Agent SDK</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">MCP</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">Neo4j / Cypher / GDS</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">GraphRAG</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">Cloudflare Workers AI</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">Vectorize</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">PostgreSQL</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">radCAD</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">Solidity</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">React / Next.js</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">GitHub Actions</span>
+    </div>
+  </div>
+
+  <h2 data-accent="1" data-rule="1" style="font-size: 14px; font-weight: 700; color: #00f3ff; margin: 28px 0 14px 0; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Space Mono', monospace;">// Shipped &amp; Running</h2>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 6px;">
+    <div data-card="1" style="background: rgba(10,10,20,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px 16px;">
+      <div data-accent="1" style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #00f3ff; margin-bottom: 6px;">AGENTIC WORKFLOWS</div>
+      <div data-muted="1" style="font-size: 11.5px; color: #a1a1aa; line-height: 1.6;">Deterministic multi-agent orchestration — poll → execute → validate → unblock, with a zero-trust validator between every step. <strong data-strong="1" style="color: #e5e5e5;">Agent-OS: 12 agents, 755 tasks, 98.7% autonomously verified, $0 infra.</strong> MB governance engine: 1,345 tests at 100% coverage.</div>
+    </div>
+    <div data-card="1" style="background: rgba(10,10,20,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px 16px;">
+      <div data-accent="1" style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #00f3ff; margin-bottom: 6px;">GRAPHRAG ON NEO4J</div>
+      <div data-muted="1" style="font-size: 11.5px; color: #a1a1aa; line-height: 1.6;">Hybrid vector + full-text retrieval over a knowledge graph — grounded and cited. <strong data-strong="1" style="color: #e5e5e5;">EcoGraph: <span data-claim="graphrag-chunks">77k chunks</span> and a <span data-claim="graphrag-entities">9,828-entity graph</span></strong> of the full Neo4j corpus; hybrid retrieval benchmarked <span data-claim="graphrag-retriever-uplift">+18 pts</span> with recovery doubled vs naive vector.</div>
+    </div>
+    <div data-card="1" style="background: rgba(10,10,20,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px 16px;">
+      <div data-accent="1" style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #00f3ff; margin-bottom: 6px;">GRAPH-NATIVE TOKENOMICS</div>
+      <div data-muted="1" style="font-size: 11.5px; color: #a1a1aa; line-height: 1.6;">Token economies modelled as graphs and fused with Monte-Carlo simulation — a graph⇄sim bridge answering structural questions about dynamic output. Neo4j + GDS + radCAD, applied to live token models (DevGuild $GUILD).</div>
+    </div>
+    <div data-card="1" style="background: rgba(10,10,20,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px 16px;">
+      <div data-accent="1" style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #00f3ff; margin-bottom: 6px;">RAG AT THE EDGE</div>
+      <div data-muted="1" style="font-size: 11.5px; color: #a1a1aa; line-height: 1.6;">Grounded retrieval on Cloudflare Workers AI + Vectorize, with MCP tool bridges so agents act on real systems safely and observably. In production across the studio edge stack (<a href="https://agilegypsy.com/portfolio/kointel" target="_blank">Kointel</a>, <a href="https://agilegypsy.com/portfolio/kthulhu-overmind" target="_blank">KTHULHU</a>).</div>
+    </div>
+  </div>
+
+  <div data-break="1" style="break-before: page; page-break-before: always; margin-top: 40px;">
+
+    <h2 data-accent="1" data-rule="1" style="font-size: 14px; font-weight: 700; color: #00f3ff; margin: 28px 0 14px 0; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Space Mono', monospace;">// AI &amp; Agentic Engineering Experience</h2>
+
+    <div data-strong="1" style="font-size: 14px; font-weight: 600; color: #e5e5e5; margin: 18px 0 4px 0;">Founder &amp; AI Engineering Lead | AgileGypsy</div>
+    <div data-accent="1" style="font-size: 11px; color: #00f3ff; margin-bottom: 8px; font-family: 'Space Mono', monospace;">Mar 2024 - Present • Remote</div>
+    <ul style="margin-bottom: 16px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px;">
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Architected <strong data-strong="1" style="color: #e5e5e5;">Agent-OS</strong>, a deterministic multi-agent orchestrator (poll → execute → validate → unblock) with a zero-trust validator between every step — 12 agents, 755 tasks, 98.7% autonomously verified, running at $0 infrastructure cost</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Designed agents that plan, decompose tasks, call tools, self-check, detect failure, retry where safe, escalate to a human where not, and <strong data-strong="1" style="color: #e5e5e5;">fail safely</strong> rather than fabricating a result</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Built <strong data-strong="1" style="color: #e5e5e5;">GraphRAG retrieval on Neo4j</strong> — hybrid vector + full-text over a knowledge graph (<span data-claim="graphrag-chunks">77k chunks</span>, <span data-claim="graphrag-entities">9,828 entities</span>), benchmarked <span data-claim="graphrag-retriever-uplift">+18 pts</span> with recovery doubled against naive vector search, and answers returned grounded and cited</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Enforced strict <strong data-strong="1" style="color: #e5e5e5;">input/output contracts</strong> on every tool: typed schemas, structured error shapes, schema-constrained responses — so downstream services can consume agent output without defensive parsing</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Own the <strong data-strong="1" style="color: #e5e5e5;">prompt engineering lifecycle</strong> — version-controlled templates, clear system/user/tool role separation, few-shot exemplars, reproducible regression runs gating every change</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Build <strong data-strong="1" style="color: #e5e5e5;">evaluation pipelines</strong> with golden datasets, regression suites, LLM-as-judge scoring and human review loops; the MB governance engine ships 1,345 tests at 100% coverage</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Implement, test and document <strong data-strong="1" style="color: #e5e5e5;">MCP tool bridges</strong> so capabilities are discoverable and reusable across agents and IDE clients — Neo4j MCP tooling certified</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Deliver AI × blockchain convergence: token-gated AI SaaS platforms and autonomous on-chain agents, with tokenomics modelled as graphs in Neo4j's Graph Data Science library and simulated in radCAD / xyflow</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Translate client business goals into technical plans, estimates and named delivery risks; lead ambiguous research independently and bring teams along through written docs and working demos</li>
+    </ul>
+
+    <div data-strong="1" style="font-size: 14px; font-weight: 600; color: #e5e5e5; margin: 18px 0 4px 0;">AI Agent &amp; Full-Stack Engineer | AgileGypsy</div>
+    <div data-accent="1" style="font-size: 11px; color: #00f3ff; margin-bottom: 8px; font-family: 'Space Mono', monospace;">Jan 2026 - Present • Remote</div>
+    <ul style="margin-bottom: 16px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px;">
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Ship edge-deployed RAG on <strong data-strong="1" style="color: #e5e5e5;">Cloudflare Workers AI + Vectorize</strong> with MCP bridges, so agents act on real systems safely and observably (Kointel, KTHULHU)</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Build multi-step tool chains and state-machine agents with deterministic routing wrapped around the non-deterministic parts</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Instrument every LLM call with structured traces — inputs, outputs, latency, token count, tool calls, task success rate — surfaced for cost and quality regression review</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Apply prompt caching, semantic routing and output memoization to cut latency and spend while holding response consistency</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Connect agentic back ends to React / Next.js front ends over typed REST APIs with streaming responses and accessible, WCAG-conscious interaction patterns</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Stack: Python, TypeScript, Node.js, Cloudflare Workers, PostgreSQL, Neo4j, GCP Agent SDK, Docker, GitHub Actions</li>
+    </ul>
+
+    <div data-strong="1" style="font-size: 14px; font-weight: 600; color: #e5e5e5; margin: 18px 0 4px 0;">AI-Assisted Security Researcher | AgileGypsy / Independent</div>
+    <div data-accent="1" style="font-size: 11px; color: #00f3ff; margin-bottom: 8px; font-family: 'Space Mono', monospace;">Feb 2025 - Present • Remote</div>
+    <ul style="margin-bottom: 16px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px;">
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Designing a graph-native audit engine on a Code Property Graph (AST + CFG + DFG) with a multi-agent roster — Topology → Vulnerability → Exploit → Verification → Reporting — and an EVM-sandbox auto-heal loop (KTHULHU)</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Built LLM-assisted review pipelines that triage findings, draft reproduction steps and rank severity, with human verification as a mandatory gate before anything is reported</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Competitive auditing on CodeHawks, with <span data-claim="codehawks-validated-findings">14 validated findings across 7 First Flights</span> — an adversarial habit that transfers straight to red-teaming agents and prompt-injection defence</li>
+    </ul>
+
+    <h2 data-accent="1" data-rule="1" style="font-size: 14px; font-weight: 700; color: #00f3ff; margin: 28px 0 14px 0; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Space Mono', monospace;">// In Development</h2>
+    <ul style="margin-bottom: 4px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px;">
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;"><strong data-strong="1" style="color: #e5e5e5;">Neo4j agent memory</strong> — graph-backed long-term memory: entities, relationships and episodic recall in Neo4j rather than a flat vector store</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;"><strong data-strong="1" style="color: #e5e5e5;">AI-agent GraphRAG</strong> — the benchmarked hybrid retriever packaged as a production agent capability over live knowledge graphs</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;"><strong data-strong="1" style="color: #e5e5e5;">Agent-ID &amp; Web3 agent security</strong> — identity, authorisation and security for autonomous agents acting on-chain, a fast-growing surface as agents get wallets</li>
+    </ul>
+  </div>
+
+  <div data-break="1" style="break-before: page; page-break-before: always; margin-top: 40px;">
+
+    <h2 data-accent="1" data-rule="1" style="font-size: 14px; font-weight: 700; color: #00f3ff; margin: 28px 0 14px 0; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Space Mono', monospace;">// Technical Skills</h2>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">Agentic Systems &amp; Orchestration:</div>
+    <div data-muted="1" style="font-size: 12px; color: #a1a1aa; margin-bottom: 12px; line-height: 1.6;">
+      Planning &amp; task decomposition, deterministic multi-agent orchestration, zero-trust step validation, state-machine agents, multi-step tool chains, LangGraph, LangChain, AutoGen, GCP Agent SDK, custom frameworks, MCP servers &amp; clients, function/tool calling, retry &amp; escalation policy, guardrails, graceful failure handling
+    </div>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">Graph &amp; Retrieval:</div>
+    <div data-muted="1" style="font-size: 12px; color: #a1a1aa; margin-bottom: 12px; line-height: 1.6;">
+      Neo4j, Cypher, Graph Data Science (GDS), knowledge-graph construction &amp; entity extraction, GraphRAG, hybrid vector + full-text retrieval, chunking &amp; retrieval strategy, embeddings, Cloudflare Vectorize, grounded &amp; cited answering, graph-backed agent memory
+    </div>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">Prompt Engineering &amp; Evaluation:</div>
+    <div data-muted="1" style="font-size: 12px; color: #a1a1aa; margin-bottom: 12px; line-height: 1.6;">
+      Structured prompt patterns, few-shot design, schema enforcement &amp; output constraints, version-controlled templates, golden test sets, regression suites, LLM-as-judge scoring, human review workflows, quantitative quality metrics, prompt caching, semantic routing, output memoization
+    </div>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">Observability &amp; Reliability:</div>
+    <div data-muted="1" style="font-size: 12px; color: #a1a1aa; margin-bottom: 12px; line-height: 1.6;">
+      LangSmith, OpenTelemetry, structured logging, trace instrumentation (latency, tokens, tool calls, task success), cost tracking, canary &amp; shadow evaluation, incident triage
+    </div>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">Languages, Platforms &amp; Modelling:</div>
+    <div data-muted="1" style="font-size: 12px; color: #a1a1aa; margin-bottom: 12px; line-height: 1.6;">
+      Python, TypeScript, JavaScript, Solidity, Rust, Node.js, React.js, Next.js, xyflow, radCAD Monte-Carlo simulation, RESTful API design, GraphQL, Cloudflare Workers, GCP, PostgreSQL, Docker, WCAG 2.2 accessibility awareness
+    </div>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">Engineering Practice &amp; AI Tooling:</div>
+    <div data-muted="1" style="font-size: 12px; color: #a1a1aa; margin-bottom: 12px; line-height: 1.6;">
+      Claude Code, GitHub Copilot, Cursor, Git &amp; GitHub workflows, pull request review standards, CI/CD with GitHub Actions, testing practice, API contracts, coding conventions — including onboarding teammates onto AI-assisted workflows
+    </div>
+
+    <h2 data-accent="1" data-rule="1" style="font-size: 14px; font-weight: 700; color: #00f3ff; margin: 28px 0 14px 0; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Space Mono', monospace;">// Delivery &amp; Leadership Experience</h2>
+
+    <div data-strong="1" style="font-size: 14px; font-weight: 600; color: #e5e5e5; margin: 18px 0 4px 0;">Project &amp; Business Development Consultant | Independent</div>
+    <div data-accent="1" style="font-size: 11px; color: #00f3ff; margin-bottom: 8px; font-family: 'Space Mono', monospace;">Oct 2022 - Mar 2024 • Remote</div>
+    <ul style="margin-bottom: 16px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px;">
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Delivered 20+ projects in agile environments at 95% on-time completion and up to 40% cost savings through Lean practice</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Owned complex technical scopes end-to-end: requirements, estimates, implementation approach, risk register, stakeholder reporting</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Clients included SproutAI, Designed Bio Solutions, Thoroughbred Auto and Total Water</li>
+    </ul>
+
+    
+      <div data-strong="1" style="font-size: 14px; font-weight: 600; color: #e5e5e5; margin: 18px 0 4px 0;">Project &amp; Business Development Manager | Designed Bio Solutions</div>
+      <div data-accent="1" style="font-size: 11px; color: #00f3ff; margin-bottom: 8px; font-family: 'Space Mono', monospace;">Aug 2020 - Dec 2022 • Boksburg, South Africa</div>
+      <ul style="margin-bottom: 16px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px;">
+        <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Led international engineering projects; cut delays 25% and rework costs 10% via tighter QA/QC and review gates</li>
+        <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">98% budget adherence with a 15% improvement in client retention</li>
+      </ul>
+
+      <div data-strong="1" style="font-size: 14px; font-weight: 600; color: #e5e5e5; margin: 18px 0 4px 0;">Project &amp; Business Development Manager | Total Water Solutions</div>
+      <div data-accent="1" style="font-size: 11px; color: #00f3ff; margin-bottom: 8px; font-family: 'Space Mono', monospace;">Jan 2011 - Aug 2020 • Kempton Park, South Africa</div>
+      <ul style="margin-bottom: 16px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px;">
+        <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Drove 40% revenue expansion over a nine-year tenure; expanded the client base 25% at 95% client approval</li>
+        <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Improved team efficiency 20% and reduced project risk exposure 20% through standardised process</li>
+      </ul>
+    
+
+    <div data-strong="1" style="font-size: 14px; font-weight: 600; color: #e5e5e5; margin: 18px 0 4px 0;">Network Engineer &amp; Lead Web Developer | Computer Concepts</div>
+    <div data-accent="1" style="font-size: 11px; color: #00f3ff; margin-bottom: 8px; font-family: 'Space Mono', monospace;">Jun 2004 - Dec 2010 • Kempton Park, South Africa</div>
+    <ul style="margin-bottom: 16px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px;">
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Built 200+ responsive websites and maintained production network infrastructure with an 11% uptime improvement</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Managed hosting deployments, DNS configuration and domain operations</li>
+    </ul>
+  </div>
+
+  <div data-break="1" style="break-before: page; page-break-before: always; margin-top: 40px;">
+
+    <h2 data-accent="1" data-rule="1" style="font-size: 14px; font-weight: 700; color: #00f3ff; margin: 28px 0 14px 0; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Space Mono', monospace;">// Certifications &amp; Education</h2>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">AI &amp; Graph (Neo4j, all completed 100%):</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;">Neo4j &amp; Generative AI Certification</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;">Neo4j &amp; Generative AI Fundamentals</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;">Developing with Neo4j MCP Tools</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;">Neo4j Fundamentals</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;">Neo4j Certified Professional</span>
+    </div>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">Delivery &amp; Agile:</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;">AgilePM® Practitioner</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;">PRINCE2® Foundation</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;">Business Agility L1</span>
+      <span data-tag="1" style="background: linear-gradient(135deg, #2d5af6, #00f3ff); color: #030014; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;">ClickUp Expert</span>
+    </div>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">Engineering:</div>
+    <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px;">
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Blockchain Development Bootcamp 3.0 • Dapp University • Jan 2026 - Present (In Progress)</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Solidity Smart Contract Developer (SSCD+) • Cyfrin Updraft • 2025 - Present (In Progress)</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">Chainlink Fundamentals (Jan 2026) • Cyfrin Blockchain Basics, Foundry Fundamentals, Web3 Wallet Security (2025)</li>
+      <li data-muted="1" style="font-size: 12px; color: #a1a1aa;">CompTIA Network+, A+ IT Technician, Microsoft MCP (2008)</li>
+    </ul>
+
+    <div data-accent="1" style="font-size: 12px; font-weight: 600; color: #00f3ff; margin: 14px 0 6px 0; font-family: 'Space Mono', monospace;">Formal Education:</div>
+    <div data-muted="1" style="font-size: 12px; color: #a1a1aa;">BSc (Honours) Environmental Science • The Open University • Part-time, in progress</div>
+
+    <div data-card="1" style="background: rgba(10,10,20,0.6); border-left: 3px solid #00f3ff; padding: 16px 20px; margin: 28px 0 0 0; border-radius: 0 8px 8px 0; backdrop-filter: blur(10px);">
+      <strong data-accent="1" style="color: #00f3ff; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px;">THE THROUGH-LINE</strong>
+      <div data-muted="1" style="font-size: 12px; color: #a1a1aa; line-height: 1.7; margin-top: 8px;">
+        <strong data-strong="1" style="color: #e5e5e5;">Systems are graphs. Model them, then prove it.</strong> An LLM over flat text guesses; an LLM over a graph reasons about structure — who connects to whom, what depends on what, which path an attacker or a whale can take. The same discipline runs through everything I build: model the system as a graph, query it, then prove the constraints hold.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+</body>
+</html>

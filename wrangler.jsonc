@@ -15,6 +15,9 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
+    // The CV pages (John, 2026-10-11) are dist/cv/<slug>.html, served at /cv/<slug>: that mapping is this
+    // mode, the platform default, named here because the CV links depend on it.
+    "html_handling": "auto-trailing-slash",
     // run_worker_first: worker.js runs on EVERY request so it can set the security headers +
     // cache rules. Workers Static Assets does NOT honor the _headers file (that was a Pages
     // feature), so the worker must own them — verified: without this, the deployed site ships

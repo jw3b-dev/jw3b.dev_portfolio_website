@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config config/vite.config.js",
-    "build": "vite build --config config/vite.config.js",
+    "build": "vite build --config config/vite.config.js && node scripts/build-cv.mjs",
     "preview": "vite preview --config config/vite.config.js",
     "lint": "eslint . --config config/eslint.config.js",
     "test": "vitest run --config config/vitest.config.js",
@@ -34,6 +34,9 @@
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/outfit": "^5.3.0",
+    "@fontsource/space-mono": "^5.3.0",
     "@huggingface/transformers": "^4.2.0",
     "@neondatabase/serverless": "^1.1.0",
     "@rainbow-me/rainbowkit": "^2.2.11",

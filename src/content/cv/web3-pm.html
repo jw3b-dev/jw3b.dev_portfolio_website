@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>John Wellard - Web3 Agile Project Manager CV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-blue: #2d5af6;
+            --neon-green: #0aff60;
+            --neon-orange: #ff6b35;
+            --bg-dark: #030014;
+            --bg-card: rgba(10, 10, 20, 0.6);
+            --text-primary: #e5e5e5;
+            --text-secondary: #a1a1aa;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 40px 60px;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            background: var(--bg-dark);
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: #1e293b;
+            }
+
+            .header-section {
+                border-color: #0d9488 !important;
+            }
+
+            .name {
+                color: #0d9488 !important;
+            }
+
+            .section-header {
+                color: #0d9488 !important;
+                border-color: #e2e8f0 !important;
+            }
+
+            .skills-category {
+                color: #0d9488 !important;
+            }
+
+            .metric-box {
+                background: #f0fdfa !important;
+                border-color: #99f6e4 !important;
+            }
+
+            .metric-value {
+                color: #0d9488 !important;
+            }
+
+            .highlight-box {
+                background: #f0fdfa !important;
+                border-color: #0d9488 !important;
+            }
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--neon-green);
+            padding-bottom: 20px;
+        }
+
+        .name {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--neon-green);
+            margin: 0 0 8px 0;
+            text-shadow: 0 0 20px rgba(10, 255, 96, 0.4);
+            letter-spacing: 2px;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 500;
+            background: linear-gradient(to right, var(--neon-green), var(--neon-cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0 0 16px 0;
+        }
+
+        .contact-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .contact-info a {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            transition: text-shadow 0.3s ease;
+        }
+
+        .contact-info a:hover {
+            text-shadow: 0 0 8px var(--neon-cyan);
+        }
+
+        .section-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--neon-green);
+            margin: 28px 0 14px 0;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-subtle);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .professional-summary {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        /* On a phone the four figures sit two to a row. The PDF renders at A4 width, so it never reaches this. */
+        @media screen and (max-width: 600px) {
+            .metric-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .metric-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-box:hover {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(10, 255, 96, 0.15);
+        }
+
+        .metric-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--neon-green);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .metric-label {
+            font-size: 9px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .highlight-box {
+            background: var(--bg-card);
+            border-left: 3px solid var(--neon-orange);
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .highlight-box strong {
+            color: var(--neon-orange);
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .job-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 18px 0 4px 0;
+        }
+
+        .job-details {
+            font-size: 11px;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .job-description {
+            margin-left: 0;
+            margin-bottom: 16px;
+            padding-left: 18px;
+        }
+
+        .job-description li {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .job-description li::marker {
+            color: var(--neon-green);
+        }
+
+        .skills-category {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            margin: 14px 0 6px 0;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .skills-list {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .certification-item {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .achievement-item {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .page-break {
+            page-break-before: always;
+            margin-top: 40px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        .cert-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+            color: var(--bg-dark);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- PAGE 1 -->
+    <div class="header-section">
+        <h1 class="name">JOHN WELLARD</h1>
+        <div class="title">Web3 Agile Project Manager | Founder & Business Development Lead</div>
+        <div class="contact-info">
+            <strong>Surrey, United Kingdom</strong> • <strong>Remote</strong> • <strong>UK &amp; South African citizen</strong><br>
+            <a href="mailto:onchain@jw3b.dev">onchain@jw3b.dev</a> •
+            <a href="https://jw3b.dev" target="_blank">jw3b.dev</a> •
+            <a href="https://www.linkedin.com/in/john-wellard/" target="_blank">linkedin.com/in/john-wellard</a><br>
+            <span style="color: var(--neon-green);">ENS:</span> jw3b.brave • agilegypsy.brave
+        </div>
+    </div>
+
+    <h2 class="section-header">// Professional Summary</h2>
+    <div class="professional-summary">
+        <strong>Web3 Agile Project Manager</strong> and <strong>Business Development Leader</strong> with <strong>15+
+            years</strong>
+        of project leadership across water engineering, environmental solutions, and Web3. I hold <strong>AgilePM
+            Practitioner</strong>
+        and <strong>PRINCE2 Foundation</strong> certifications, and I've delivered 20+ projects with a 95% on-time
+        completion rate.
+        As Founder of <strong>AgileGypsy</strong>, I drive the strategic vision for AI × Web3 convergence—bridging the
+        gap between
+        complex blockchain technology and measurable business value. I orchestrate cross-functional teams from
+        whitepaper to mainnet,
+        speaking the language of developers, investors, and stakeholders alike.
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-box">
+            <div class="metric-value">20+</div>
+            <div class="metric-label">Projects Delivered</div>
+        </div>
+        <div class="metric-box">
+            <div class="metric-value">95%</div>
+            <div class="metric-label">On-Time Delivery</div>
+        </div>
+        <div class="metric-box">
+            <div class="metric-value">40%</div>
+            <div class="metric-label">Cost Savings</div>
+        </div>
+        <div class="metric-box">
+            <div class="metric-value">15+</div>
+            <div class="metric-label">Years Experience</div>
+        </div>
+    </div>
+
+    <h2 class="section-header">// Web3 & Leadership Experience</h2>
+
+    <div class="job-title">Founder & Web3 Delivery Lead | AgileGypsy</div>
+    <div class="job-details">Mar 2024 - Present • Remote</div>
+    <ul class="job-description">
+        <li>Founded blockchain consultancy offering full-cycle dApp delivery from whitepaper to mainnet</li>
+        <li>Providing Agile project management for DeFi protocols while pioneering AI × Web3 convergence</li>
+        <li>Spearheading strategic partnerships with protocols and enterprise Web3 teams</li>
+        <li>Orchestrating cross-functional teams of developers, designers, and security auditors</li>
+        <li>Guiding architectural vision for dApps integrating AI automation into blockchain workflows</li>
+        <li>Stack: Agile PM, Tokenomics, Strategic Partnerships, Product Strategy</li>
+    </ul>
+
+    <div class="job-title">Full-Stack Blockchain Engineer | AgileGypsy</div>
+    <div class="job-details">Jan 2026 - Present • Remote</div>
+    <ul class="job-description">
+        <li>Leading full-stack initiatives combining technical expertise with project leadership</li>
+        <li>Bridging secure backend protocols with intent-based frontend UX</li>
+        <li>Implementing agile sprint planning and delivery for smart contract development lifecycles</li>
+        <li>Coordinating security audit processes and formal verification requirements</li>
+    </ul>
+
+    <div class="highlight-box">
+        <strong>🔧 WEB3 DOMAIN EXPERTISE</strong><br>
+        <span style="color: var(--text-secondary); font-size: 12px; line-height: 1.6;">
+            DeFi Protocols • RWA Tokenization • DAO Governance • Smart Contract Lifecycle •
+            Security Audit Coordination • AI Agent Integration • Tokenomics Strategy • Cross-Chain Architecture
+        </span>
+    </div>
+
+    <!-- PAGE 2 -->
+    <div class="page-break">
+        <h2 class="section-header">// Project Management Experience</h2>
+
+        <div class="job-title">Project & Business Development Consultant | Independent</div>
+        <div class="job-details">Oct 2022 - Mar 2024 • Remote</div>
+        <ul class="job-description">
+            <li>Led 20+ projects across diverse industries including SproutAI and Designed Bio</li>
+            <li>Achieved 95% on-time delivery and up to 40% savings through Lean methodologies</li>
+            <li>Managed cross-functional teams and complex stakeholder relationships</li>
+            <li>Clients: SproutAI, Thoroughbred Auto, Designed Bio Solutions, Total Water, Urban Farm</li>
+        </ul>
+
+        <div class="job-title">Project & Business Development Manager | Designed Bio Solutions</div>
+        <div class="job-details">Aug 2020 - Dec 2022 • Boksburg, South Africa</div>
+        <ul class="job-description">
+            <li>Led international water and wastewater treatment projects including Hong Kong RBC upgrade</li>
+            <li>Reduced project delays by 25% and rework costs by 10% through improved QA/QC systems</li>
+            <li>Achieved 98% budget adherence with 15% improvement in client retention rates</li>
+            <li>Managed global equipment exports and cross-border installations</li>
+        </ul>
+
+        <div class="job-title">Project & Business Development Manager | Total Water Solutions</div>
+        <div class="job-details">Jan 2011 - Aug 2020 • Kempton Park, South Africa</div>
+        <ul class="job-description">
+            <li>Drove 40% revenue expansion over 9-year tenure through strategic business development</li>
+            <li>Expanded client base by 25% while maintaining 95% client approval ratings</li>
+            <li>Improved team efficiency by 20% and minimized project risks by 20%</li>
+            <li>Featured in Water & Sanitation Africa magazine for RotorClear (RBC) plant innovation</li>
+            <li>Key projects: Saudi Arabia DAF/MBBR plants, Kolomela Mine Anglo-American, Commercial Aquaponics</li>
+        </ul>
+
+        <h2 class="section-header">// Core Competencies</h2>
+
+        <div class="skills-category">Project & Agile Management:</div>
+        <div class="skills-list">
+            Agile/Scrum Methodologies, PRINCE2, Sprint Planning, Backlog Management, Stakeholder Engagement,
+            Risk Management, Budget Management, Resource Allocation, Team Leadership, Vendor Management,
+            Quality Assurance, Lean Practices, ClickUp Expert
+        </div>
+
+        <div class="skills-category">Business Development & Strategy:</div>
+        <div class="skills-list">
+            Strategic Partnerships, Market Analysis, Client Relationship Management, Revenue Growth,
+            Contract Negotiation, Proposal Development, Go-to-Market Strategy, Tokenomics Design
+        </div>
+
+        <div class="skills-category">Web3 & Blockchain Knowledge:</div>
+        <div class="skills-list">
+            DeFi Protocol Understanding, Smart Contract Lifecycle, Security Audit Processes,
+            RWA Tokenization, DAO Governance, ERC Standards (4337, 6551, 3643),
+            AI × Blockchain Integration, Developer Team Coordination
+        </div>
+
+        <h2 class="section-header">// Certifications</h2>
+
+        <div class="skills-category">Project Management:</div>
+        <p style="margin-bottom: 10px;">
+            <span class="cert-badge">AgilePM® Practitioner</span>
+            <span class="cert-badge">PRINCE2® Foundation</span>
+            <span class="cert-badge">Business Agility L1</span>
+            <span class="cert-badge">ClickUp Expert</span>
+        </p>
+    </div>
+
+    <!-- PAGE 3 -->
+    <div class="page-break">
+        <div class="skills-category">Blockchain:</div>
+        <ul>
+            <li class="certification-item">Solidity Smart Contract Developer (SSCD+) • Cyfrin • In Progress</li>
+            <li class="certification-item">Chainlink Fundamentals (Jan 2026)</li>
+            <li class="certification-item">Blockchain Basics, Foundry Fundamentals • Cyfrin (2025)</li>
+            <li class="certification-item">Neo4j Certified Professional (Jan 2025)</li>
+        </ul>
+
+        <div class="skills-category">Formal Education:</div>
+        <div class="certification-item">
+            BSc (Honours) Environmental Science • The Open University • Part-time, in progress
+        </div>
+
+        <h2 class="section-header">// Key Achievements</h2>
+        <ul>
+            <li class="achievement-item">
+                <strong>Project Excellence:</strong> Delivered 20+ projects with 95% on-time rate and up to 40% cost
+                savings
+            </li>
+            <li class="achievement-item">
+                <strong>Revenue Growth:</strong> Drove 40% revenue expansion over 9-year tenure at Total Water Solutions
+            </li>
+            <li class="achievement-item">
+                <strong>Industry Recognition:</strong> Featured in Water & Sanitation Africa magazine for innovation
+            </li>
+            <li class="achievement-item">
+                <strong>Web3 Pivot:</strong> Successfully founded AgileGypsy consultancy bridging traditional PM with
+                blockchain
+            </li>
+        </ul>
+    </div>
+
+</body>
+
+</html>
