@@ -678,3 +678,16 @@ break the CTF flow — nothing in the client or worker calls `totalHeld`, and th
 flow uses (`balances`, `deposit`, `withdraw`) all match — but it is not the v2 contract and the
 vault holds **0.00012 ETH**, so there is nothing to drain even when it works. Blocked here: no
 `contracts/.env` keystore locally, and the deployer holds 0.0005 ETH on Base Sepolia.
+
+## Owner requests — 2026-10-11
+
+| TASK | PLAN role | Role (actual) | SKILL-LOADED | COMMIT |
+|-------|-----------|---------------|--------------|--------|
+| CV-PUBLISH | devops-engineer + portfolio-evidence | devops-engineer + portfolio-evidence | y | (this commit) |
+
+**John's three CVs published at `/cv/<file name>`, on John's word.** Asked in the v3 session on 2026-10-11 whether to put
+them on the live site, John answered "push all three". The PDFs are copied unchanged, byte for byte, from the job-search
+folder the mini-projects session keeps; the site Worker serves them from the build with no route or header change.
+Checked before publishing: none carries a claim the evidence register blocks (no PMP, PRINCE2 Foundation only, no TVL,
+bounty or audit count). Two list audit platforms beyond CodeHawks, which the register does not evidence; John has that
+note and asked for no change before publishing.
